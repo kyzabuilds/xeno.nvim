@@ -199,7 +199,10 @@ M["akinsho/bufferline.nvim"] = function(colors)
   }
 
   local highlights = {
-    defaults = { sp = colors.base_700 },
+    defaults = {
+      underline = true,
+      sp = colors.base_700,
+    },
 
     BufferLineFill = { fg = base_colors.fill_fg, bg = base_colors.fill_bg },
     BufferLineSeparator = { fg = base_colors.separator, bg = base_colors.fill_bg },

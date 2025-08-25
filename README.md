@@ -1,39 +1,47 @@
-<img title="Preview" alt="Preview" src="./media/preview.png">
+<img title="xeno banner" alt="xeno banner" src="./media/banner.png">
 
-A minimalist Neovim colorscheme generator that creates monochrome themes with accent highlights from background, foreground, and accent colors.
+<p align='center'>
+  Colorscheme generator that creates minimalist themes using two colors.
+</p>
+
+<br/>
 
 ## Previews
 
-<img title="Preview" alt="Preview Lilypad" src="./media/preview-lily-pad.png">
+<img title="Preview" alt="Preview Lilypad" src="./media/theme-lily-pad.png">
 
 ```lua
 xeno.new_theme('xeno-lilypad', {
   base = '#1E1E1E',
   accent = '#8CBE8C',
+  contrast = 0.1,
 })
 ```
 
-<img title="Preview" alt="Preview Pink Haze" src="./media/preview-pink-haze.png">
+<img title="Preview" alt="Preview Pink Haze" src="./media/theme-pink-haze.png">
 
 ```lua
 xeno.new_theme('xeno-pink-haze', {
-  base = '#1E1E1E',
-  accent = '#8CBE8C',
+  base = '#0f0c0e',
+  accent = '#D19EBC',
+  contrast = 0.1,
 })
 
 ```
-<img title="Preview" alt="Preview Golden Hour" src="./media/preview-golden-hour.png">
+<img title="Preview" alt="Preview Golden Hour" src="./media/theme-golden-hour.png">
 
 ```lua
 xeno.new_theme('xeno-golden-hour', {
-  base = '#1E1E1E',
-  accent = '#8CBE8C',
+  base = '#11100f',
+  accent = '#FFCC33',
+  contrast = 0.1,
 })
 ```
 
 ## Installation
 
-Using [lazy.nvim](https://github.com/folke/lazy.nvim):
+<details>
+<summary><strong>lazy.nvim</strong> (recommended)</summary>
 
 ```lua
 {
@@ -41,31 +49,87 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim):
   lazy = false,
   priority = 1000, -- Load colorscheme early
   config = function()
-    require('xeno').setup()
+    -- Create your custom theme here
+    require('xeno').new_theme('my-theme', {
+      base = '#1E1E1E',
+      accent = '#8CBE8C',
+    })
+    vim.cmd('colorscheme my-theme')
   end,
 }
 ```
 
-Using [packer.nvim](https://github.com/wbthomason/packer.nvim):
+</details>
+
+<details>
+<summary><strong>packer.nvim</strong></summary>
 
 ```lua
 use {
   'kyza0d/xeno.nvim',
   config = function()
-    require('xeno').setup() -- Use default colors
+    -- Create your custom theme
+    require('xeno').new_theme('my-theme', {
+      base = '#1E1E1E',
+      accent = '#8CBE8C',
+    })
+    vim.cmd('colorscheme my-theme')
   end
 }
 ```
 
+</details>
+
+<details>
+<summary><strong>vim-plug</strong></summary>
+
+```vim
+Plug 'kyza0d/xeno.nvim'
+```
+
+Then add to your `init.vim` or `init.lua`:
+```lua
+-- Create your custom theme
+require('xeno').new_theme('my-theme', {
+  base = '#1E1E1E',
+  accent = '#8CBE8C',
+})
+vim.cmd('colorscheme my-theme')
+```
+
+</details>
+
+<details>
+<summary><strong>paq-nvim</strong></summary>
+
+```lua
+require "paq" {
+  'kyza0d/xeno.nvim';
+}
+```
+
+Then add to your config:
+```lua
+-- Create your custom theme
+require('xeno').new_theme('my-theme', {
+  base = '#1E1E1E',
+  accent = '#8CBE8C',
+})
+vim.cmd('colorscheme my-theme')
+```
+
+</details>
+
 ## Usage
+
+**Note:** Xeno.nvim does not provide any default colorschemes. You must create your own themes using the configuration options below.
 
 ### Basic Configuration
 
 ```lua
 -- Create a new theme
 require('xeno').new_theme('my-new-theme', {
-  background = '#1a1a1a',
-  foreground = '#e0e0e0', 
+  base = '#1a1a1a',
   accent = '#7aa2f7',
 })
 
@@ -103,7 +167,13 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim) with global options:
     local xeno = require('xeno')
     
     xeno.config(opts)
-    xeno.setup()
+    
+    -- Create your custom theme
+    xeno.new_theme('my-theme', {
+      base = '#1E1E1E',
+      accent = '#8CBE8C',
+    })
+    vim.cmd('colorscheme my-theme')
   end,
 }
 ```
