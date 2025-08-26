@@ -1,8 +1,7 @@
 local M = {}
-local utils = require("xeno.utils")
-local helpers = require("xeno.helpers")
+local utils = require("xeno.core.utils")
+local helpers = require("xeno.core.helpers")
 
--- Telescope highlights
 M["nvim-telescope/telescope.nvim"] = function(colors)
   return {
     TelescopeNormal = { fg = colors.base_200, bg = colors.base_800 },
@@ -38,7 +37,6 @@ M["ibhagwan/fzf-lua"] = function(colors)
   }
 end
 
--- nvim-cmp highlights
 M["hrsh7th/nvim-cmp"] = function(colors)
   return {
     CmpItemAbbrMatch = { fg = colors.accent_200 },
@@ -50,7 +48,6 @@ M["hrsh7th/nvim-cmp"] = function(colors)
   }
 end
 
--- nvim-navic (winbar) highlights
 M["SmiteshP/nvim-navic"] = function(colors)
   return {
     NavicText = { fg = colors.base_300 },
@@ -68,7 +65,6 @@ M["SmiteshP/nvim-navic"] = function(colors)
   }
 end
 
--- todo-comments highlights
 M["folke/todo-comments.nvim"] = function(colors)
   return {
     TodoBgNOTE = { fg = colors.base_700, bg = colors.accent_500, bold = true },
@@ -83,7 +79,6 @@ M["folke/todo-comments.nvim"] = function(colors)
   }
 end
 
--- indent-blankline highlights
 M["lukas-reineke/indent-blankline.nvim"] = function(colors)
   return {
     IblScope = { fg = colors.base_500, nocombine = true },
@@ -92,7 +87,6 @@ M["lukas-reineke/indent-blankline.nvim"] = function(colors)
   }
 end
 
--- neo-tree highlights
 M["nvim-neo-tree/neo-tree.nvim"] = function(colors)
   local neotree = {
     bg = colors.base_800,
@@ -140,7 +134,6 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors)
   }
 end
 
--- gitsigns highlights
 M["lewis6991/gitsigns.nvim"] = function(colors)
   return {
     GitSignsAdd = { fg = colors.green },

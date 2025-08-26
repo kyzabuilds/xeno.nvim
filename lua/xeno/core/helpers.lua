@@ -1,5 +1,5 @@
 local M = {}
-local utils = require("xeno.utils")
+local utils = require("xeno.core.utils")
 
 --- Apply default properties to every highlight in a configuration table
 --- If the table has a 'defaults' property, those properties will be applied
@@ -34,4 +34,3 @@ M.default = function(config)
 end
 
 return M
-

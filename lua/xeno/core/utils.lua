@@ -1,4 +1,5 @@
 local utils = {}
+local fmt = string.format
 
 -- Constants for theme variants
 local THEME_DARK = 1
@@ -6,17 +7,7 @@ local THEME_LIGHT = 2
 
 -- Simple debug logging utility
 local function log_warn(message)
-  vim.notify("xeno.nvim utils: " .. message, vim.log.levels.WARN)
-end
-
-local function log_debug(message)
-  -- Check a global or config option to enable debug logs
-  -- For example: if vim.g.xeno_debug_enabled then
-  -- For this example, we'll assume debug logging is off by default
-  -- To enable, one might set `vim.g.xeno_debug_enabled = true`
-  if _G.XENO_DEBUG_ENABLED or (vim.g and vim.g.xeno_debug_enabled) then
-    vim.notify("xeno.nvim utils [DEBUG]: " .. message, vim.log.levels.DEBUG)
-  end
+  vim.notify(fmt("xeno.nvim utils: %s", message), vim.log.levels.WARN)
 end
 
 --- Get the current theme variant.
@@ -27,7 +18,7 @@ utils.get_variant = function(variant)
     return variant == "light" and THEME_LIGHT or THEME_DARK
   end
   -- Neovim's 'background' option indicates the theme type
-  return vim.o.background == "light" and THEME_LIGHT or THEME_DARK -- Default to dark (1)
+  return vim.o.background == "light" and THEME_LIGHT or THEME_DARK
 end
 
 --- Merge tables deeply. Creates a new table.
@@ -46,7 +37,6 @@ end
 --- @return number? b Blue component (0-255) or nil on failure.
 utils.hex2rgb = function(hex)
   if type(hex) ~= "string" then
-    log_debug("hex2rgb: Input is not a string: " .. tostring(hex))
     return nil, nil, nil
   end
 
@@ -60,11 +50,11 @@ utils.hex2rgb = function(hex)
     local three_digit_match = { hex:match("^#?(%x)(%x)(%x)$") }
     if #three_digit_match == 3 then
       local r_short, g_short, b_short = three_digit_match[1], three_digit_match[2], three_digit_match[3]
-      r_hex = r_short .. r_short
-      g_hex = g_short .. g_short
-      b_hex = b_short .. b_short
+      r_hex = fmt("%s%s", r_short, r_short)
+      g_hex = fmt("%s%s", g_short, g_short)
+      b_hex = fmt("%s%s", b_short, b_short)
     else
-      log_warn("hex2rgb: Invalid hex format: " .. hex)
+      log_warn(fmt("hex2rgb: Invalid hex format: %s", hex))
       return nil, nil, nil -- Invalid hex format
     end
   end
@@ -72,7 +62,7 @@ utils.hex2rgb = function(hex)
   local r, g, b = tonumber(r_hex, 16), tonumber(g_hex, 16), tonumber(b_hex, 16)
   if not r or not g or not b then
     -- This case should ideally not be reached if regex matched valid hex chars
-    log_warn("hex2rgb: Failed to convert hex components to numbers: " .. hex)
+    log_warn(fmt("hex2rgb: Failed to convert hex components to numbers: %s", hex))
     return nil, nil, nil
   end
 
@@ -90,7 +80,7 @@ utils.rgb2hex = function(r, g, b)
     return "#000000"
   end
   -- Ensure values are integers before formatting
-  return string.format("#%02x%02x%02x", math.floor(r), math.floor(g), math.floor(b))
+  return fmt("#%02x%02x%02x", math.floor(r), math.floor(g), math.floor(b))
 end
 
 --- Clamp RGB values to the valid range of 0-255.
@@ -127,37 +117,35 @@ utils.opaque = function(color_source, opacity)
   if type(color_source) == "string" then
     if color_source:sub(1, 1) == "#" or not color_source:match("%s") then -- Heuristic: if it starts with # or has no spaces, likely a hex or direct color name
       r_fg, g_fg, b_fg = utils.hex2rgb(color_source)
-      if not r_fg then -- If hex2rgb failed, it might be a named color like "red", try to get its highlight
-        log_debug("utils.opaque: Could not parse '" .. color_source .. "' as hex. Attempting as highlight group.")
-      end
     end
 
     if not (r_fg and g_fg and b_fg) then -- If not resolved as hex, assume it's a highlight group name
       local ok_hl, hl_def = pcall(vim.api.nvim_get_hl, 0, { name = color_source, link = false, rgb = true })
       if ok_hl and hl_def and hl_def.foreground then
-        local fg_hex = string.format("#%06x", hl_def.foreground)
+        local fg_hex = fmt("#%06x", hl_def.foreground)
         r_fg, g_fg, b_fg = utils.hex2rgb(fg_hex)
       else
         if not ok_hl then
-          log_warn("utils.opaque: Error getting highlight group '" .. color_source .. "': " .. tostring(hl_def)) -- hl_def is error message here
+          log_warn(fmt("utils.opaque: Error getting highlight group '%s': %s", color_source, tostring(hl_def))) -- hl_def is error message here
         elseif not hl_def then
-          log_warn("utils.opaque: Highlight group '" .. color_source .. "' not found.")
+          log_warn(fmt("utils.opaque: Highlight group '%s' not found.", color_source))
         elseif not hl_def.foreground then
           log_warn(
-            "utils.opaque: Highlight group '" .. color_source .. "' has no foreground color. Cannot apply opacity."
+            fmt("utils.opaque: Highlight group '%s' has no foreground color. Cannot apply opacity.", color_source)
           )
         end
       end
     end
   else
-    log_warn("utils.opaque: color_source must be a string. Got " .. type(color_source))
+    log_warn(fmt("utils.opaque: color_source must be a string. Got %s", type(color_source)))
   end
 
   if not (r_fg and g_fg and b_fg) then
     log_warn(
-      "utils.opaque: Could not parse foreground color from source: "
-        .. vim.inspect(color_source)
-        .. ". Using black as fallback for foreground."
+      fmt(
+        "utils.opaque: Could not parse foreground color from source: %s. Using black as fallback for foreground.",
+        vim.inspect(color_source)
+      )
     )
     r_fg, g_fg, b_fg = 0, 0, 0 -- Fallback for foreground to black
   end
@@ -167,21 +155,11 @@ utils.opaque = function(color_source, opacity)
   local ok_normal_hl, normal_hl_def = pcall(vim.api.nvim_get_hl, 0, { name = "Normal", link = false, rgb = true })
 
   if ok_normal_hl and normal_hl_def and normal_hl_def.background then
-    local normal_bg_hex = string.format("#%06x", normal_hl_def.background)
+    local normal_bg_hex = fmt("#%06x", normal_hl_def.background)
     r_bg, g_bg, b_bg = utils.hex2rgb(normal_bg_hex)
-  else
-    if not ok_normal_hl then
-      log_debug("utils.opaque: Error getting 'Normal' highlight group: " .. tostring(normal_hl_def))
-    elseif not normal_hl_def then
-      log_debug("utils.opaque: 'Normal' highlight group not found.")
-    elseif not normal_hl_def.background then
-      log_debug("utils.opaque: 'Normal' highlight group has no background color.")
-    end
   end
 
   if not (r_bg and g_bg and b_bg) then
-    local fallback_bg_type = (vim.o.background == "light" and "white" or "black")
-    log_debug("utils.opaque: Could not get 'Normal' background color. Falling back to " .. fallback_bg_type .. ".")
     if vim.o.background == "light" then
       r_bg, g_bg, b_bg = 255, 255, 255 -- White for light themes
     else
@@ -207,7 +185,6 @@ end
 utils.adjust_lightness = function(hex, amount)
   local r, g, b = utils.hex2rgb(hex)
   if not r then
-    log_debug("utils.adjust_lightness: Invalid hex '" .. tostring(hex) .. "'. Returning original.")
     return hex -- Return original if invalid hex
   end
 
@@ -227,7 +204,6 @@ end
 utils.hex2hsl = function(hex)
   local r_orig, g_orig, b_orig = utils.hex2rgb(hex)
   if not r_orig then
-    log_debug("utils.hex2hsl: Invalid hex for HSL conversion: " .. tostring(hex))
     return nil, nil, nil
   end
 
@@ -312,98 +288,6 @@ end
 utils.hsl2hex = function(h, s, l)
   local r, g, b = utils.hsl2rgb(h, s, l)
   return utils.rgb2hex(r, g, b)
-end
-
---- Adjust the saturation of a hex color.
---- @param hex string The hex color string.
---- @param amount number Percentage adjustment for saturation (e.g., 20 for +20%, -10 for -10%).
---- @return string The new hex color string, or the original hex if input was invalid.
-utils.adjust_saturation = function(hex, amount)
-  local h, s, l = utils.hex2hsl(hex)
-  if h == nil then -- hex2hsl now returns nil for components on failure
-    log_debug("utils.adjust_saturation: Invalid hex '" .. tostring(hex) .. "' for HSL conversion. Returning original.")
-    return hex -- Return original invalid hex
-  end
-
-  s = s + (amount / 100) -- Apply percentage adjustment
-  s = math.min(1, math.max(0, s)) -- Clamp saturation between 0 and 1
-
-  return utils.hsl2hex(h, s, l)
-end
-
---- Safe color getter that validates the colorscheme is loaded.
---- @param color_key string The color key to retrieve (e.g., "base_900", "accent_100").
---- @param fallback string? Optional fallback color (hex string). If not provided, uses internal fallbacks.
---- @return string The color hex string.
-utils.safe_color = function(color_key, fallback)
-  local xeno = require("xeno")
-
-  if vim.g.colors_name ~= "xeno" then
-    log_warn("xeno colorscheme not active, using fallback for '" .. color_key .. "'")
-    return fallback or "#000000"
-  end
-
-  local color = xeno.colors and xeno.colors[color_key]
-  if not color then
-    log_warn("Color key '" .. color_key .. "' not found in xeno colors, using fallback")
-    return fallback or "#000000"
-  end
-
-  return color
-end
-
---- Check if the xeno colorscheme is properly loaded and active.
---- @return boolean True if xeno is active and colors are available.
-utils.is_colorscheme_active = function()
-  return vim.g.colors_name == "xeno" and require("xeno").colors ~= nil
-end
-
---- Lighten a hex color by a specific amount.
---- @param hex string The hex color string.
---- @param amount number The amount to lighten by (0.0 to 1.0, default 0.1).
---- @return string The lightened hex color string.
-utils.lighten_color = function(hex, amount)
-  amount = amount or 0.1
-  local h, s, l = utils.hex2hsl(hex)
-  if not h then
-    log_debug("utils.lighten_color: Invalid hex '" .. tostring(hex) .. "'. Returning original.")
-    return hex
-  end
-
-  l = math.min(1, l + amount)
-  return utils.hsl2hex(h, s, l)
-end
-
---- Darken a hex color by a specific amount.
---- @param hex string The hex color string.
---- @param amount number The amount to darken by (0.0 to 1.0, default 0.1).
---- @return string The darkened hex color string.
-utils.darken_color = function(hex, amount)
-  amount = amount or 0.1
-  local h, s, l = utils.hex2hsl(hex)
-  if not h then
-    log_debug("utils.darken_color: Invalid hex '" .. tostring(hex) .. "'. Returning original.")
-    return hex
-  end
-
-  l = math.max(0, l - amount)
-  return utils.hsl2hex(h, s, l)
-end
-
---- Add alpha transparency to a hex color.
---- @param hex string The hex color string.
---- @param alpha number The alpha value (0.0 to 1.0, default 0.5).
---- @return string The hex color with alpha (e.g., "#RRGGBBAA").
-utils.add_alpha = function(hex, alpha)
-  alpha = alpha or 0.5
-  local r, g, b = utils.hex2rgb(hex)
-  if not r then
-    log_debug("utils.add_alpha: Invalid hex '" .. tostring(hex) .. "'. Returning original.")
-    return hex
-  end
-
-  local alpha_hex = string.format("%02x", math.floor(alpha * 255))
-  return string.format("#%02x%02x%02x%s", r, g, b, alpha_hex)
 end
 
 return utils
