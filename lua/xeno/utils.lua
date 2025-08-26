@@ -337,18 +337,18 @@ end
 --- @return string The color hex string.
 utils.safe_color = function(color_key, fallback)
   local xeno = require("xeno")
-  
+
   if vim.g.colors_name ~= "xeno" then
     log_warn("xeno colorscheme not active, using fallback for '" .. color_key .. "'")
     return fallback or "#000000"
   end
-  
+
   local color = xeno.colors and xeno.colors[color_key]
   if not color then
     log_warn("Color key '" .. color_key .. "' not found in xeno colors, using fallback")
     return fallback or "#000000"
   end
-  
+
   return color
 end
 
@@ -369,7 +369,7 @@ utils.lighten_color = function(hex, amount)
     log_debug("utils.lighten_color: Invalid hex '" .. tostring(hex) .. "'. Returning original.")
     return hex
   end
-  
+
   l = math.min(1, l + amount)
   return utils.hsl2hex(h, s, l)
 end
@@ -385,7 +385,7 @@ utils.darken_color = function(hex, amount)
     log_debug("utils.darken_color: Invalid hex '" .. tostring(hex) .. "'. Returning original.")
     return hex
   end
-  
+
   l = math.max(0, l - amount)
   return utils.hsl2hex(h, s, l)
 end
@@ -401,7 +401,7 @@ utils.add_alpha = function(hex, alpha)
     log_debug("utils.add_alpha: Invalid hex '" .. tostring(hex) .. "'. Returning original.")
     return hex
   end
-  
+
   local alpha_hex = string.format("%02x", math.floor(alpha * 255))
   return string.format("#%02x%02x%02x%s", r, g, b, alpha_hex)
 end

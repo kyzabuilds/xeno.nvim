@@ -111,7 +111,7 @@ function M.generate_base_highlights(colors)
     GitSignsChange = { fg = colors.yellow },
     GitSignsDelete = { fg = colors.red },
 
-    Comment = { fg = colors.base_600, italic = true },
+    Comment = { fg = colors.base_500, italic = true },
     Constant = { fg = colors.accent_100 },
     Number = { fg = colors.accent_100 },
     String = { fg = colors.accent_100 },
