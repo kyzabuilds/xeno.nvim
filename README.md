@@ -122,7 +122,7 @@ vim.cmd('colorscheme my-theme')
 
 ## Usage
 
-**Note:** Xeno.nvim does not provide any default colorschemes. You must create your own themes using the configuration options below.
+**Note:** xeno.nvim does not provide any default colorschemes. You must create your own themes using the configuration options below.
 
 ### Basic Configuration
 
@@ -177,6 +177,29 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim) with global options:
   end,
 }
 ```
+
+## FAQ
+
+<details>
+<summary><strong>What font is used in the preview images?</strong></summary>
+
+The previews use [Lotion](https://github.com/ninabelikova/lotion) - it's a cozy monospace font that works great for coding (it's my favorite)
+
+</details>
+
+<details>
+<summary><strong>Why doesn't xeno come with built-in themes?</strong></summary>
+
+The whole point is to create your own! xeno is designed to be a theme generator, not a collection of pre-made themes. This way you get exactly the colors you want instead of settling for someone else's choices.
+
+</details>
+
+<details>
+<summary><strong>Can I use more than two colors?</strong></summary>
+
+Not directly - xeno is built around the concept of minimalism with just a base and accent color. However, the generator creates various shades and tones from these two colors to provide sufficient contrast and variety throughout your editor.
+
+</details>
 
 ## Customization
 
