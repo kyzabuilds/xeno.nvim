@@ -88,48 +88,28 @@ M["lukas-reineke/indent-blankline.nvim"] = function(colors)
 end
 
 M["nvim-neo-tree/neo-tree.nvim"] = function(colors)
-  local neotree = {
-    bg = colors.base_800,
-    fg = colors.base_200,
-  }
+  local neotree = { bg = colors.base_800, fg = colors.base_200 }
 
   return {
-    -- Root directory
     NeoTreeRootName = { fg = colors.accent_500, bold = true, italic = true, underline = true },
-
-    -- Main backgrounds
     NeoTreeNormal = { bg = neotree.bg, fg = neotree.fg },
     NeoTreeNormalNC = { bg = neotree.bg, fg = neotree.fg },
     NeoTreeEndOfBuffer = { bg = neotree.bg },
-
-    -- Status line
     NeoTreeStatusLine = { bg = neotree.bg, fg = neotree.fg },
     NeoTreeStatusLineNC = { bg = neotree.bg, fg = neotree.fg },
-
-    -- Window separator
-    NeoTreeWinSeparator = { bg = neotree.bg, fg = colors.base_700 }, -- Uses the same color as WinSeparator
-
-    -- Tabs
+    NeoTreeWinSeparator = { bg = neotree.bg, fg = colors.base_700 },
     NeoTreeTabActive = { bg = colors.base_700, bold = true },
     NeoTreeTabInactive = { bg = colors.base_800, fg = colors.base_300 },
     NeoTreeTabSeparatorActive = { fg = colors.base_300, bg = colors.base_700 },
     NeoTreeTabSeparatorInactive = { fg = colors.base_700, bg = colors.base_800 },
-
-    -- Cursor line highlighting
     NeoTreeCursorLine = { bg = colors.base_700 },
-
-    -- Files and directories
     NeoTreeDirectoryName = { fg = colors.base_200 },
     NeoTreeDirectoryIcon = { fg = colors.base_300 },
-    NeoTreeDotFile = { fg = colors.base_300 }, -- Similar to Comment but slightly altered
+    NeoTreeDotFile = { fg = colors.base_500 },
     NeoTreeMessage = { fg = colors.base_300 },
-
-    -- Git status indicators
     NeoTreeGitAdded = { fg = colors.green },
     NeoTreeGitModified = { fg = colors.yellow },
     NeoTreeGitDeleted = { fg = colors.red },
-
-    -- Indentation
     NeoTreeIndentMarker = { fg = colors.base_600, nocombine = true },
   }
 end
@@ -146,7 +126,7 @@ end
 M["akinsho/bufferline.nvim"] = function(colors)
   local is_light = utils.get_variant() == 2
 
-  local function get_base_colors()
+  local function palette()
     if is_light then
       return {
         fill_bg = colors.base_700,
@@ -170,198 +150,70 @@ M["akinsho/bufferline.nvim"] = function(colors)
     end
   end
 
-  local base_colors = get_base_colors()
-
-  local base_visible = {
-    fg = base_colors.visible_fg,
-    bg = base_colors.visible_bg,
-  }
-
-  local base_selected = {
-    fg = base_colors.selected_fg,
-    bg = base_colors.selected_bg,
-    bold = true,
-    sp = colors.accent_400,
-  }
-
-  local diagnostic_colors = {
-    Hint = colors.blue,
-    Info = colors.purple,
-    Warning = colors.yellow,
-    Error = colors.red,
-  }
+  local bufferline = palette()
+  local buffer_visible = { fg = bufferline.visible_fg, bg = bufferline.visible_bg }
+  local buffer_selected = { fg = bufferline.selected_fg, bg = bufferline.selected_bg, bold = true, sp = colors.accent_400 }
+  local diagnostic_colors = { Hint = colors.blue, Info = colors.purple, Warning = colors.yellow, Error = colors.red }
 
   local highlights = {
-    defaults = {
-      underline = true,
-      sp = colors.base_700,
-    },
-
-    BufferLineFill = { fg = base_colors.fill_fg, bg = base_colors.fill_bg },
-    BufferLineSeparator = { fg = base_colors.separator, bg = base_colors.fill_bg },
-    BufferLineTabSeparator = { fg = base_colors.separator, bg = base_colors.visible_bg },
-    BufferLineOffsetSeparator = { fg = colors.base_600, bg = base_colors.visible_bg },
-    BufferLineGroupSeparator = { fg = colors.base_300, bg = base_colors.visible_bg },
-    BufferLineGroupLabel = { fg = base_colors.visible_bg, bg = colors.base_300 },
-
-    BufferLineBufferVisible = base_visible,
-    BufferLineNumbersVisible = base_visible,
-    BufferLineCloseButtonVisible = base_visible,
-    BufferLineInfoDiagnosticVisible = base_visible,
-    BufferLineDiagnosticVisible = base_visible,
-    BufferLineHintDiagnosticVisible = base_visible,
-    BufferLineWarningDiagnosticVisible = base_visible,
-    BufferLineErrorDiagnosticVisible = base_visible,
-    BufferLineWarningVisible = base_visible,
-    BufferLineHintVisible = base_visible,
-    BufferLineInfoVisible = base_visible,
-    BufferLineErrorVisible = base_visible,
-    BufferLineModifiedVisible = { fg = colors.base_100, bg = base_colors.visible_bg },
-    BufferLineSeparatorVisible = { fg = colors.base_200, bg = base_colors.visible_bg },
-    BufferLineIndicatorVisible = { fg = colors.base_600, bg = base_colors.visible_bg },
-    BufferLineDuplicateVisible = { fg = base_colors.visible_fg, bg = base_colors.visible_bg, italic = true },
-
-    BufferLineBufferSelected = base_selected,
-    BufferLineNumbersSelected = base_selected,
-
-    BufferLineCloseButtonSelected = {
-      fg = base_colors.selected_fg,
-      bg = base_colors.selected_bg,
-      sp = colors.accent_400,
-    },
-
-    BufferLineModifiedSelected = {
-      fg = base_colors.selected_fg,
-      bg = base_colors.selected_bg,
-      sp = colors.accent_400,
-    },
-
-    BufferLineTabSelected = {
-      fg = colors.accent_400,
-      bg = base_colors.selected_bg,
-      sp = colors.accent_400,
-    },
-
-    BufferLineIndicatorSelected = {
-      fg = colors.accent_400,
-      bg = base_colors.selected_bg,
-      sp = colors.accent_400,
-    },
-
-    BufferLineSeparatorSelected = {
-      fg = colors.base_300,
-      bg = base_colors.selected_bg,
-      sp = colors.accent_400,
-    },
-
-    BufferLineTabSeparatorSelected = {
-      fg = colors.base_600,
-      bg = base_colors.selected_bg,
-      sp = colors.accent_400,
-    },
-
-    BufferLineDuplicateSelected = {
-      fg = colors.base_300,
-      bg = base_colors.selected_bg,
-      sp = colors.accent_400,
-    },
-
-    BufferLineHintSelected = {
-      fg = diagnostic_colors.Hint,
-      bg = base_colors.selected_bg,
-      bold = true,
-      sp = colors.accent_400,
-    },
-    BufferLineHintDiagnosticSelected = {
-      fg = diagnostic_colors.Hint,
-      bg = base_colors.selected_bg,
-      bold = true,
-      sp = colors.accent_400,
-    },
-    BufferLineInfoSelected = {
-      fg = diagnostic_colors.Info,
-      bg = base_colors.selected_bg,
-      bold = true,
-      sp = colors.accent_400,
-    },
-
-    BufferLineInfoDiagnosticSelected = {
-      fg = diagnostic_colors.Info,
-      bg = base_colors.selected_bg,
-      bold = true,
-      sp = colors.accent_400,
-    },
-
-    BufferLineWarningSelected = {
-      fg = diagnostic_colors.Warning,
-      bg = base_colors.selected_bg,
-      bold = true,
-      sp = colors.accent_400,
-    },
-
-    BufferLineWarningDiagnosticSelected = {
-      fg = diagnostic_colors.Warning,
-      bg = base_colors.selected_bg,
-      bold = true,
-    },
-
-    BufferLineErrorSelected = {
-      fg = diagnostic_colors.Error,
-      bg = base_colors.selected_bg,
-      bold = true,
-      sp = colors.accent_400,
-      cterm = { bold = true, underline = true },
-    },
-
-    BufferLineErrorDiagnosticSelected = {
-      fg = diagnostic_colors.Error,
-      bg = base_colors.selected_bg,
-      bold = true,
-      sp = colors.accent_400,
-    },
-
-    BufferLinePickVisible = {
-      fg = colors.red,
-      bg = base_colors.visible_bg,
-      bold = true,
-      cterm = { bold = true },
-    },
-
-    BufferLinePickSelected = {
-      fg = colors.red,
-      bg = base_colors.selected_bg,
-      bold = true,
-    },
-
-    BufferLinePick = {
-      fg = colors.red,
-      bg = base_colors.visible_bg,
-      bold = true,
-      cterm = {
-        bold = true,
-      },
-    },
-
-    BufferLineDiagnostic = base_visible,
-    BufferLineTab = base_visible,
-    BufferLineBuffer = base_visible,
-    BufferLineNumbers = base_visible,
-    BufferLineCloseButton = base_visible,
-    BufferLineTabClose = base_visible,
-
-    BufferLineModified = { fg = colors.base_100, bg = base_colors.visible_bg },
-    BufferLineWarning = { fg = base_colors.visible_fg, bg = base_colors.visible_bg, sp = colors.yellow },
-    BufferLineHint = { fg = base_colors.visible_fg, bg = base_colors.visible_bg, sp = colors.blue },
-    BufferLineInfo = { fg = base_colors.visible_fg, bg = base_colors.visible_bg, sp = colors.purple },
-    BufferLineError = { fg = base_colors.visible_fg, bg = base_colors.visible_bg, sp = colors.red },
-    BufferLineInfoDiagnostic = { fg = base_colors.visible_fg, bg = base_colors.visible_bg, sp = colors.purple },
-    BufferLineHintDiagnostic = { fg = base_colors.visible_fg, bg = base_colors.visible_bg, sp = colors.blue },
-    BufferLineErrorDiagnostic = { fg = base_colors.visible_fg, bg = base_colors.visible_bg, sp = colors.red },
-    BufferLineWarningDiagnostic = { fg = base_colors.visible_fg, bg = base_colors.visible_bg, sp = colors.purple },
-    BufferLinebg = base_visible,
+    Defaults = { underline = true, sp = colors.base_700 },
+    BufferLineFill = { fg = bufferline.fill_fg, bg = bufferline.fill_bg },
+    BufferLineSeparator = { fg = bufferline.separator, bg = bufferline.fill_bg },
+    BufferLineTabSeparator = { fg = bufferline.separator, bg = bufferline.visible_bg },
+    BufferLineOffsetSeparator = { fg = colors.base_600, bg = bufferline.visible_bg },
+    BufferLineGroupSeparator = { fg = colors.base_300, bg = bufferline.visible_bg },
+    BufferLineGroupLabel = { fg = bufferline.visible_bg, bg = colors.base_300 },
+    BufferLineBufferVisible = buffer_visible,
+    BufferLineNumbersVisible = buffer_visible,
+    BufferLineCloseButtonVisible = buffer_visible,
+    BufferLineInfoDiagnosticVisible = buffer_visible,
+    BufferLineDiagnosticVisible = buffer_visible,
+    BufferLineHintDiagnosticVisible = buffer_visible,
+    BufferLineWarningDiagnosticVisible = buffer_visible,
+    BufferLineErrorDiagnosticVisible = buffer_visible,
+    BufferLineWarningVisible = buffer_visible,
+    BufferLineHintVisible = buffer_visible,
+    BufferLineInfoVisible = buffer_visible,
+    BufferLineErrorVisible = buffer_visible,
+    BufferLineModifiedVisible = { fg = colors.base_100, bg = bufferline.visible_bg },
+    BufferLineSeparatorVisible = { fg = colors.base_200, bg = bufferline.visible_bg },
+    BufferLineIndicatorVisible = { fg = colors.base_600, bg = bufferline.visible_bg },
+    BufferLineDuplicateVisible = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, italic = true },
+    BufferLineBufferSelected = buffer_selected,
+    BufferLineNumbersSelected = buffer_selected,
+    BufferLineCloseButtonSelected = { fg = bufferline.selected_fg, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineModifiedSelected = { fg = bufferline.selected_fg, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineTabSelected = { fg = colors.accent_400, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineIndicatorSelected = { fg = colors.accent_400, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineSeparatorSelected = { fg = colors.base_300, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineTabSeparatorSelected = { fg = colors.base_600, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineDuplicateSelected = { fg = colors.base_300, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineHintSelected = { fg = diagnostic_colors.Hint, bg = bufferline.selected_bg, bold = true, sp = colors.accent_400 },
+    BufferLineHintDiagnosticSelected = { fg = diagnostic_colors.Hint, bg = bufferline.selected_bg, bold = true, sp = colors.accent_400 },
+    BufferLineInfoSelected = { fg = diagnostic_colors.Info, bg = bufferline.selected_bg, bold = true, sp = colors.accent_400 },
+    BufferLineInfoDiagnosticSelected = { fg = diagnostic_colors.Info, bg = bufferline.selected_bg, bold = true, sp = colors.accent_400 },
+    BufferLineWarningSelected = { fg = diagnostic_colors.Warning, bg = bufferline.selected_bg, bold = true, sp = colors.accent_400 },
+    BufferLineErrorSelected = { fg = diagnostic_colors.Error, bg = bufferline.selected_bg, bold = true, sp = colors.accent_400 },
+    BufferLineErrorDiagnosticSelected = { fg = diagnostic_colors.Error, bg = bufferline.selected_bg, bold = true, sp = colors.accent_400 },
+    BufferLinePickVisible = { fg = colors.red, bg = bufferline.visible_bg, bold = true, cterm = { bold = true } },
+    BufferLinePickSelected = { fg = colors.red, bg = bufferline.selected_bg, bold = true },
+    BufferLinePick = { fg = colors.red, bg = bufferline.visible_bg, bold = true, cterm = { bold = true } },
+    BufferLineDiagnostic = buffer_visible,
+    BufferLineTab = buffer_visible,
+    BufferLineBuffer = buffer_visible,
+    BufferLineNumbers = buffer_visible,
+    BufferLineCloseButton = buffer_visible,
+    BufferLineTabClose = buffer_visible,
+    BufferLineModified = { fg = colors.base_100, bg = bufferline.visible_bg },
+    BufferLineWarning = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, sp = colors.yellow },
+    BufferLineHint = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, sp = colors.blue },
+    BufferLineInfo = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, sp = colors.purple },
+    BufferLineError = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, sp = colors.red },
+    BufferLineInfoDiagnostic = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, sp = colors.purple },
+    BufferLineHintDiagnostic = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, sp = colors.blue },
+    BufferLineErrorDiagnostic = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, sp = colors.red },
+    BufferLineWarningDiagnostic = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, sp = colors.purple },
   }
-
-  -- Use the default helper to apply defaults to all highlights
   return helpers.default(highlights)
 end
 

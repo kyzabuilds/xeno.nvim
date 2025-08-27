@@ -1,7 +1,7 @@
 local M = {}
 local utils = require("xeno.core.utils")
 
-function M.generate_window_highlights(colors)
+function M.generate_editor_highlights(colors)
   local is_light = utils.get_variant() == 2
   local cursor_line_bg = is_light and colors.base_800 or colors.base_900
 
@@ -114,4 +114,3 @@ function M.generate_window_highlights(colors)
 end
 
 return M
-

@@ -12,7 +12,7 @@ M.default = function(config)
   end
 
   -- Check if there's a defaults property
-  local defaults = config.defaults
+  local defaults = config.Defaults
   if not defaults or type(defaults) ~= "table" then
     return config
   end

@@ -1,7 +1,7 @@
 local M = {}
 
 local syntax = require("xeno.highlights.base.syntax")
-local window = require("xeno.highlights.base.window")
+local editor = require("xeno.highlights.base.editor")
 local plugins = require("xeno.highlights.plugins")
 
 -- Utility function to merge multiple highlight tables
@@ -30,7 +30,7 @@ end
 function M.generate_base_highlights(colors)
   return merge_highlights(
     syntax.generate_syntax_highlights(colors),
-    window.generate_window_highlights(colors),
+    editor.generate_editor_highlights(colors),
     M.generate_plugin_highlights(colors)
   )
 end

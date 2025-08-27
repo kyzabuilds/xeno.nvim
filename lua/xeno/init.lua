@@ -6,6 +6,8 @@ local terminal = require("xeno.integrations.terminal")
 local theme = require("xeno.theme.apply")
 local fallback = require("xeno.core.fallback")
 local generator = require("xeno.core.generator")
+local resolver = require("xeno.core.resolver")
+local merger = require("xeno.core.merger")
 local fmt = string.format
 
 local xeno = {}
@@ -23,6 +25,9 @@ xeno.colors = fallback.initialize_default_colors()
 
 function xeno.setup(user_config)
   vim.g.colors_name = "xeno"
+
+  -- Clear resolver cache for fresh setup
+  resolver.clear_cache()
 
   local config = utils.extend("force", defaults.config, user_config or {})
 
@@ -44,7 +49,7 @@ function xeno.setup(user_config)
   -- Setup terminal colors
   terminal.setup_terminal_colors(xeno.colors)
 
-  -- Generate highlights
+  -- Generate base highlights
   local ok_highlights, highlights = pcall(highlight_generator.generate_base_highlights, xeno.colors)
   if not ok_highlights then
     vim.notify(
@@ -58,6 +63,18 @@ function xeno.setup(user_config)
     }
   end
 
+  -- Process user highlight overrides if present
+  if config.highlights then
+    -- Validate the highlight structure
+    if resolver.validate_highlights(config.highlights) then
+      -- Resolve color references in user highlights
+      local resolved_user_highlights = resolver.resolve_highlights(config.highlights, xeno.colors)
+
+      -- Merge user highlights with base highlights
+      highlights = merger.merge_all_highlights(highlights, resolved_user_highlights)
+    end
+  end
+
   -- Apply highlights and setup autocmds
   theme.apply_highlights(highlights, config)
   theme.setup_autocmds(user_config)
@@ -65,7 +82,9 @@ end
 
 -- Generate new colorscheme files
 function xeno.new_theme(name, config)
-  generator.new_theme(name, config, xeno._global_config)
+  -- Merge global config with theme-specific config
+  local merged_config = utils.extend("force", xeno._global_config, config or {})
+  generator.new_theme(name, merged_config, xeno._global_config)
 end
 
 return xeno

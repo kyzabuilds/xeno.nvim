@@ -15,6 +15,13 @@ defaults.config = {
   purple = nil,
   cyan = nil,
 
+  -- Add highlights configuration support
+  highlights = {
+    editor = {},
+    syntax = {},
+    plugins = {},
+  },
+
   plugins = {
     "nvim-telescope/telescope.nvim",
     "hrsh7th/nvim-cmp",
