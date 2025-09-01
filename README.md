@@ -1,175 +1,20 @@
 <img title="xeno banner" alt="xeno banner" src="./media/banner.png">
 
 <p align='center'>
-  Colorscheme generator that creates minimalist themes using two colors.
+  Colorscheme generator that creates minimalist themes using two colors.<br/>
+  Explore <a href="examples.md">theme examples</a> and <a href="plugins.md">supported plugins</a>.
 </p>
-
-<br/>
-
-## Previews
-
-<img title="Preview" alt="Preview Lilypad" src="./media/theme-lily-pad.png">
-
-```lua
-xeno.new_theme('xeno-lilypad', {
-  base = '#1E1E1E',
-  accent = '#8CBE8C',
-  contrast = 0.1,
-})
-```
-
-<img title="Preview" alt="Preview Pink Haze" src="./media/theme-pink-haze.png">
-
-```lua
-xeno.new_theme('xeno-pink-haze', {
-  base = '#0f0c0e',
-  accent = '#D19EBC',
-  contrast = 0.1,
-})
-
-```
-<img title="Preview" alt="Preview Golden Hour" src="./media/theme-golden-hour.png">
-
-```lua
-xeno.new_theme('xeno-golden-hour', {
-  base = '#11100f',
-  accent = '#FFCC33',
-  contrast = 0.1,
-})
-```
 
 ## Installation
 
-<details>
-<summary><strong>lazy.nvim</strong> (recommended)</summary>
-
-```lua
-{
-  'kyza0d/xeno.nvim',
-  lazy = false,
-  priority = 1000, -- Load colorscheme early
-  config = function()
-    -- Create your custom theme here
-    require('xeno').new_theme('my-theme', {
-      base = '#1E1E1E',
-      accent = '#8CBE8C',
-    })
-    vim.cmd('colorscheme my-theme')
-  end,
-}
-```
-
-</details>
-
-<details>
-<summary><strong>packer.nvim</strong></summary>
-
-```lua
-use {
-  'kyza0d/xeno.nvim',
-  config = function()
-    -- Create your custom theme
-    require('xeno').new_theme('my-theme', {
-      base = '#1E1E1E',
-      accent = '#8CBE8C',
-    })
-    vim.cmd('colorscheme my-theme')
-  end
-}
-```
-
-</details>
-
-<details>
-<summary><strong>vim-plug</strong></summary>
-
-```vim
-Plug 'kyza0d/xeno.nvim'
-```
-
-Then add to your `init.vim` or `init.lua`:
-```lua
--- Create your custom theme
-require('xeno').new_theme('my-theme', {
-  base = '#1E1E1E',
-  accent = '#8CBE8C',
-})
-vim.cmd('colorscheme my-theme')
-```
-
-</details>
-
-<details>
-<summary><strong>paq-nvim</strong></summary>
-
-```lua
-require "paq" {
-  'kyza0d/xeno.nvim';
-}
-```
-
-Then add to your config:
-```lua
--- Create your custom theme
-require('xeno').new_theme('my-theme', {
-  base = '#1E1E1E',
-  accent = '#8CBE8C',
-})
-vim.cmd('colorscheme my-theme')
-```
-
-</details>
-
-## Usage
-
-**Note:** xeno.nvim does not provide any default colorschemes. You must create your own themes using the configuration options below.
-
-### Basic Configuration
-
-```lua
--- Create a new theme
-require('xeno').new_theme('my-new-theme', {
-  base = '#1a1a1a',
-  accent = '#7aa2f7',
-})
-
-vim.cmd('colorscheme my-new-theme')
-```
-
-### Global Configuration Options
-
-Global configuration options affect all themes and are set using `xeno.config()`:
-
-```lua
--- Set global configuration options
-require('xeno').config({
-  -- Appearance adjustments
-  contrast = 0,            -- Adjust contrast (-1 to 1, 0 is default)
-  variation = 0,           -- Adjust color variation strength (-1 to 1, 0 is default)
-  transparent = false,     -- Enable transparent background
-})
-```
-
-### Plugin Manager Configuration
-
-Using [lazy.nvim](https://github.com/folke/lazy.nvim) with global options:
-
+**lazy.nvim**
 ```lua
 {
   'kyza0d/xeno.nvim',
   lazy = false,
   priority = 1000,
-  opts = {
-    transparent = true,
-    contrast = 0.1,
-  },
-  config = function(_, opts)
-    local xeno = require('xeno')
-    
-    xeno.config(opts)
-    
-    -- Create your custom theme
-    xeno.new_theme('my-theme', {
+  config = function()
+    require('xeno').new_theme('my-theme', {
       base = '#1E1E1E',
       accent = '#8CBE8C',
     })
@@ -178,29 +23,27 @@ Using [lazy.nvim](https://github.com/folke/lazy.nvim) with global options:
 }
 ```
 
-## FAQ
+**mini.deps**
+```lua
+local MiniDeps = require('mini.deps')
+MiniDeps.add('kyza0d/xeno.nvim')
 
-<details>
-<summary><strong>What font is used in the preview images?</strong></summary>
+require('xeno').new_theme('my-theme', {
+  base = '#1E1E1E',
+  accent = '#8CBE8C',
+})
+vim.cmd('colorscheme my-theme')
+```
 
-The previews use [Lotion](https://github.com/ninabelikova/lotion) - it's a cozy monospace font that works great for coding (it's my favorite)
+## Features
 
-</details>
-
-<details>
-<summary><strong>Why doesn't xeno come with built-in themes?</strong></summary>
-
-The whole point is to create your own! xeno is designed to be a theme generator, not a collection of pre-made themes. This way you get exactly the colors you want instead of settling for someone else's choices.
-
-</details>
-
-<details>
-<summary><strong>Can I use more than two colors?</strong></summary>
-
-Not directly - xeno is built around the concept of minimalism with just a base and accent color. However, the generator creates various shades and tones from these two colors to provide sufficient contrast and variety throughout your editor.
-
-</details>
+- **Minimal Configuration**: Generate complete themes with just two colors
+- **Automatic Palette Generation**: Creates 9 shades for each color automatically
+- **Custom Highlights**: Override any highlight group with flexible color references
+- **Plugin Support**: Built-in support for popular Neovim plugins
+- **Color References**: Use `@base.500` or `@accent.200` syntax for dynamic color mapping
+- **Terminal Integration**: Automatically configures terminal colors
 
 ## Customization
 
-MIT
+xeno.nvim supports extensive customization through the `highlights` parameter. See [examples.md](examples.md) for detailed configuration examples and color combinations.

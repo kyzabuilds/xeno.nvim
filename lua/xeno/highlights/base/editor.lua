@@ -2,13 +2,10 @@ local M = {}
 local utils = require("xeno.core.utils")
 
 function M.generate_editor_highlights(colors)
-  local is_light = utils.get_variant() == 2
-  local cursor_line_bg = is_light and colors.base_800 or colors.base_900
-
   return {
     Normal = { bg = colors.base_900, fg = colors.base_300 },
     NormalNC = { fg = colors.base_200, bg = colors.base_900 },
-    Visual = { bg = utils.opaque(colors.accent_100, 0.2) },
+    Visual = { bg = utils.opaque(colors.base_500, 0.20, nil, colors) },
 
     NormalFloat = { fg = colors.base_200, bg = colors.base_800 },
     FloatBorder = { fg = colors.base_400, bg = colors.base_800 },
@@ -16,13 +13,13 @@ function M.generate_editor_highlights(colors)
 
     ColorColumn = { bg = colors.base_800 },
 
-    Cursor = { bg = colors.accent_200, reverse = false },
-    CursorColumn = { bg = cursor_line_bg },
-    CursorLine = { bg = cursor_line_bg },
-    CursorLineNr = { bg = cursor_line_bg, fg = colors.accent_200 },
-    CursorLineFold = { bg = cursor_line_bg },
-    CursorLineSign = { bg = cursor_line_bg },
-    CursorLineSignColumn = { bg = cursor_line_bg },
+    Cursor = { bg = colors.accent_500, fg = "#000000" },
+    CursorColumn = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
+    CursorLine = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
+    CursorLineNr = { bg = utils.opaque(colors.base_500, 0.05, nil, colors), fg = colors.base_200, bold = false },
+    CursorLineFold = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
+    CursorLineSign = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
+    CursorLineSignColumn = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
 
     LineNr = { fg = colors.base_600 },
     Directory = { fg = colors.base_200 },
@@ -31,9 +28,9 @@ function M.generate_editor_highlights(colors)
     WarningMsg = { fg = colors.yellow },
     MoreMsg = { fg = colors.green },
 
-    IncSearch = { bg = utils.opaque(colors.accent_100, 0.2) },
-    Search = { bg = utils.opaque(colors.accent_100, 0.2) },
-    CurSearch = { bg = utils.opaque(colors.accent_100, 0.4) },
+    Search = { bg = utils.opaque(colors.base_500, 0.15, nil, colors) },
+    IncSearch = { link = "Cursor" },
+    CurSearch = { bg = utils.opaque(colors.base_500, 0.40, nil, colors) },
 
     MatchParen = { fg = colors.accent_100, bold = true },
     NonText = { fg = colors.base_300 },
@@ -62,14 +59,14 @@ function M.generate_editor_highlights(colors)
 
     WinSeparator = { fg = colors.base_700 },
     WhiteSpace = { fg = colors.base_700 },
-    WinBar = { bg = "NONE", fg = utils.adjust_lightness(colors.base_200, -50), bold = false },
-    WinBarNC = { link = "WinBar" },
+    WinBar = { bg = colors.base_800, sp = colors.base_700, underline = true },
+    WinBarNC = { bg = colors.base_800, sp = colors.base_700, underline = true },
 
     WildMenu = { fg = colors.base_200, bg = colors.base_800 },
     SignColumn = { bg = "NONE" },
-    Folded = { fg = colors.base_300, bg = utils.adjust_lightness(colors.base_700, 3) },
+    Folded = { fg = colors.base_300, bg = colors.base_800 },
     FoldStatus = { fg = utils.adjust_lightness(colors.base_200, -50) },
-    FoldColumn = { fg = colors.base_300, bg = colors.base_700 },
+    FoldColumn = { fg = colors.base_500 },
     EndOfBuffer = { bg = "NONE" },
     Substitute = { fg = colors.base_700, bg = colors.accent_100 },
 
@@ -102,9 +99,11 @@ function M.generate_editor_highlights(colors)
     DiagnosticSignInfo = { fg = colors.accent_100 },
     DiagnosticSignHint = { fg = colors.green },
 
-    DiffAdd = { bg = utils.opaque(colors.green, 0.25), fg = colors.green },
-    DiffChange = { bg = utils.opaque(colors.yellow, 0.25), fg = colors.yellow },
-    DiffDelete = { bg = utils.opaque(colors.red, 0.25), fg = colors.red },
+    DiagnosticUnnecessary = { fg = colors.base_600 },
+
+    DiffAdd = { bg = utils.opaque(colors.green, 0.25, nil, colors), fg = colors.green },
+    DiffChange = { bg = utils.opaque(colors.yellow, 0.25, nil, colors), fg = colors.yellow },
+    DiffDelete = { bg = utils.opaque(colors.red, 0.25, nil, colors), fg = colors.red },
     DiffText = { bg = colors.base_800 },
 
     GitSignsAdd = { fg = colors.green },

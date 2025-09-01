@@ -86,7 +86,7 @@ local function generate_highlights_code(highlights)
   return serialize_value(highlights, 1)
 end
 
-function M.new_theme(name, config, global_config)
+function M.theme(name, config, global_config)
   local colorscheme_dir = fmt("%s/colors", fn.stdpath("config"))
   local colorscheme_path = fmt("%s/%s.lua", colorscheme_dir, name)
 

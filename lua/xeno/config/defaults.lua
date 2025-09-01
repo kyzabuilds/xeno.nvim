@@ -1,16 +1,15 @@
 local defaults = {}
 
 defaults.config = {
-  base = "#030303",
-  accent = "#7AA2F7",
   variation = 0.0,
-  contrast = 0,
+  contrast = 0.0,
+
   transparent = false,
 
-  red = "#E86671",
-  green = "#A9DC76",
-  yellow = "#E7C547",
-  orange = "#FFA94D",
+  red = nil, -- #E86671 (dark) / #B71C1C (light)
+  green = nil, -- #A9DC76 (dark) / #2E7D32 (light)
+  yellow = nil, -- #E7C547 (dark) / #F57C00 (light)
+  orange = nil, -- #FFA94D (dark) / #E65100 (light)
   blue = nil,
   purple = nil,
   cyan = nil,
@@ -20,19 +19,6 @@ defaults.config = {
     editor = {},
     syntax = {},
     plugins = {},
-  },
-
-  plugins = {
-    "nvim-telescope/telescope.nvim",
-    "hrsh7th/nvim-cmp",
-    "SmiteshP/nvim-navic",
-    "folke/todo-comments.nvim",
-    "lukas-reineke/indent-blankline.nvim",
-    "nvim-neo-tree/neo-tree.nvim",
-    "lewis6991/gitsigns.nvim",
-    "akinsho/bufferline.nvim",
-    "ibhagwan/fzf-lua",
-    "folke/trouble.nvim",
   },
 }
 

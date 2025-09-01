@@ -101,80 +101,86 @@ utils.rgb_clamp = function(r, g, b)
   return r, g, b
 end
 
---- Blend a color with the 'Normal' background color based on opacity.
---- @param color_source string Either a hex color (e.g., "#RRGGBB") or a highlight group name.
---- @param opacity number From 0.0 (fully transparent, shows Normal background) to 1.0 (fully opaque, shows input color).
---- @return string The new hex color string. Returns input color (if hex and resolvable) or black on critical failure.
-utils.opaque = function(color_source, opacity)
-  assert(color_source ~= nil, "utils.opaque: color_source must be provided (hex string or highlight group name).")
-  assert(
-    type(opacity) == "number" and opacity >= 0 and opacity <= 1,
-    "utils.opaque: Opacity must be a number between 0.0 and 1.0."
-  )
+--- Blend a color with a background color based on opacity.
+--- This is a simplified version that focuses on reliable color blending.
+--- @param fg_color string The foreground hex color (e.g., "#RRGGBB")
+--- @param opacity number From 0.0 (fully transparent) to 1.0 (fully opaque)
+--- @param bg_color? string Optional background hex color. If not provided, derives from Normal background
+--- @param colors? table Optional colors table to derive background from
+--- @return string The blended hex color string
+utils.opaque = function(fg_color, opacity, bg_color, colors)
+  -- Validate inputs
+  if type(fg_color) ~= "string" then
+    log_warn("utils.opaque: fg_color must be a hex string")
+    return "#000000"
+  end
 
-  local r_fg, g_fg, b_fg
+  if type(opacity) ~= "number" or opacity < 0 or opacity > 1 then
+    log_warn("utils.opaque: opacity must be a number between 0.0 and 1.0")
+    opacity = 0.5
+  end
 
-  if type(color_source) == "string" then
-    if color_source:sub(1, 1) == "#" or not color_source:match("%s") then -- Heuristic: if it starts with # or has no spaces, likely a hex or direct color name
-      r_fg, g_fg, b_fg = utils.hex2rgb(color_source)
+  -- Get foreground RGB values
+  local r_fg, g_fg, b_fg = utils.hex2rgb(fg_color)
+  if not r_fg then
+    log_warn(fmt("utils.opaque: Invalid foreground color: %s", fg_color))
+    return fg_color
+  end
+
+  -- Get background RGB values
+  local r_bg, g_bg, b_bg
+
+  if bg_color then
+    -- Use provided background color
+    r_bg, g_bg, b_bg = utils.hex2rgb(bg_color)
+    if not r_bg then
+      log_warn(fmt("utils.opaque: Invalid background color: %s. Using theme default.", bg_color))
+      bg_color = nil
+    end
+  end
+
+  if not bg_color then
+    -- Try to derive from colors table first (preferred method)
+    if colors and colors.base_900 then
+      r_bg, g_bg, b_bg = utils.hex2rgb(colors.base_900)
     end
 
-    if not (r_fg and g_fg and b_fg) then -- If not resolved as hex, assume it's a highlight group name
-      local ok_hl, hl_def = pcall(vim.api.nvim_get_hl, 0, { name = color_source, link = false, rgb = true })
-      if ok_hl and hl_def and hl_def.foreground then
-        local fg_hex = fmt("#%06x", hl_def.foreground)
-        r_fg, g_fg, b_fg = utils.hex2rgb(fg_hex)
-      else
-        if not ok_hl then
-          log_warn(fmt("utils.opaque: Error getting highlight group '%s': %s", color_source, tostring(hl_def))) -- hl_def is error message here
-        elseif not hl_def then
-          log_warn(fmt("utils.opaque: Highlight group '%s' not found.", color_source))
-        elseif not hl_def.foreground then
-          log_warn(
-            fmt("utils.opaque: Highlight group '%s' has no foreground color. Cannot apply opacity.", color_source)
-          )
-        end
+    -- Fallback: try to get Normal background color from applied highlights
+    if not r_bg then
+      local ok, normal_hl = pcall(vim.api.nvim_get_hl, 0, { name = "Normal", link = false })
+      if ok and normal_hl and normal_hl.bg then
+        local bg_hex = fmt("#%06x", normal_hl.bg)
+        r_bg, g_bg, b_bg = utils.hex2rgb(bg_hex)
       end
     end
-  else
-    log_warn(fmt("utils.opaque: color_source must be a string. Got %s", type(color_source)))
-  end
 
-  if not (r_fg and g_fg and b_fg) then
-    log_warn(
-      fmt(
-        "utils.opaque: Could not parse foreground color from source: %s. Using black as fallback for foreground.",
-        vim.inspect(color_source)
-      )
-    )
-    r_fg, g_fg, b_fg = 0, 0, 0 -- Fallback for foreground to black
-  end
-
-  -- Get RGB for the 'Normal' background color
-  local r_bg, g_bg, b_bg
-  local ok_normal_hl, normal_hl_def = pcall(vim.api.nvim_get_hl, 0, { name = "Normal", link = false, rgb = true })
-
-  if ok_normal_hl and normal_hl_def and normal_hl_def.background then
-    local normal_bg_hex = fmt("#%06x", normal_hl_def.background)
-    r_bg, g_bg, b_bg = utils.hex2rgb(normal_bg_hex)
-  end
-
-  if not (r_bg and g_bg and b_bg) then
-    if vim.o.background == "light" then
-      r_bg, g_bg, b_bg = 255, 255, 255 -- White for light themes
-    else
-      r_bg, g_bg, b_bg = 0, 0, 0 -- Black for dark themes
+    -- Final fallback to theme-appropriate background
+    if not r_bg then
+      if utils.get_variant() == THEME_LIGHT then
+        r_bg, g_bg, b_bg = 255, 255, 255 -- White for light themes
+      else
+        r_bg, g_bg, b_bg = 17, 17, 17 -- Very dark gray for dark themes
+      end
     end
   end
 
-  -- Blend the colors: alpha * FG + (1 - alpha) * BG
-  local r_new = opacity * r_fg + (1 - opacity) * r_bg
-  local g_new = opacity * g_fg + (1 - opacity) * g_bg
-  local b_new = opacity * b_fg + (1 - opacity) * b_bg
+  -- Simple linear interpolation between background and foreground
+  local r = r_bg + (r_fg - r_bg) * opacity
+  local g = g_bg + (g_fg - g_bg) * opacity
+  local b = b_bg + (b_fg - b_bg) * opacity
+
+  -- Apply a subtle minimum opacity boost for very low values to ensure visibility
+  -- This helps maintain legibility without complex contrast calculations
+  if opacity < 0.15 and opacity > 0 then
+    local boost = 0.15 - opacity
+    r = r + (r_fg - r_bg) * boost * 0.5
+    g = g + (g_fg - g_bg) * boost * 0.5
+    b = b + (b_fg - b_bg) * boost * 0.5
+  end
 
   -- Clamp and convert to hex
-  r_new, g_new, b_new = utils.rgb_clamp(r_new, g_new, b_new)
-  return utils.rgb2hex(r_new, g_new, b_new)
+  r, g, b = utils.rgb_clamp(r, g, b)
+  return utils.rgb2hex(r, g, b)
 end
 
 --- Adjust the lightness of a hex color.

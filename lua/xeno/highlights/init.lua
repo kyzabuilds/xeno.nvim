@@ -20,7 +20,7 @@ end
 -- Generate highlights from all plugins
 function M.generate_plugin_highlights(colors)
   local plugin_results = {}
-  for plugin_name, plugin_fn in pairs(plugins) do
+  for _, plugin_fn in pairs(plugins) do
     table.insert(plugin_results, plugin_fn(colors))
   end
   return merge_highlights(unpack(plugin_results))

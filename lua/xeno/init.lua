@@ -8,6 +8,8 @@ local fallback = require("xeno.core.fallback")
 local generator = require("xeno.core.generator")
 local resolver = require("xeno.core.resolver")
 local merger = require("xeno.core.merger")
+local namespace = require("xeno.core.namespace")
+
 local fmt = string.format
 
 local xeno = {}
@@ -35,12 +37,12 @@ function xeno.setup(user_config)
     config.base = config.background
   end
 
+  -- In the xeno.setup function, after the terminal setup line:
+  -- Add this after: terminal.setup_terminal_colors(xeno.colors)
+
   local ok, colors = pcall(palette.generate_palette, config)
   if not ok then
-    vim.notify(
-      fmt("xeno.nvim: Error generating color palette: %s. Using fallback colors.", tostring(colors)),
-      vim.log.levels.ERROR
-    )
+    vim.notify(fmt("xeno.nvim: Error generating color palette: %s. Using fallback colors.", tostring(colors)), vim.log.levels.ERROR)
     colors = {}
   end
 
@@ -67,11 +69,8 @@ function xeno.setup(user_config)
   if config.highlights then
     -- Validate the highlight structure
     if resolver.validate_highlights(config.highlights) then
-      -- Resolve color references in user highlights
-      local resolved_user_highlights = resolver.resolve_highlights(config.highlights, xeno.colors)
-
-      -- Merge user highlights with base highlights
-      highlights = merger.merge_all_highlights(highlights, resolved_user_highlights)
+      -- Merge user highlights with base highlights (includes reference resolution)
+      highlights = merger.merge_all_highlights(highlights, config.highlights, xeno.colors)
     end
   end
 
@@ -81,10 +80,42 @@ function xeno.setup(user_config)
 end
 
 -- Generate new colorscheme files
-function xeno.new_theme(name, config)
+function xeno.theme(name, config)
   -- Merge global config with theme-specific config
   local merged_config = utils.extend("force", xeno._global_config, config or {})
-  generator.new_theme(name, merged_config, xeno._global_config)
+  generator.theme(name, merged_config, xeno._global_config)
 end
+
+-- Create a namespaced variant of the theme
+function xeno.namespace(namespace_name, highlights_override)
+  local colors = xeno.colors
+  if not colors then
+    vim.notify("xeno.nvim: Please call setup() before creating namespaces", vim.log.levels.ERROR)
+    return
+  end
+
+  -- Start with base highlights
+  local base_highlights = highlight_generator.generate_base_highlights(colors)
+
+  -- Apply overrides if provided
+  local final_highlights = base_highlights
+  if highlights_override then
+    if resolver.validate_highlights(highlights_override) then
+      final_highlights = merger.merge_all_highlights(base_highlights, highlights_override, colors)
+    end
+  end
+
+  -- Apply to namespace
+  local ns_id = namespace.apply_to_namespace(namespace_name, final_highlights)
+  return ns_id
+end
+
+-- Set window to use a specific namespace
+function xeno.set_window_namespace(win_id, namespace_name)
+  return namespace.set_window_namespace(win_id or 0, namespace_name)
+end
+
+-- Expose namespace utilities
+xeno.namespace_utils = namespace
 
 return xeno
