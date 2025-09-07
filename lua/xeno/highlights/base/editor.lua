@@ -8,7 +8,7 @@ function M.generate_editor_highlights(colors)
     Visual = { bg = utils.opaque(colors.base_500, 0.20, nil, colors) },
 
     NormalFloat = { fg = colors.base_200, bg = colors.base_800 },
-    FloatBorder = { fg = colors.base_400, bg = colors.base_800 },
+    FloatBorder = { fg = colors.base_700, bg = colors.base_800 },
     FloatTitle = { fg = colors.base_300, bg = colors.base_800 },
 
     ColorColumn = { bg = colors.base_800 },
@@ -93,6 +93,41 @@ function M.generate_editor_highlights(colors)
     DiagnosticFloatingWarn = { fg = colors.yellow, bg = colors.base_800 },
     DiagnosticFloatingInfo = { fg = colors.accent_100, bg = colors.base_800 },
     DiagnosticFloatingHint = { fg = colors.green, bg = colors.base_800 },
+    DiagnosticFloatingOk = { fg = colors.green, bg = colors.base_800 },
+
+    ErrorFloat = { fg = colors.red, bg = colors.base_800 },
+    WarningFloat = { fg = colors.yellow, bg = colors.base_800 },
+    InfoFloat = { fg = colors.accent_100, bg = colors.base_800 },
+    HintFloat = { fg = colors.green, bg = colors.base_800 },
+    OkFloat = { fg = colors.green, bg = colors.base_800 },
+
+    VirtualTextError = { fg = colors.red },
+    VirtualTextWarning = { fg = colors.yellow },
+    VirtualTextInfo = { fg = colors.accent_100 },
+    VirtualTextHint = { fg = colors.green },
+    VirtualTextOk = { fg = colors.green },
+
+    RedSign = { fg = colors.red },
+    YellowSign = { fg = colors.yellow },
+    BlueSign = { fg = colors.accent_100 },
+    PurpleSign = { fg = colors.accent_100 },
+    GreenSign = { fg = colors.green },
+
+    CurrentWord = { bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    InlayHints = { fg = colors.base_500 },
+
+    LspInfoBorder = { fg = colors.base_400, bg = colors.base_800 },
+    LspInfoTitle = { fg = colors.base_300, bg = colors.base_800 },
+    LspInfoFloat = { fg = colors.base_200, bg = colors.base_800 },
+
+    LspHover = { fg = colors.base_200, bg = colors.base_800 },
+    LspHoverBorder = { fg = colors.base_400, bg = colors.base_800 },
+    LspSignatureHelp = { fg = colors.base_200, bg = colors.base_800 },
+    LspSignatureHelpBorder = { fg = colors.base_400, bg = colors.base_800 },
+
+    -- Additional floating window variants
+    FloatingWindow = { fg = colors.base_200, bg = colors.base_800 },
+    Floating = { fg = colors.base_200, bg = colors.base_800 },
 
     DiagnosticSignError = { fg = colors.red },
     DiagnosticSignWarn = { fg = colors.yellow },

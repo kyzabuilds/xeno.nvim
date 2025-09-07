@@ -12,12 +12,8 @@ local function apply_transparency(highlights, transparent)
   local transparent_groups = {
     "Normal",
     "NormalNC",
-    "WinBar",
-    "WinBarNC",
     "SignColumn",
     "EndOfBuffer",
-    "NormalFloat",
-    "FloatBorder",
     "NotifyBackground",
   }
 

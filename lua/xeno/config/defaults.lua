@@ -20,6 +20,14 @@ defaults.config = {
     syntax = {},
     plugins = {},
   },
+
+  -- Terminal integrations
+  integrations = {
+    ghostty = {
+      enabled = true,
+      update_config = true,
+    },
+  },
 }
 
 return defaults

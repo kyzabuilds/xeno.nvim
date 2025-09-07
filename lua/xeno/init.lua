@@ -37,9 +37,6 @@ function xeno.setup(user_config)
     config.base = config.background
   end
 
-  -- In the xeno.setup function, after the terminal setup line:
-  -- Add this after: terminal.setup_terminal_colors(xeno.colors)
-
   local ok, colors = pcall(palette.generate_palette, config)
   if not ok then
     vim.notify(fmt("xeno.nvim: Error generating color palette: %s. Using fallback colors.", tostring(colors)), vim.log.levels.ERROR)
@@ -48,8 +45,8 @@ function xeno.setup(user_config)
 
   xeno.colors = fallback.create_safe_color_table(colors)
 
-  -- Setup terminal colors
-  terminal.setup_terminal_colors(xeno.colors)
+  -- Setup terminal colors (includes Ghostty integration)
+  terminal.setup_terminal_colors(xeno.colors, config)
 
   -- Generate base highlights
   local ok_highlights, highlights = pcall(highlight_generator.generate_base_highlights, xeno.colors)

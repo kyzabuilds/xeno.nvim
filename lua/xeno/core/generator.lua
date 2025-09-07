@@ -133,6 +133,12 @@ function M.theme(name, config, global_config)
     table.insert(config_parts, fmt("  highlights = %s", highlights_code))
   end
 
+  -- Add integrations if present
+  if user_config.integrations then
+    local integrations_code = serialize_value(user_config.integrations, 1)
+    table.insert(config_parts, fmt("  integrations = %s", integrations_code))
+  end
+
   local content = fmt(
     [=[
 require("xeno").setup({

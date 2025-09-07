@@ -163,6 +163,13 @@ M["lukas-reineke/indent-blankline.nvim"] = function(colors)
   }
 end
 
+M["nvimdev/indentmini.nvim"] = function(colors)
+  return {
+    IndentLine = { fg = utils.opaque(colors.base_500, 0.30, nil, colors), nocombine = true },
+    IndentLineCurrent = { fg = utils.opaque(colors.base_500, 0.70, nil, colors), nocombine = true },
+  }
+end
+
 M["nvim-neo-tree/neo-tree.nvim"] = function(colors)
   local neotree = { bg = colors.base_800, fg = colors.base_200 }
 
@@ -869,33 +876,33 @@ M["DNLHC/glance.nvim"] = function(colors)
   return {
     -- Main window elements
     GlanceNone = { clear = true },
-    GlanceWinBarTitle = { fg = colors.base_200, bg = colors.base_700 },
-    GlanceWinBarFilepath = { fg = colors.base_400, bg = colors.base_700 },
-    GlanceWinBarFilename = { fg = colors.base_200, bg = colors.base_700 },
+    GlanceWinBarTitle = { fg = colors.base_200, bg = colors.base_800, underline = true, sp = colors.base_700 },
+    GlanceWinBarFilepath = { fg = colors.base_400, bg = colors.base_800, underline = true, sp = colors.base_700 },
+    GlanceWinBarFilename = { fg = colors.base_200, bg = colors.base_800, underline = true, sp = colors.base_700 },
 
     -- List panel
-    GlanceListNormal = { fg = colors.base_200, bg = colors.base_700 },
-    GlanceListCursorLine = { bg = colors.base_700 },
-    GlanceListFilepath = { fg = colors.base_400 },
+    GlanceListNormal = { fg = colors.base_200, bg = colors.base_800 },
+    GlanceListCursorLine = { bg = utils.opaque(colors.base_500, 0.10, nil, colors) },
+    GlanceListFilepath = { fg = colors.base_500 },
     GlanceListFilename = { link = "Directory" },
     GlanceListCount = { link = "Number" },
     GlanceListMatch = { link = "Search" },
-    GlanceListEndOfBuffer = { fg = colors.base_800, bg = colors.base_700 },
-    GlanceListBorderBottom = { fg = colors.base_600, bg = colors.base_700 },
+    GlanceListEndOfBuffer = { fg = colors.base_800, bg = colors.base_800 },
+    GlanceListBorderBottom = { fg = colors.base_600, bg = colors.base_800 },
 
     -- Preview panel
     GlancePreviewNormal = { bg = colors.base_800 },
-    GlancePreviewCursorLine = { bg = colors.base_700 },
+    GlancePreviewCursorLine = { bg = utils.opaque(colors.base_500, 0.10, nil, colors) },
     GlancePreviewMatch = { bg = colors.base_700 },
-    GlancePreviewSignColumn = { fg = colors.base_900 },
+    GlancePreviewSignColumn = { fg = colors.base_800 },
     GlancePreviewLineNr = { fg = colors.base_500 },
-    GlancePreviewEndOfBuffer = { fg = colors.base_900, bg = colors.base_900 },
-    GlancePreviewBorderBottom = { fg = colors.base_600, bg = colors.base_900 },
+    GlancePreviewEndOfBuffer = { fg = colors.base_800, bg = colors.base_800 },
+    GlancePreviewBorderBottom = { fg = colors.base_600, bg = colors.base_800 },
 
     -- Borders and separators
     GlanceBorderTop = { fg = colors.base_600, bg = colors.base_800 },
-    GlanceIndent = { fg = colors.base_600 },
-    GlanceFoldIcon = { fg = colors.base_400 },
+    GlanceIndent = { fg = utils.opaque(colors.base_500, 0.20, nil, colors) },
+    GlanceFoldIcon = { fg = colors.base_500 },
   }
 end
 
@@ -928,11 +935,11 @@ M["MagicDuck/grug-far.nvim"] = function(colors)
 
     -- Context lines
     GrugFarResultsLine = { fg = colors.base_500 },
-    GrugFarResultsLineContext = { fg = colors.base_400, underline = true, sp = colors.base_300 },
+    GrugFarResultsLineContext = { fg = colors.base_400 },
 
     -- Headers with enhanced visibility
-    GrugFarResultsHeader = { bg = colors.base_700, fg = colors.base_300, underline = true, sp = colors.base_600 },
-    GrugFarResultsCmdHeader = { bg = colors.base_700, fg = colors.base_400, bold = true, underline = true },
+    GrugFarResultsHeader = { fg = colors.base_300 },
+    GrugFarResultsCmdHeader = { fg = colors.base_400, bold = true, underline = true },
 
     -- UI messages and stats with base colors
     GrugFarResultsActionMessage = { fg = colors.base_300, bold = true },
@@ -947,13 +954,13 @@ M["MagicDuck/grug-far.nvim"] = function(colors)
     GrugFarInputBorder = { fg = colors.base_600 },
 
     -- Help window elements with consistent theming
-    GrugFarHelpWinNormal = { bg = colors.base_700, fg = colors.base_200 },
-    GrugFarHelpWinBorder = { bg = colors.base_700, fg = colors.base_500 },
-    GrugFarHelpWinActionDescription = { fg = colors.base_300, bg = colors.base_700 },
-    GrugFarHelpWinActionKey = { fg = colors.base_400, bg = colors.base_700, bold = true },
-    GrugFarHelpWinActionText = { fg = colors.base_200, bg = colors.base_700 },
-    GrugFarHelpWinActionPrefix = { fg = colors.base_300, bg = colors.base_700, bold = true },
-    GrugFarHelpWinHeader = { fg = colors.base_300, bg = colors.base_700, bold = true, underline = true },
+    GrugFarHelpWinNormal = { fg = colors.base_200 },
+    GrugFarHelpWinBorder = { fg = colors.base_500 },
+    GrugFarHelpWinActionDescription = { fg = colors.base_300 },
+    GrugFarHelpWinActionKey = { fg = colors.base_400, bold = true },
+    GrugFarHelpWinActionText = { fg = colors.base_200 },
+    GrugFarHelpWinActionPrefix = { fg = colors.base_300, bold = true },
+    GrugFarHelpWinHeader = { fg = colors.base_300, bold = true, underline = true },
     GrugFarHelpHeaderKey = { fg = colors.base_400, bold = true },
     GrugFarHelpHeader = { fg = colors.base_300, bold = true },
 
@@ -1124,7 +1131,7 @@ M["folke/which-key.nvim"] = function(colors)
     WhichKeyIconBlue = { link = "DiagnosticInfo" },
     WhichKeyIconAzure = { link = "Function" },
     WhichKeyDesc = { link = "Identifier" },
-    WhichKeyNormal = { link = "NormalFloat" },
+    WhichKeyNormal = { bg = colors.base_800 },
     WhichKeyIconYellow = { link = "DiagnosticWarn" },
     WhichKeyValue = { link = "Comment" },
   }
