@@ -52,7 +52,7 @@ function M.generate_syntax_highlights(colors)
     ["@text.uri"] = { fg = colors.syntax_accent_100, underline = true },
     ["@text.reference"] = { fg = colors.syntax_accent_100 },
 
-    ["@variable"] = { clear = true },
+    ["@variable"] = { fg = colors.syntax_base_500 },
     ["@comment"] = { link = "Comment" },
     ["@spell"] = { clear = true },
 

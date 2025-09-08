@@ -37,7 +37,7 @@ function M.generate_editor_highlights(colors, config)
     NonText = { fg = colors.base_300 },
 
     Pmenu = { bg = colors.base_700, fg = colors.base_200 },
-    PmenuSel = { bg = colors.base_600, bold = false },
+    PmenuSel = { bg = colors.base_600, bold = false, reverse = false },
     PmenuSbar = { bg = colors.base_900 },
     PmenuThumb = { bg = colors.base_600 },
 
@@ -60,15 +60,15 @@ function M.generate_editor_highlights(colors, config)
 
     WinSeparator = { fg = colors.base_700 },
     WhiteSpace = { fg = colors.base_700 },
-    WinBar = helpers.with_borders({ bg = colors.base_800, sp = colors.base_700 }, config),
-    WinBarNC = helpers.with_borders({ bg = colors.base_800, sp = colors.base_700 }, config),
+    WinBar = helpers.with_borders({ bg = colors.base_800, fg = colors.base_500, sp = colors.base_700 }, config),
+    WinBarNC = helpers.with_borders({ bg = colors.base_800, fg = colors.base_500, sp = colors.base_700 }, config),
 
     WildMenu = { fg = colors.base_200, bg = colors.base_800 },
-    SignColumn = { bg = "NONE" },
+    SignColumn = { link = "Normal" },
     Folded = { fg = colors.base_300, bg = colors.base_800 },
     FoldStatus = { fg = utils.adjust_lightness(colors.base_200, -50) },
-    FoldColumn = { fg = colors.base_500 },
-    EndOfBuffer = { bg = "NONE" },
+    FoldColumn = { link = "Normal", fg = colors.base_500 },
+    EndOfBuffer = { link = "Normal" },
     Substitute = { fg = colors.base_700, bg = colors.accent_100 },
 
     IndentLine = { fg = colors.base_200, bg = "NONE" },

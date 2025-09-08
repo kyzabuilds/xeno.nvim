@@ -68,6 +68,9 @@ function xeno.setup(user_config)
 
   local config = utils.extend("force", defaults.config, user_config or {})
 
+  -- Store the merged config globally for export functionality
+  xeno._global_config = config
+
   -- Add custom colors to config for palette generation
   config._custom_colors = custom_colors
 
@@ -153,6 +156,12 @@ end
 -- Set window to use a specific namespace
 function xeno.set_window_namespace(win_id, namespace_name)
   return namespace.set_window_namespace(win_id or 0, namespace_name)
+end
+
+-- Export current theme as standalone colorscheme
+function xeno.export(config)
+  local export_module = require("xeno.export")
+  return export_module.export_theme(config)
 end
 
 -- Expose namespace utilities
