@@ -12,6 +12,9 @@ local namespace = require("xeno.core.namespace")
 
 local fmt = string.format
 
+-- Store custom colors defined by users
+local custom_colors = {}
+
 local xeno = {}
 
 -- Store global plugin configuration for new_theme function
@@ -20,6 +23,38 @@ xeno._global_config = {}
 -- Set global configuration (for use with lazy.nvim opts)
 function xeno.config(config)
   xeno._global_config = config or {}
+end
+
+-- Define a custom color that can be referenced in highlights
+function xeno.color(name, hex_value)
+  -- Validate name is a valid identifier
+  if type(name) ~= "string" or not name:match("^[%a_][%w_]*$") then
+    vim.notify(
+      fmt("xeno.nvim: Invalid color name '%s'. Use alphanumeric characters and underscores only.", tostring(name)),
+      vim.log.levels.ERROR
+    )
+    return xeno
+  end
+
+  -- Validate hex_value is a valid hex color
+  if type(hex_value) ~= "string" then
+    vim.notify(fmt("xeno.nvim: Invalid color hex value '%s' for '%s'. Must be a string.", tostring(hex_value), name), vim.log.levels.ERROR)
+    return xeno
+  end
+
+  local h, s, l = utils.hex2hsl(hex_value)
+  if not h then
+    vim.notify(fmt("xeno.nvim: Invalid color hex value '%s' for '%s'. Must be a valid hex color.", hex_value, name), vim.log.levels.ERROR)
+    return xeno
+  end
+
+  -- Store the custom color
+  custom_colors[name] = hex_value
+
+  -- Clear resolver cache since we've added a new color
+  resolver.clear_cache()
+
+  return xeno -- Allow chaining
 end
 
 -- Initialize with default colors immediately for plugin access
@@ -32,6 +67,9 @@ function xeno.setup(user_config)
   resolver.clear_cache()
 
   local config = utils.extend("force", defaults.config, user_config or {})
+
+  -- Add custom colors to config for palette generation
+  config._custom_colors = custom_colors
 
   if config.background and not config.base then
     config.base = config.background
@@ -80,6 +118,10 @@ end
 function xeno.theme(name, config)
   -- Merge global config with theme-specific config
   local merged_config = utils.extend("force", xeno._global_config, config or {})
+
+  -- Add custom colors to config
+  merged_config._custom_colors = custom_colors
+
   generator.theme(name, merged_config, xeno._global_config)
 end
 

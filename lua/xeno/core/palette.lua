@@ -185,6 +185,14 @@ function M.generate_palette(config)
     add_scale_to_colors(colors, scale_data.scale, scale_data.prefix)
   end
 
+  -- Add custom color scales
+  if config._custom_colors then
+    for name, hex_value in pairs(config._custom_colors) do
+      local custom_scale = generate_color_scale(hex_value, scale_options.standard)
+      add_scale_to_colors(colors, custom_scale, name)
+    end
+  end
+
   -- Add semantic colors
   local semantic = SEMANTIC_COLORS[theme]
   for name, default_color in pairs(semantic) do
