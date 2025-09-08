@@ -2,6 +2,7 @@ local M = {}
 local utils = require("xeno.core.utils")
 local helpers = require("xeno.core.helpers")
 
+
 M["nvim-telescope/telescope.nvim"] = function(colors)
   local telescope = {
     bg = colors.base_800,
@@ -456,7 +457,7 @@ M["lewis6991/gitsigns.nvim"] = function(colors)
   }
 end
 
-M["akinsho/bufferline.nvim"] = function(colors)
+M["akinsho/bufferline.nvim"] = function(colors, config)
   local is_light = utils.get_variant() == 2
 
   local function palette()
@@ -490,7 +491,7 @@ M["akinsho/bufferline.nvim"] = function(colors)
 
   local highlights = {
     -- General/Default
-    Defaults = { underline = true, sp = colors.base_700 },
+    Defaults = helpers.with_borders({ sp = colors.base_700 }, config),
 
     -- Fill & Separators
     BufferLineFill = { fg = bufferline.fill_fg, bg = bufferline.fill_bg },
@@ -575,7 +576,7 @@ M["folke/trouble.nvim"] = function(colors)
   }
 end
 
-M["NeogitOrg/neogit"] = function(colors)
+M["NeogitOrg/neogit"] = function(colors, config)
   local neogit = {
     bg = colors.base_900,
     fg = colors.base_200,
@@ -642,14 +643,14 @@ M["NeogitOrg/neogit"] = function(colors)
     NeogitDiffContextCursor = { bg = colors.base_800 },
 
     -- Diff Headers
-    NeogitDiffHeader = { fg = neogit.fg, bg = colors.base_900, underline = true, sp = colors.base_700 },
-    NeogitDiffHeaderHighlight = { bg = colors.base_800, fg = colors.base_200, underline = true, sp = colors.base_700, bold = true },
-    NeogitDiffHeaderCursor = { bg = colors.base_800, underline = true, sp = colors.base_700, bold = true },
+    NeogitDiffHeader = helpers.with_borders({ fg = neogit.fg, bg = colors.base_900, sp = colors.base_700 }, config),
+    NeogitDiffHeaderHighlight = helpers.with_borders({ bg = colors.base_800, fg = colors.base_200, sp = colors.base_700, bold = true }, config),
+    NeogitDiffHeaderCursor = helpers.with_borders({ bg = colors.base_800, sp = colors.base_700, bold = true }, config),
 
     -- Hunk Headers
-    NeogitHunkHeader = { bg = colors.base_800, fg = colors.base_300, underline = true, sp = colors.base_700, bold = true },
-    NeogitHunkHeaderHighlight = { bg = colors.base_800, fg = colors.base_300, underline = true, sp = colors.base_700, bold = true },
-    NeogitHunkHeaderCursor = { bg = colors.base_800, fg = colors.base_200, underline = true, sp = colors.base_700, bold = true },
+    NeogitHunkHeader = helpers.with_borders({ bg = colors.base_800, fg = colors.base_300, sp = colors.base_700, bold = true }, config),
+    NeogitHunkHeaderHighlight = helpers.with_borders({ bg = colors.base_800, fg = colors.base_300, sp = colors.base_700, bold = true }, config),
+    NeogitHunkHeaderCursor = helpers.with_borders({ bg = colors.base_800, fg = colors.base_200, sp = colors.base_700, bold = true }, config),
 
     -- Merge Headers
     NeogitHunkMergeHeader = { bold = true, fg = colors.base_200, bg = colors.base_900 },
@@ -872,13 +873,13 @@ M["Bekaboo/dropbar.nvim"] = function(colors)
   }
 end
 
-M["DNLHC/glance.nvim"] = function(colors)
+M["DNLHC/glance.nvim"] = function(colors, config)
   return {
     -- Main window elements
     GlanceNone = { clear = true },
-    GlanceWinBarTitle = { fg = colors.base_200, bg = colors.base_800, underline = true, sp = colors.base_700 },
-    GlanceWinBarFilepath = { fg = colors.base_400, bg = colors.base_800, underline = true, sp = colors.base_700 },
-    GlanceWinBarFilename = { fg = colors.base_200, bg = colors.base_800, underline = true, sp = colors.base_700 },
+    GlanceWinBarTitle = helpers.with_borders({ fg = colors.base_200, bg = colors.base_800, sp = colors.base_700 }, config),
+    GlanceWinBarFilepath = helpers.with_borders({ fg = colors.base_400, bg = colors.base_800, sp = colors.base_700 }, config),
+    GlanceWinBarFilename = helpers.with_borders({ fg = colors.base_200, bg = colors.base_800, sp = colors.base_700 }, config),
 
     -- List panel
     GlanceListNormal = { fg = colors.base_200, bg = colors.base_800 },
@@ -1134,6 +1135,126 @@ M["folke/which-key.nvim"] = function(colors)
     WhichKeyNormal = { bg = colors.base_800 },
     WhichKeyIconYellow = { link = "DiagnosticWarn" },
     WhichKeyValue = { link = "Comment" },
+  }
+end
+
+M["petertriho/nvim-scrollbar"] = function(colors)
+  return {
+    -- Base scrollbar elements
+    ScrollbarHandle = { bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+
+    -- Miscellaneous scrollbar indicators
+    ScrollbarMisc = { fg = colors.base_500 },
+    ScrollbarMiscHandle = { fg = colors.base_500, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+
+    -- Git indicators
+    ScrollbarGitAdd = { fg = colors.green },
+    ScrollbarGitAddHandle = { fg = colors.green, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarGitChange = { fg = colors.yellow },
+    ScrollbarGitChangeHandle = { fg = colors.yellow, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarGitDelete = { fg = colors.red },
+    ScrollbarGitDeleteHandle = { fg = colors.red, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+
+    -- Diagnostic indicators
+    ScrollbarError = { fg = colors.red },
+    ScrollbarErrorHandle = { fg = colors.red, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarWarn = { fg = colors.yellow },
+    ScrollbarWarnHandle = { fg = colors.yellow, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarInfo = { fg = colors.blue },
+    ScrollbarInfoHandle = { fg = colors.blue, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarHint = { fg = colors.green },
+    ScrollbarHintHandle = { fg = colors.green, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+
+    -- Search indicators
+    ScrollbarSearch = { fg = colors.base_100 },
+    ScrollbarSearchHandle = { fg = colors.base_100, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+
+    -- Cursor position indicator
+    ScrollbarCursor = { fg = colors.base_500 },
+    ScrollbarCursorHandle = { fg = colors.base_500, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+  }
+end
+
+M["yetone/avante.nvim"] = function(colors)
+  return {
+    -- State indicators with colorful backgrounds
+    AvanteStateSpinnerSearching = { fg = colors.base_900, bg = colors.purple },
+    AvanteStateSpinnerSucceeded = { fg = colors.base_900, bg = colors.green },
+    AvanteStateSpinnerFailed = { fg = colors.base_900, bg = colors.red },
+    AvanteStateSpinnerToolCalling = { fg = colors.base_900, bg = colors.blue },
+    AvanteStateSpinnerGenerating = { fg = colors.base_900, bg = colors.accent_300 },
+    AvanteStateSpinnerCompacting = { fg = colors.base_900, bg = colors.purple },
+    AvanteStateSpinnerThinking = { fg = colors.base_900, bg = colors.purple },
+
+    -- Main UI elements
+    AvanteReversedNormal = { bg = colors.base_400 },
+    AvanteCommentFg = { fg = colors.base_500 },
+
+    -- Logo gradient (from dark to light)
+    AvanteLogoLine1 = { fg = colors.base_100 },
+    AvanteLogoLine2 = { fg = colors.base_200 },
+    AvanteLogoLine3 = { fg = colors.base_200 },
+    AvanteLogoLine4 = { fg = colors.base_300 },
+    AvanteLogoLine5 = { fg = colors.base_300 },
+    AvanteLogoLine6 = { fg = colors.base_400 },
+    AvanteLogoLine7 = { fg = colors.base_400 },
+    AvanteLogoLine8 = { fg = colors.base_500 },
+    AvanteLogoLine9 = { fg = colors.base_500 },
+    AvanteLogoLine10 = { fg = colors.base_600 },
+    AvanteLogoLine11 = { fg = colors.base_600 },
+    AvanteLogoLine12 = { fg = colors.base_700 },
+    AvanteLogoLine13 = { fg = colors.base_700 },
+    AvanteLogoLine14 = { fg = colors.base_800 },
+
+    -- Buttons with proper styling
+    AvanteButtonDefault = { fg = colors.base_900, bg = colors.base_300 },
+    AvanteButtonDefaultHover = { fg = colors.base_900, bg = colors.green },
+    AvanteButtonPrimary = { fg = colors.base_900, bg = colors.base_300 },
+    AvanteButtonPrimaryHover = { fg = colors.base_900, bg = colors.blue },
+    AvanteButtonDanger = { fg = colors.base_900, bg = colors.base_300 },
+    AvanteButtonDangerHover = { fg = colors.base_900, bg = colors.red },
+
+    -- Titles and headers
+    AvanteTitle = { fg = colors.base_900, bg = colors.green },
+    AvanteSubtitle = { fg = colors.base_900, bg = colors.blue },
+    AvanteReversedTitle = { fg = colors.green, bg = colors.base_900 },
+    AvanteReversedSubtitle = { fg = colors.blue, bg = colors.base_900 },
+    AvanteThirdTitle = { fg = colors.base_300, bg = colors.base_700 },
+    AvanteReversedThirdTitle = { fg = colors.base_700, bg = colors.base_900 },
+
+    -- Sidebar and floating elements
+    AvanteSidebarNormal = { link = "NormalFloat" },
+    AvanteSidebarWinSeparator = { fg = colors.base_900, bg = colors.base_900 },
+    AvanteSidebarWinHorizontalSeparator = { fg = colors.base_700, bg = colors.base_900 },
+
+    -- Popup and input elements
+    AvantePopupHint = { link = "NormalFloat" },
+    AvantePromptInput = { clear = true },
+    AvantePromptInputBorder = { link = "NormalFloat" },
+
+    -- Task status indicators
+    AvanteTaskRunning = { fg = colors.purple },
+    AvanteTaskCompleted = { fg = colors.green },
+    AvanteTaskFailed = { fg = colors.red },
+
+    -- Special text states
+    AvanteThinking = { fg = colors.purple },
+    AvanteInlineHint = { link = "Keyword" },
+    AvanteSuggestion = { link = "Comment" },
+    AvanteAnnotation = { link = "Comment" },
+
+    -- Confirmation dialogs
+    AvanteConfirmTitle = { fg = colors.base_900, bg = colors.red },
+
+    -- Diff and change indicators
+    AvanteToBeDeleted = { strikethrough = true, bg = utils.opaque(colors.red, 0.20, nil, colors) },
+    AvanteToBeDeletedWOStrikethrough = { bg = utils.opaque(colors.red, 0.15, nil, colors) },
+
+    -- Conflict resolution
+    AvanteConflictCurrent = { bold = true, bg = utils.opaque(colors.red, 0.15, nil, colors) },
+    AvanteConflictCurrentLabel = { bg = utils.opaque(colors.red, 0.25, nil, colors) },
+    AvanteConflictIncoming = { bold = true, bg = utils.opaque(colors.blue, 0.15, nil, colors) },
+    AvanteConflictIncomingLabel = { bg = utils.opaque(colors.blue, 0.25, nil, colors) },
   }
 end
 

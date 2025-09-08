@@ -12,3 +12,9 @@ xeno.nvim provides built-in highlight support for popular Neovim plugins. Each p
 - [LSP](#lsp)
 - [Indent Blankline](#indent-blankline)
 
+Format:
+- Description
+- Preview
+- Plugin options
+- Notes about the plugin
+

@@ -49,7 +49,7 @@ function xeno.setup(user_config)
   terminal.setup_terminal_colors(xeno.colors, config)
 
   -- Generate base highlights
-  local ok_highlights, highlights = pcall(highlight_generator.generate_base_highlights, xeno.colors)
+  local ok_highlights, highlights = pcall(highlight_generator.generate_base_highlights, xeno.colors, config)
   if not ok_highlights then
     vim.notify(
       fmt("xeno.nvim: Error generating highlights: %s. Using minimal fallback highlights.", tostring(highlights)),
@@ -91,8 +91,9 @@ function xeno.namespace(namespace_name, highlights_override)
     return
   end
 
-  -- Start with base highlights
-  local base_highlights = highlight_generator.generate_base_highlights(colors)
+  -- Start with base highlights (use global config merged with defaults)
+  local config = utils.extend("force", defaults.config, xeno._global_config)
+  local base_highlights = highlight_generator.generate_base_highlights(colors, config)
 
   -- Apply overrides if provided
   local final_highlights = base_highlights

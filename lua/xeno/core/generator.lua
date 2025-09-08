@@ -127,6 +127,12 @@ function M.theme(name, config, global_config)
     table.insert(config_parts, fmt('  cyan = "%s"', user_config.cyan))
   end
 
+  -- Add decorations if present
+  if user_config.decorations then
+    local decorations_code = serialize_value(user_config.decorations, 1)
+    table.insert(config_parts, fmt("  decorations = %s", decorations_code))
+  end
+
   -- Add highlights if present
   local highlights_code = generate_highlights_code(user_config.highlights)
   if highlights_code then

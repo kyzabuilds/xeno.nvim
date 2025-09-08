@@ -1,7 +1,8 @@
 local M = {}
 local utils = require("xeno.core.utils")
+local helpers = require("xeno.core.helpers")
 
-function M.generate_editor_highlights(colors)
+function M.generate_editor_highlights(colors, config)
   return {
     Normal = { bg = colors.base_900, fg = colors.base_300 },
     NormalNC = { fg = colors.base_200, bg = colors.base_900 },
@@ -59,8 +60,8 @@ function M.generate_editor_highlights(colors)
 
     WinSeparator = { fg = colors.base_700 },
     WhiteSpace = { fg = colors.base_700 },
-    WinBar = { bg = colors.base_800, sp = colors.base_700, underline = true },
-    WinBarNC = { bg = colors.base_800, sp = colors.base_700, underline = true },
+    WinBar = helpers.with_borders({ bg = colors.base_800, sp = colors.base_700 }, config),
+    WinBarNC = helpers.with_borders({ bg = colors.base_800, sp = colors.base_700 }, config),
 
     WildMenu = { fg = colors.base_200, bg = colors.base_800 },
     SignColumn = { bg = "NONE" },

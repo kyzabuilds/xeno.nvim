@@ -18,20 +18,20 @@ local function merge_highlights(...)
 end
 
 -- Generate highlights from all plugins
-function M.generate_plugin_highlights(colors)
+function M.generate_plugin_highlights(colors, config)
   local plugin_results = {}
   for _, plugin_fn in pairs(plugins) do
-    table.insert(plugin_results, plugin_fn(colors))
+    table.insert(plugin_results, plugin_fn(colors, config))
   end
   return merge_highlights(unpack(plugin_results))
 end
 
 -- Generate all highlights in one call
-function M.generate_base_highlights(colors)
+function M.generate_base_highlights(colors, config)
   return merge_highlights(
     syntax.generate_syntax_highlights(colors),
-    editor.generate_editor_highlights(colors),
-    M.generate_plugin_highlights(colors)
+    editor.generate_editor_highlights(colors, config),
+    M.generate_plugin_highlights(colors, config)
   )
 end
 

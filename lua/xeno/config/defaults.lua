@@ -6,6 +6,11 @@ defaults.config = {
 
   transparent = false,
 
+  -- UI decorations
+  decorations = {
+    borders = true,
+  },
+
   red = nil, -- #E86671 (dark) / #B71C1C (light)
   green = nil, -- #A9DC76 (dark) / #2E7D32 (light)
   yellow = nil, -- #E7C547 (dark) / #F57C00 (light)
