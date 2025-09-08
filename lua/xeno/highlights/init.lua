@@ -20,8 +20,18 @@ end
 -- Generate highlights from all plugins
 function M.generate_plugin_highlights(colors, config)
   local plugin_results = {}
-  for _, plugin_fn in pairs(plugins) do
-    table.insert(plugin_results, plugin_fn(colors, config))
+  local plugin_configs = config.highlights and config.highlights.plugins or {}
+  local resolver = require("xeno.core.resolver")
+  
+  for plugin_name, plugin_fn in pairs(plugins) do
+    local plugin_config = plugin_configs[plugin_name]
+    
+    -- Resolve color references in plugin config if provided
+    if plugin_config then
+      plugin_config = resolver.resolve_highlights(plugin_config, colors, nil)
+    end
+    
+    table.insert(plugin_results, plugin_fn(colors, config, plugin_config))
   end
   return merge_highlights(unpack(plugin_results))
 end

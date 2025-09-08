@@ -44,6 +44,38 @@ vim.cmd('colorscheme my-theme')
 - **Color References**: Use `@base.500` or `@accent.200` syntax for dynamic color mapping
 - **Terminal Integration**: Automatically configures terminal colors
 
+## Plugin Configuration
+
+Customize plugin themes using high-level options:
+
+```lua
+require('xeno').new_theme('my-theme', {
+  base = '#1a1a1a',
+  accent = '#7aa2f7',
+  highlights = {
+    plugins = {
+      ["nvim-telescope/telescope.nvim"] = {
+        bg = "@base.950",
+        fg = "@base.50", 
+        border = "@accent.500",
+      },
+      ["akinsho/bufferline.nvim"] = {
+        selected_bg = "@base.700",
+        visible_bg = "@base.900",
+        separator = "@base.600",
+      },
+      ["nvim-tree/nvim-tree.lua"] = {
+        bg = "@base.800",
+        fg = "@base.200",
+        folder_fg = "@accent.300",
+      },
+    },
+  },
+})
+```
+
+This provides intuitive controls over plugin appearance while maintaining full compatibility with granular highlight overrides.
+
 ## Customization
 
 xeno.nvim supports extensive customization through the `highlights` parameter. See [examples.md](examples.md) for detailed configuration examples and color combinations.

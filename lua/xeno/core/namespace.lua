@@ -19,7 +19,7 @@ end
 --- @param highlights table The highlights to apply
 function M.apply_to_namespace(namespace_name, highlights)
   local ns_id = M.get_namespace(namespace_name)
-  
+
   for group, attrs in pairs(highlights) do
     if attrs.clear then
       -- Clear the highlight in this namespace
@@ -33,7 +33,7 @@ function M.apply_to_namespace(namespace_name, highlights)
       api.nvim_set_hl(ns_id, group, attrs)
     end
   end
-  
+
   return ns_id
 end
 
@@ -68,3 +68,4 @@ function M.get_namespace_names()
 end
 
 return M
+

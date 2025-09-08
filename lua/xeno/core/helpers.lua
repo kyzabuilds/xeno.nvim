@@ -47,7 +47,7 @@ M.with_borders = function(base_highlight, config)
     result.sp = nil
     return result
   end
-  
+
   -- Default: add border properties
   local result = vim.tbl_deep_extend("force", {}, base_highlight)
   result.underline = true

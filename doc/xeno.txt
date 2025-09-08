@@ -117,8 +117,8 @@ You can override specific semantic colors:
 *xeno-config-highlights*
 highlights        Table. Custom highlight overrides with three categories:
 - editor          Table. Editor UI highlights
-- syntax          Table. Syntax highlighting
-- plugins         Table. Plugin-specific highlights
+- syntax          Table. Syntax highlighting  
+- plugins         Table. Plugin-specific highlights and configurations
 
 *xeno-config-integrations*
 integrations      Table. Terminal integration settings:
@@ -178,6 +178,93 @@ Use `@base.XXX` or `@accent.XXX` syntax to reference generated color shades:
 - `@base.900`   - Darkest base shade
 
 Same pattern applies to `@accent.XXX` references.
+
+Plugin Configuration~
+                                                   *xeno-plugin-highlights*
+
+xeno provides two ways to customize plugin themes:
+
+1. High-level plugin configuration - Control key aspects of plugins through
+   simple configuration options:
+   
+2. Granular highlight overrides - Override individual highlight groups for
+   complete control.
+
+Plugin-specific configuration allows you to customize high-level aspects of 
+plugin themes without writing individual highlight overrides.
+
+Configuration Structure: >lua
+    highlights = {
+      plugins = {
+        ["plugin-name"] = {
+          option1 = "@base.500",
+          option2 = "@accent.200", 
+          option3 = "#ff0000",
+        },
+      },
+    }
+<
+
+Example Configurations: >lua
+    highlights = {
+      plugins = {
+        ["nvim-telescope/telescope.nvim"] = {
+          bg = "@base.950",        -- Background color
+          fg = "@base.50",         -- Foreground color  
+          border = "@accent.900",  -- Border color
+        },
+        ["akinsho/bufferline.nvim"] = {
+          selected_bg = "@base.700",    -- Selected buffer background
+          visible_bg = "@base.900",     -- Visible buffer background
+          separator = "@base.600",      -- Buffer separator color
+        },
+        ["nvim-tree/nvim-tree.lua"] = {
+          bg = "@base.800",            -- Tree background
+          fg = "@base.200",            -- Tree foreground
+          folder_fg = "@accent.300",   -- Folder name color
+        },
+        ["hrsh7th/nvim-cmp"] = {
+          match_fg = "@accent.400",    -- Match highlight color
+          kind_fg = "@base.300",       -- Kind icon color
+          menu_fg = "@base.400",       -- Menu text color
+          item_fg = "@base.200",       -- Item text color
+        },
+        ["lewis6991/gitsigns.nvim"] = {
+          add_fg = "@green",           -- Git add color
+          change_fg = "@yellow",       -- Git change color
+          delete_fg = "@red",          -- Git delete color
+        },
+      },
+    }
+<
+
+Available Plugin Configurations:
+
+nvim-telescope/telescope.nvim ~
+- bg: Background color for telescope windows
+- fg: Foreground text color  
+- border: Border color for telescope windows
+
+akinsho/bufferline.nvim ~
+- selected_bg: Background color for selected buffer
+- visible_bg: Background color for visible buffers
+- separator: Color for buffer separators
+
+nvim-tree/nvim-tree.lua ~
+- bg: Background color for tree window
+- fg: Default text color
+- folder_fg: Color for folder names
+
+hrsh7th/nvim-cmp ~
+- match_fg: Color for matching text in completions
+- kind_fg: Color for completion kind icons
+- menu_fg: Color for menu text
+- item_fg: Color for completion items
+
+lewis6991/gitsigns.nvim ~
+- add_fg: Color for git additions
+- change_fg: Color for git changes
+- delete_fg: Color for git deletions
 
 ==============================================================================
 5. API REFERENCE                                                 *xeno-api*

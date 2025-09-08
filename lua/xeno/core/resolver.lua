@@ -32,13 +32,13 @@ function M.resolve_highlight_reference(reference, attribute, highlights)
   if not M.is_highlight_reference(reference) then
     return reference
   end
-  
+
   local target_group = reference.from
   if not highlights[target_group] then
     vim.notify(fmt("xeno.nvim: Unknown highlight group reference '%s'", target_group), vim.log.levels.WARN)
     return reference
   end
-  
+
   local target_attrs = highlights[target_group]
   if target_attrs[attribute] then
     return target_attrs[attribute]
@@ -151,6 +151,19 @@ function M.validate_highlights(highlights)
     if type(groups) ~= "table" then
       vim.notify(fmt("xeno.nvim: Highlight category '%s' must be a table", category), vim.log.levels.WARN)
       return false
+    end
+    
+    -- Validate plugin configurations
+    if category == "plugins" then
+      for plugin_name, plugin_config in pairs(groups) do
+        if type(plugin_config) ~= "table" then
+          vim.notify(
+            fmt("xeno.nvim: Plugin config for '%s' must be a table", plugin_name),
+            vim.log.levels.WARN
+          )
+          return false
+        end
+      end
     end
   end
 

@@ -39,21 +39,21 @@ function M.merge_all_highlights(base_highlights, user_highlights, colors)
       target_table[group] = M.merge_highlight_group(target_table[group], resolved_attrs)
     end
   end
-  
+
   -- Helper function to resolve highlight references after all groups are merged
   local function resolve_highlight_references(target_table)
     local changed = true
     local max_iterations = 10 -- Prevent infinite loops
     local iterations = 0
-    
+
     while changed and iterations < max_iterations do
       changed = false
       iterations = iterations + 1
-      
+
       for group, attrs in pairs(target_table) do
         local new_attrs = {}
         local group_changed = false
-        
+
         for attr_key, attr_value in pairs(attrs) do
           if resolver.is_highlight_reference(attr_value) then
             local resolved = resolver.resolve_highlight_reference(attr_value, attr_key, target_table)
@@ -68,15 +68,18 @@ function M.merge_all_highlights(base_highlights, user_highlights, colors)
             new_attrs[attr_key] = attr_value
           end
         end
-        
+
         if group_changed then
           target_table[group] = new_attrs
         end
       end
     end
-    
+
     if iterations >= max_iterations then
-      vim.notify("xeno.nvim: Maximum iterations reached while resolving highlight references. Some references may be circular.", vim.log.levels.WARN)
+      vim.notify(
+        "xeno.nvim: Maximum iterations reached while resolving highlight references. Some references may be circular.",
+        vim.log.levels.WARN
+      )
     end
   end
 
@@ -90,16 +93,8 @@ function M.merge_all_highlights(base_highlights, user_highlights, colors)
     process_highlights(user_highlights.syntax, merged)
   end
 
-  -- Process plugin highlights
-  if user_highlights.plugins then
-    for plugin_path, plugin_highlights in pairs(user_highlights.plugins) do
-      process_highlights(plugin_highlights, merged)
-    end
-  end
-  
   -- After all merging is done, resolve highlight references
   resolve_highlight_references(merged)
-
   return merged
 end
 
