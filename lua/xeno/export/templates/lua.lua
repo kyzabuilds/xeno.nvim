@@ -12,12 +12,27 @@ end
 
 vim.g.colors_name = '{{THEME_NAME}}'
 
--- Color definitions
+-- Color palette
+local colors = {
 {{COLOR_DEFINITIONS}}
+}
 
 -- Helper function to apply highlights
 local function hi(group, opts)
   if not opts then return end
+  
+  -- Handle link highlights specially
+  if opts.link then
+    -- Use pcall to safely create links, skip if target doesn't exist
+    local ok = pcall(function()
+      vim.cmd('highlight! link ' .. group .. ' ' .. opts.link)
+    end)
+    if not ok then
+      -- If link fails, silently skip this highlight
+      return
+    end
+    return
+  end
   
   local cmd = 'highlight ' .. group
   
@@ -55,44 +70,18 @@ local function hi(group, opts)
     cmd = cmd .. ' gui=' .. table.concat(gui_attrs, ',')
   end
   
-  vim.cmd(cmd)
+  -- Use pcall to safely execute highlight commands
+  local ok = pcall(function()
+    vim.cmd(cmd)
+  end)
+  if not ok then
+    -- If highlight command fails, silently skip
+    return
+  end
 end
 
--- Apply highlights (theme-aware for dual-variant exports)
-{{EDITOR_HIGHLIGHTS}}
-
--- Syntax highlights
-{{SYNTAX_HIGHLIGHTS}}
-
--- TreeSitter highlights
-{{TREESITTER_HIGHLIGHTS}}
-
--- LSP highlights
-{{LSP_HIGHLIGHTS}}
-
--- Plugin highlights
-{{PLUGIN_HIGHLIGHTS}}
-
--- Additional highlights
-{{OTHER_HIGHLIGHTS}}
-
--- Terminal colors
-{{TERMINAL_COLORS}}
-
--- Apply highlights initially and setup auto-refresh on background change
-if type(apply_highlights) == "function" then
-  apply_highlights()
-  
-  -- Auto-refresh when background changes  
-  local augroup = vim.api.nvim_create_augroup("XenoThemeRefresh", { clear = true })
-  vim.api.nvim_create_autocmd("OptionSet", {
-    group = augroup,
-    pattern = "background",
-    callback = function()
-      apply_highlights()
-    end,
-  })
-end]]
+-- All highlights
+{{EDITOR_HIGHLIGHTS}}]]
 
 -- Placeholders that will be replaced during generation
 M.placeholders = {
@@ -100,12 +89,7 @@ M.placeholders = {
   "{{THEME_NAME}}",
   "{{COLOR_DEFINITIONS}}",
   "{{EDITOR_HIGHLIGHTS}}",
-  "{{SYNTAX_HIGHLIGHTS}}",
-  "{{TREESITTER_HIGHLIGHTS}}",
-  "{{LSP_HIGHLIGHTS}}",
-  "{{PLUGIN_HIGHLIGHTS}}",
-  "{{OTHER_HIGHLIGHTS}}",
-  "{{TERMINAL_COLORS}}",
 }
 
 return M
+

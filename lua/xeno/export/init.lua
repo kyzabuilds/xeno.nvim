@@ -1,386 +1,397 @@
 local M = {}
 
 local utils = require("xeno.core.utils")
-local highlight_generator = require("xeno.highlights")
-local defaults = require("xeno.config.defaults")
 local export_utils = require("xeno.export.utils")
 local lua_formatter = require("xeno.export.formatters.lua")
 local vim_formatter = require("xeno.export.formatters.vim")
 
 local fmt = string.format
 
--- Default export configuration
+-- Simplified export configuration
 local DEFAULT_EXPORT_CONFIG = {
   format = "lua",
-  output = "~/.config/nvim/colors/",
-  filename = nil,
-  include_plugins = true,
-  include_terminal = true,
-  include_metadata = true,
-  minify = false,
-  export_both_variants = true,  -- Export both light and dark mode support
+  dir = "~/.config/nvim/colors/",
 }
 
 -- Validate export configuration
 local function validate_export_config(config)
   config = config or {}
-  
+
   -- Validate format
   if config.format and config.format ~= "lua" and config.format ~= "vim" then
     return nil, fmt("Invalid format '%s'. Must be 'lua' or 'vim'", config.format)
   end
-  
+
   -- Validate output directory exists or can be created
-  if config.output then
-    local expanded_output = vim.fn.expand(config.output)
-    if not export_utils.ensure_directory(expanded_output) then
-      return nil, fmt("Cannot create or access output directory: %s", expanded_output)
+  if config.dir then
+    local expanded_dir = vim.fn.expand(config.dir)
+    if not export_utils.ensure_directory(expanded_dir) then
+      return nil, fmt("Cannot create or access output directory: %s", expanded_dir)
     end
   end
-  
+
   return true
 end
 
--- Generate color data for a specific theme variant
-local function generate_color_data_for_variant(theme_config, variant)
-  local palette_generator = require("xeno.core.palette")
-  local temp_variant = vim.o.background
+-- Extract which colors are actually used in the resolved highlights and track semantic color references
+local function extract_used_colors_from_highlights(highlights)
+  local used_colors = {}
+  local used_semantic_colors = {}
   
-  -- Temporarily set the background to generate the right palette
-  vim.o.background = variant
-  local colors = palette_generator.generate_palette(theme_config)
-  vim.o.background = temp_variant  -- Restore original
-  
-  local color_data = {
-    base_colors = {},
-    accent_colors = {},
-    syntax_colors = {},
-    semantic_colors = {},
-    custom_colors = {},
-  }
-  
-  -- Extract base color scale
-  local scale_levels = { 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950 }
-  for _, level in ipairs(scale_levels) do
-    color_data.base_colors[level] = colors[fmt("base_%d", level)]
-  end
-  
-  -- Extract accent color scale
-  for _, level in ipairs(scale_levels) do
-    color_data.accent_colors[level] = colors[fmt("accent_%d", level)]
-  end
-  
-  -- Extract syntax variations
-  for _, level in ipairs(scale_levels) do
-    color_data.syntax_colors[fmt("syntax_base_%d", level)] = colors[fmt("syntax_base_%d", level)]
-    color_data.syntax_colors[fmt("syntax_accent_%d", level)] = colors[fmt("syntax_accent_%d", level)]
-  end
-  
-  -- Extract semantic colors
-  local semantic_names = { "red", "green", "yellow", "orange", "blue", "purple", "cyan" }
-  for _, name in ipairs(semantic_names) do
-    if colors[name] then
-      color_data.semantic_colors[name] = colors[name]
+  for group_name, attrs in pairs(highlights) do
+    if attrs.fg then
+      if attrs.fg:match("^#[0-9a-fA-F]+$") then
+        used_colors[attrs.fg:upper()] = true
+      else
+        -- Track semantic color references (like 'green', 'red', etc.)
+        used_semantic_colors[attrs.fg] = true
+      end
+    end
+    if attrs.bg then
+      if attrs.bg:match("^#[0-9a-fA-F]+$") then
+        used_colors[attrs.bg:upper()] = true
+      else
+        -- Track semantic color references (like 'green', 'red', etc.)
+        used_semantic_colors[attrs.bg] = true
+      end
+    end
+    if attrs.sp then
+      if attrs.sp:match("^#[0-9a-fA-F]+$") then
+        used_colors[attrs.sp:upper()] = true
+      else
+        -- Track semantic color references (like 'green', 'red', etc.)
+        used_semantic_colors[attrs.sp] = true
+      end
     end
   end
   
-  -- Extract custom colors (if any)
-  if theme_config._custom_colors then
-    for name, hex_value in pairs(theme_config._custom_colors) do
-      -- Include both the raw custom color and its scale if generated
-      color_data.custom_colors[name] = hex_value
-      
-      -- Include scale variations if they exist
-      for _, level in ipairs(scale_levels) do
-        local scale_key = fmt("%s_%d", name, level)
-        if colors[scale_key] then
-          color_data.custom_colors[scale_key] = colors[scale_key]
+  return used_colors, used_semantic_colors
+end
+
+-- Filter the xeno color palette to only include color families that are actually used
+local function get_filtered_color_palette(highlights)
+  local xeno = package.loaded["xeno"]
+  if not xeno or not xeno.colors then
+    return nil, "xeno.nvim colors not available. Please run xeno.setup() first"
+  end
+  
+  local used_color_values, used_semantic_colors = extract_used_colors_from_highlights(highlights)
+  local used_color_families = {}
+  local filtered_colors = {}
+  
+  -- Also check original user configuration for semantic color references
+  if xeno._global_config and xeno._global_config.highlights then
+    local function extract_semantic_from_config(config_section)
+      if type(config_section) ~= "table" then return end
+      for group_name, attrs in pairs(config_section) do
+        if type(attrs) == "table" then
+          for attr_name, attr_value in pairs(attrs) do
+            if (attr_name == "fg" or attr_name == "bg" or attr_name == "sp") and 
+               type(attr_value) == "string" and 
+               not attr_value:match("^#[0-9a-fA-F]+$") and
+               not attr_value:match("^@") then  -- Not a color reference like @base.500
+              used_semantic_colors[attr_value] = true
+            end
+          end
+        end
+      end
+    end
+    
+    -- Check all highlight categories for semantic color references
+    if xeno._global_config.highlights.syntax then
+      extract_semantic_from_config(xeno._global_config.highlights.syntax)
+    end
+    if xeno._global_config.highlights.editor then
+      extract_semantic_from_config(xeno._global_config.highlights.editor)
+    end
+    if xeno._global_config.highlights.plugins then
+      for plugin_name, plugin_config in pairs(xeno._global_config.highlights.plugins) do
+        if type(plugin_config) == "table" then
+          extract_semantic_from_config(plugin_config)
         end
       end
     end
   end
   
-  return color_data, colors
-end
-
--- Extract color data from current xeno theme (legacy function for compatibility)
-local function extract_color_data(xeno_colors, custom_colors)
-  if not xeno_colors then
-    return nil, "No xeno colors available. Please run xeno.setup() first"
-  end
-  
-  local color_data = {
-    base_colors = {},
-    accent_colors = {},
-    syntax_colors = {},
-    semantic_colors = {},
-    custom_colors = {},
-  }
-  
-  -- Extract base color scale
-  local scale_levels = { 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950 }
-  for _, level in ipairs(scale_levels) do
-    color_data.base_colors[level] = xeno_colors[fmt("base_%d", level)]
-  end
-  
-  -- Extract accent color scale
-  for _, level in ipairs(scale_levels) do
-    color_data.accent_colors[level] = xeno_colors[fmt("accent_%d", level)]
-  end
-  
-  -- Extract syntax variations
-  for _, level in ipairs(scale_levels) do
-    color_data.syntax_colors[fmt("syntax_base_%d", level)] = xeno_colors[fmt("syntax_base_%d", level)]
-    color_data.syntax_colors[fmt("syntax_accent_%d", level)] = xeno_colors[fmt("syntax_accent_%d", level)]
-  end
-  
-  -- Extract semantic colors
-  local semantic_names = { "red", "green", "yellow", "orange", "blue", "purple", "cyan" }
-  for _, name in ipairs(semantic_names) do
-    if xeno_colors[name] then
-      color_data.semantic_colors[name] = xeno_colors[name]
+  -- First pass: Determine which color families are being used
+  for color_name, color_value in pairs(xeno.colors) do
+    if type(color_value) == "string" and color_value:match("^#[0-9a-fA-F]+$") then
+      if used_color_values[color_value:upper()] then
+        -- Extract the color family name (e.g., "red_stone" from "red_stone_300")
+        local family = color_name:match("^([^_]+_?[^_]*)_?%d*$") or color_name
+        -- Handle cases like "red_stone_300" -> "red_stone", or "base_500" -> "base"
+        family = color_name:match("^(.-)_%d+$") or color_name
+        used_color_families[family] = true
+      end
     end
   end
   
-  -- Extract custom colors (if any)
-  if custom_colors then
-    for name, hex_value in pairs(custom_colors) do
-      -- Include both the raw custom color and its scale if generated
-      color_data.custom_colors[name] = hex_value
+  -- List of semantic color names that should always be included
+  local semantic_colors = {"red", "green", "yellow", "orange", "blue", "purple", "cyan"}
+  
+  -- Second pass: Include all colors from the used families and referenced semantic colors
+  for color_name, color_value in pairs(xeno.colors) do
+    if type(color_value) == "string" and color_value:match("^#[0-9a-fA-F]+$") then
+      local family = color_name:match("^(.-)_%d+$") or color_name
+      local is_semantic = false
       
-      -- Include scale variations if they exist
-      for _, level in ipairs(scale_levels) do
-        local scale_key = fmt("%s_%d", name, level)
-        if xeno_colors[scale_key] then
-          color_data.custom_colors[scale_key] = xeno_colors[scale_key]
+      -- Check if this is a semantic color
+      for _, semantic in ipairs(semantic_colors) do
+        if color_name == semantic then
+          is_semantic = true
+          break
+        end
+      end
+      
+      -- Include if:
+      -- 1. It's from a used color family (color scale)
+      -- 2. It's a semantic color that was referenced by name in the original config
+      -- 3. It's directly used as a hex value in highlights
+      if used_color_families[family] or not color_name:match("_") then
+        -- For non-scale colors (semantic colors), include if:
+        -- - It's a semantic color that was referenced by name in user config
+        -- - It's a standard semantic color (for safety)
+        -- - It's directly used as a hex value
+        if not color_name:match("_%d+$") then
+          if used_semantic_colors[color_name] or is_semantic or used_color_values[color_value:upper()] then
+            filtered_colors[color_name] = color_value
+          end
+        else
+          -- For scale colors, include entire family if any level is used
+          filtered_colors[color_name] = color_value
         end
       end
     end
   end
   
-  return color_data
+  return filtered_colors
 end
 
--- Generate highlight data for a specific theme variant  
-local function generate_highlight_data_for_variant(colors, config, variant)
-  -- Temporarily set background for highlight generation
-  local temp_variant = vim.o.background
-  vim.o.background = variant
+-- Get xeno's generated highlights with resolved colors
+local function get_xeno_generated_highlights()
+  local xeno = package.loaded["xeno"]
+  if not xeno or not xeno._generated_highlights then
+    return nil, "xeno.nvim highlights not available. Please run xeno.setup() first"
+  end
   
-  -- Generate base highlights using the same logic as setup
-  local highlights = highlight_generator.generate_base_highlights(colors, config)
+  local resolver = require("xeno.core.resolver")
+  local resolved_highlights = {}
   
-  -- Restore original background
-  vim.o.background = temp_variant
-  
-  -- Organize highlights by category for better structure in output
-  local organized_highlights = {
-    editor = {},
-    syntax = {},
-    treesitter = {},
-    lsp = {},
-    plugins = {},
-    other = {},
-  }
-  
-  -- Categorize highlights
-  for group, attrs in pairs(highlights) do
-    if group:match("^@") then
-      organized_highlights.treesitter[group] = attrs
-    elseif group:match("^Diagnostic") or group:match("^Lsp") then
-      organized_highlights.lsp[group] = attrs
-    elseif group:match("^Comment$") or group:match("^String$") or group:match("^Function$") or 
-           group:match("^Keyword$") or group:match("^Type$") or group:match("^Constant$") or
-           group:match("^Special$") or group:match("^PreProc$") or group:match("^Identifier$") then
-      organized_highlights.syntax[group] = attrs
-    elseif group:match("^Normal$") or group:match("^Visual") or group:match("^Cursor") or
-           group:match("^StatusLine") or group:match("^LineNr") or group:match("^SignColumn") or
-           group:match("^Float") or group:match("^Pmenu") then
-      organized_highlights.editor[group] = attrs
-    elseif group:match("^Telescope") or group:match("^Cmp") or group:match("^GitSigns") or
-           group:match("^BufferLine") or group:match("^WhichKey") or group:match("^NvimTree") then
-      organized_highlights.plugins[group] = attrs
-    else
-      organized_highlights.other[group] = attrs
+  -- Resolve all color references in the generated highlights
+  for group_name, attrs in pairs(xeno._generated_highlights) do
+    if type(attrs) == "table" and next(attrs) then
+      local resolved_attrs = {}
+      
+      -- Resolve color references
+      for attr_name, attr_value in pairs(attrs) do
+        if attr_name == "fg" or attr_name == "bg" or attr_name == "sp" then
+          resolved_attrs[attr_name] = resolver.resolve_value(attr_value, xeno.colors)
+        else
+          -- Copy style attributes as-is
+          resolved_attrs[attr_name] = attr_value
+        end
+      end
+      
+      -- Only include if we have actual attributes
+      if next(resolved_attrs) then
+        resolved_highlights[group_name] = resolved_attrs
+      end
     end
   end
   
-  return organized_highlights
-end
-
--- Extract highlight data from current theme (legacy function for compatibility)
-local function extract_highlight_data(colors, config)
-  -- Generate base highlights using the same logic as setup
-  local highlights = highlight_generator.generate_base_highlights(colors, config)
-  
-  -- Organize highlights by category for better structure in output
-  local organized_highlights = {
-    editor = {},
-    syntax = {},
-    treesitter = {},
-    lsp = {},
-    plugins = {},
-    other = {},
-  }
-  
-  -- Categorize highlights
-  for group, attrs in pairs(highlights) do
-    if group:match("^@") then
-      organized_highlights.treesitter[group] = attrs
-    elseif group:match("^Diagnostic") or group:match("^Lsp") then
-      organized_highlights.lsp[group] = attrs
-    elseif group:match("^Comment$") or group:match("^String$") or group:match("^Function$") or 
-           group:match("^Keyword$") or group:match("^Type$") or group:match("^Constant$") or
-           group:match("^Special$") or group:match("^PreProc$") or group:match("^Identifier$") then
-      organized_highlights.syntax[group] = attrs
-    elseif group:match("^Normal$") or group:match("^Visual") or group:match("^Cursor") or
-           group:match("^StatusLine") or group:match("^LineNr") or group:match("^SignColumn") or
-           group:match("^Float") or group:match("^Pmenu") then
-      organized_highlights.editor[group] = attrs
-    elseif group:match("^Telescope") or group:match("^Cmp") or group:match("^GitSigns") or
-           group:match("^BufferLine") or group:match("^WhichKey") or group:match("^NvimTree") then
-      organized_highlights.plugins[group] = attrs
-    else
-      organized_highlights.other[group] = attrs
+  -- Check if user has custom syntax highlights and make TreeSitter highlights link to them
+  if xeno._global_config and xeno._global_config.highlights and xeno._global_config.highlights.syntax then
+    local user_syntax = xeno._global_config.highlights.syntax
+    
+    -- Map TreeSitter highlights to traditional vim syntax highlights 
+    local treesitter_to_vim_map = {
+      ['@string'] = 'String',
+      ['@string.regexp'] = 'String', 
+      ['@string.escape'] = 'String',
+      ['@string.special'] = 'String',
+      ['@function'] = 'Function',
+      ['@function.builtin'] = 'Function',
+      ['@function.macro'] = 'Function',
+      ['@method'] = 'Function',
+      ['@conditional'] = 'Conditional',
+      ['@repeat'] = 'Repeat',
+      ['@keyword'] = 'Keyword',
+      ['@keyword.function'] = 'Function',
+      ['@keyword.return'] = 'Return',
+      ['@keyword.conditional'] = 'Conditional',
+      ['@keyword.repeat'] = 'Repeat',
+      ['@keyword.operator'] = 'Operator',
+      ['@type'] = 'Type',
+      ['@type.builtin'] = 'Type',
+      ['@type.definition'] = 'Typedef',
+      ['@constant'] = 'Constant',
+      ['@constant.builtin'] = 'Constant',
+      ['@constant.macro'] = 'Define',
+      ['@number'] = 'Number',
+      ['@boolean'] = 'Boolean',
+      ['@float'] = 'Float',
+      ['@comment'] = 'Comment',
+      ['@include'] = 'Include',
+      ['@define'] = 'Define',
+      ['@macro'] = 'Macro',
+      ['@preproc'] = 'PreProc',
+      ['@tag'] = 'Tag',
+      ['@label'] = 'Label',
+      ['@exception'] = 'Exception',
+      ['@variable'] = 'Identifier',
+      ['@parameter'] = 'Identifier',
+      ['@field'] = 'Special',
+      ['@property'] = 'Special',
+      ['@constructor'] = 'Special',
+      ['@namespace'] = 'Identifier',
+      ['@punctuation'] = 'Delimiter',
+      ['@punctuation.delimiter'] = 'Delimiter',
+      ['@punctuation.bracket'] = 'Delimiter',
+      ['@operator'] = 'Operator',
+      ['@error'] = 'Error',
+      ['@debug'] = 'Debug',
+    }
+    
+    -- If user has defined a traditional vim syntax highlight, make TreeSitter equivalents link to it
+    for ts_group, vim_group in pairs(treesitter_to_vim_map) do
+      -- Only create link if:
+      -- 1. User has defined this vim syntax highlight
+      -- 2. The TreeSitter highlight exists in our resolved highlights
+      -- 3. The target vim highlight exists in our resolved highlights
+      if user_syntax[vim_group] and resolved_highlights[ts_group] and resolved_highlights[vim_group] then
+        -- Replace TreeSitter highlight with a link to user's vim highlight
+        resolved_highlights[ts_group] = { link = vim_group }
+      elseif resolved_highlights[ts_group] and not resolved_highlights[vim_group] then
+        -- If TreeSitter highlight exists but target vim group doesn't, remove the TreeSitter highlight
+        -- to avoid broken links in the exported colorscheme
+        resolved_highlights[ts_group] = nil
+      end
     end
   end
   
-  return organized_highlights
+  return resolved_highlights
 end
 
--- Generate metadata for the exported theme
-local function generate_metadata(config, base_color, accent_color)
+-- Fallback: Get current highlights from Neovim API if xeno highlights unavailable
+local function get_neovim_current_highlights()
+  local highlights = {}
+  
+  -- Get all highlight groups using Neovim's API
+  local all_highlights = vim.api.nvim_get_hl(0, {})
+  
+  for group_name, attrs in pairs(all_highlights) do
+    if attrs.fg or attrs.bg or attrs.sp or attrs.bold or attrs.italic or attrs.underline or attrs.strikethrough then
+      local hl_def = {}
+      
+      -- Convert numeric colors to hex format
+      if attrs.fg then
+        hl_def.fg = string.format("#%06x", attrs.fg)
+      end
+      if attrs.bg then
+        hl_def.bg = string.format("#%06x", attrs.bg)
+      end
+      if attrs.sp then
+        hl_def.sp = string.format("#%06x", attrs.sp)
+      end
+      
+      -- Handle style attributes
+      if attrs.bold then hl_def.bold = true end
+      if attrs.italic then hl_def.italic = true end
+      if attrs.underline then hl_def.underline = true end
+      if attrs.strikethrough then hl_def.strikethrough = true end
+      if attrs.reverse then hl_def.reverse = true end
+      if attrs.standout then hl_def.standout = true end
+      if attrs.undercurl then hl_def.undercurl = true end
+      if attrs.underdouble then hl_def.underdouble = true end
+      if attrs.underdotted then hl_def.underdotted = true end
+      if attrs.underdashed then hl_def.underdashed = true end
+      
+      highlights[group_name] = hl_def
+    end
+  end
+  
+  return highlights
+end
+
+-- Generate basic metadata for the exported theme
+local function generate_metadata()
   local timestamp = os.date("%Y-%m-%d %H:%M:%S")
-  local variant = utils.get_variant() == 1 and "dark" or "light"
+  local variant = vim.o.background or "dark"
   
   return {
     timestamp = timestamp,
     variant = variant,
-    base_color = base_color or "#000000",
-    accent_color = accent_color or "#7AA2F7",
-    xeno_version = "1.0.0", -- Could be extracted from plugin version
-    variation = config.variation or 0,
-    contrast = config.contrast or 0,
+    exported_by = "xeno.nvim export",
   }
 end
 
--- Main export function
+-- Main export function with simplified API
 function M.export_theme(config)
   config = utils.extend("force", DEFAULT_EXPORT_CONFIG, config or {})
-  
+
   -- Validate configuration
   local ok, err = validate_export_config(config)
   if not ok then
     return nil, err
   end
-  
+
   -- Check if xeno is currently loaded
   local xeno = package.loaded["xeno"]
-  if not xeno or not xeno._global_config then
+  if not xeno then
     return nil, "xeno.nvim theme is not currently loaded. Please run xeno.setup() first"
   end
-  
-  -- Use current global config for theme generation
-  local theme_config = utils.extend("force", defaults.config, xeno._global_config or {})
-  
-  local export_data, format_err, content
-  
-  if config.export_both_variants then
-    -- Generate both light and dark variants
-    local dark_color_data, dark_colors = generate_color_data_for_variant(theme_config, "dark")
-    local light_color_data, light_colors = generate_color_data_for_variant(theme_config, "light")
-    
-    local dark_highlights = generate_highlight_data_for_variant(dark_colors, theme_config, "dark")
-    local light_highlights = generate_highlight_data_for_variant(light_colors, theme_config, "light")
-    
-    -- Generate metadata based on dark variant (traditional default)
-    local base_color = dark_color_data.base_colors[900] or "#000000"
-    local accent_color = dark_color_data.accent_colors[500] or "#7AA2F7"
-    local metadata = generate_metadata(theme_config, base_color, accent_color)
-    
-    -- Prepare dual-variant export data
-    export_data = {
-      dark = {
-        colors = dark_color_data,
-        highlights = dark_highlights,
-      },
-      light = {
-        colors = light_color_data, 
-        highlights = light_highlights,
-      },
-      metadata = metadata,
-      config = {
-        include_plugins = config.include_plugins,
-        include_terminal = config.include_terminal,
-        include_metadata = config.include_metadata,
-        minify = config.minify,
-        export_both_variants = true,
-      }
-    }
-  else
-    -- Legacy mode: export only current variant
-    local custom_colors = xeno._global_config and xeno._global_config._custom_colors or {}
-    local color_data, color_err = extract_color_data(xeno.colors, custom_colors)
-    if not color_data then
-      return nil, color_err
-    end
-    
-    local highlight_data = extract_highlight_data(xeno.colors, theme_config)
-    
-    -- Generate metadata
-    local base_color = color_data.base_colors[900] or "#000000"
-    local accent_color = color_data.accent_colors[500] or "#7AA2F7"
-    local metadata = generate_metadata(theme_config, base_color, accent_color)
-    
-    -- Prepare single-variant export data (legacy format)
-    export_data = {
-      colors = color_data,
-      highlights = highlight_data,
-      metadata = metadata,
-      config = {
-        include_plugins = config.include_plugins,
-        include_terminal = config.include_terminal,
-        include_metadata = config.include_metadata,
-        minify = config.minify,
-        export_both_variants = false,
-      }
-    }
+
+  -- Get xeno's generated highlights (with fallback to Neovim API)
+  local current_highlights, err = get_xeno_generated_highlights()
+  if not current_highlights then
+    vim.notify(fmt("xeno.nvim export: %s. Using Neovim API fallback.", err), vim.log.levels.WARN)
+    current_highlights = get_neovim_current_highlights()
   end
   
+  -- Get only the colors that are actually used in the current highlights
+  local color_palette, palette_err = get_filtered_color_palette(current_highlights)
+  if not color_palette then
+    return nil, fmt("Error getting color palette: %s", palette_err)
+  end
+  
+  -- Generate metadata
+  local metadata = generate_metadata()
+
+  -- Prepare export data with complete color palette
+  local export_data = {
+    highlights = current_highlights,
+    colors = color_palette,
+    metadata = metadata,
+  }
+
   -- Generate the colorscheme file
   local formatter = config.format == "vim" and vim_formatter or lua_formatter
-  content, format_err = formatter.format_colorscheme(export_data)
+  local content, format_err = formatter.format_colorscheme(export_data)
   if not content then
     return nil, fmt("Error formatting colorscheme: %s", format_err)
   end
-  
-  -- Determine output filename
-  local filename = config.filename
-  if not filename then
-    filename = export_utils.generate_filename(config.format, export_data.metadata)
-  end
-  
-  -- Ensure filename has correct extension
-  local extension = config.format == "vim" and ".vim" or ".lua"
-  if not filename:match("%." .. config.format .. "$") and not filename:match("%.lua$") and not filename:match("%.vim$") then
-    filename = filename .. extension
-  end
-  
+
+  -- Generate filename based on theme name and timestamp
+  local theme_name = "xeno"
+  local timestamp = os.date("%Y%m%d_%H%M%S")
+  local filename = fmt("%s_%s_%s.%s", theme_name, vim.o.background, timestamp, config.format)
+
   -- Write to file
-  local output_dir = vim.fn.expand(config.output)
+  local output_dir = vim.fn.expand(config.dir)
   local full_path = export_utils.join_path(output_dir, filename)
-  
+
   local write_ok, write_err = export_utils.write_file(full_path, content)
   if not write_ok then
     return nil, write_err
   end
-  
+
   return {
     path = full_path,
     filename = filename,
     format = config.format,
     size = #content,
-    variants_exported = config.export_both_variants and {"dark", "light"} or {utils.get_variant() == 1 and "dark" or "light"},
+    highlights_exported = vim.tbl_count(current_highlights),
+    colors_exported = vim.tbl_count(color_palette),
   }
 end
 

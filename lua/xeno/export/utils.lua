@@ -14,16 +14,16 @@ function M.ensure_directory(path)
   if not path or path == "" then
     return false
   end
-  
+
   -- Expand ~ and environment variables
   local expanded_path = vim.fn.expand(path)
-  
+
   -- Check if directory exists
   local stat = vim.loop.fs_stat(expanded_path)
   if stat and stat.type == "directory" then
     return true
   end
-  
+
   -- Try to create directory
   local success = vim.fn.mkdir(expanded_path, "p")
   return success == 1
@@ -34,37 +34,37 @@ function M.write_file(file_path, content)
   if not file_path or not content then
     return false, "Invalid file path or content"
   end
-  
+
   -- Ensure parent directory exists
   local parent_dir = vim.fn.fnamemodify(file_path, ":h")
   if not M.ensure_directory(parent_dir) then
     return false, fmt("Cannot create parent directory: %s", parent_dir)
   end
-  
+
   -- Write file
   local file = io.open(file_path, "w")
   if not file then
     return false, fmt("Cannot open file for writing: %s", file_path)
   end
-  
+
   local success, err = file:write(content)
   file:close()
-  
+
   if not success then
     return false, fmt("Error writing file: %s", err or "unknown error")
   end
-  
+
   return true
 end
 
 -- Generate a filename based on theme properties
 function M.generate_filename(format, metadata)
   local timestamp = os.date("%Y%m%d_%H%M%S")
-  
+
   -- Extract color info for filename
   local base_suffix = metadata.base_color:gsub("#", ""):sub(1, 6)
   local accent_suffix = metadata.accent_color:gsub("#", ""):sub(1, 6)
-  
+
   -- Create descriptive filename
   local name_parts = {
     "xeno",
@@ -72,7 +72,7 @@ function M.generate_filename(format, metadata)
     base_suffix,
     accent_suffix,
   }
-  
+
   -- Add variation/contrast info if significant
   if metadata.variation and metadata.variation ~= 0 then
     table.insert(name_parts, fmt("var%.1f", metadata.variation))
@@ -80,10 +80,10 @@ function M.generate_filename(format, metadata)
   if metadata.contrast and metadata.contrast ~= 0 then
     table.insert(name_parts, fmt("con%.1f", metadata.contrast))
   end
-  
+
   local base_name = table.concat(name_parts, "_")
   local extension = format == "vim" and ".vim" or ".lua"
-  
+
   return base_name .. extension
 end
 
@@ -92,15 +92,15 @@ function M.sanitize_name(name)
   if not name or type(name) ~= "string" then
     return "invalid_name"
   end
-  
+
   -- Replace invalid characters with underscores
   local sanitized = name:gsub("[^%w_]", "_")
-  
+
   -- Ensure it starts with a letter or underscore
   if not sanitized:match("^[%a_]") then
     sanitized = "_" .. sanitized
   end
-  
+
   return sanitized
 end
 
@@ -109,12 +109,12 @@ function M.format_hex_color(color)
   if not color or type(color) ~= "string" then
     return "#000000"
   end
-  
+
   -- Add # prefix if missing
   if not color:match("^#") then
     color = "#" .. color
   end
-  
+
   -- Validate hex format and length
   if color:match("^#[0-9a-fA-F][0-9a-fA-F][0-9a-fA-F]$") then
     -- 3-digit hex, expand to 6-digit
@@ -133,14 +133,14 @@ end
 function M.sort_color_scale(colors, prefix)
   local sorted = {}
   local scale_levels = { 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950 }
-  
+
   for _, level in ipairs(scale_levels) do
     local key = fmt("%s_%d", prefix, level)
     if colors[key] then
       table.insert(sorted, { level = level, key = key, color = colors[key] })
     end
   end
-  
+
   return sorted
 end
 
@@ -150,16 +150,37 @@ function M.categorize_highlight(group_name)
     return "treesitter"
   elseif group_name:match("^Diagnostic") or group_name:match("^Lsp") then
     return "lsp"
-  elseif group_name:match("^Comment$") or group_name:match("^String$") or group_name:match("^Function$") or 
-         group_name:match("^Keyword$") or group_name:match("^Type$") or group_name:match("^Constant$") or
-         group_name:match("^Special$") or group_name:match("^PreProc$") or group_name:match("^Identifier$") then
+  elseif
+    group_name:match("^Comment$")
+    or group_name:match("^String$")
+    or group_name:match("^Function$")
+    or group_name:match("^Keyword$")
+    or group_name:match("^Type$")
+    or group_name:match("^Constant$")
+    or group_name:match("^Special$")
+    or group_name:match("^PreProc$")
+    or group_name:match("^Identifier$")
+  then
     return "syntax"
-  elseif group_name:match("^Normal$") or group_name:match("^Visual") or group_name:match("^Cursor") or
-         group_name:match("^StatusLine") or group_name:match("^LineNr") or group_name:match("^SignColumn") or
-         group_name:match("^Float") or group_name:match("^Pmenu") then
+  elseif
+    group_name:match("^Normal$")
+    or group_name:match("^Visual")
+    or group_name:match("^Cursor")
+    or group_name:match("^StatusLine")
+    or group_name:match("^LineNr")
+    or group_name:match("^SignColumn")
+    or group_name:match("^Float")
+    or group_name:match("^Pmenu")
+  then
     return "editor"
-  elseif group_name:match("^Telescope") or group_name:match("^Cmp") or group_name:match("^GitSigns") or
-         group_name:match("^BufferLine") or group_name:match("^WhichKey") or group_name:match("^NvimTree") then
+  elseif
+    group_name:match("^Telescope")
+    or group_name:match("^Cmp")
+    or group_name:match("^GitSigns")
+    or group_name:match("^BufferLine")
+    or group_name:match("^WhichKey")
+    or group_name:match("^NvimTree")
+  then
     return "plugins"
   else
     return "other"
@@ -171,14 +192,20 @@ function M.normalize_highlight_attrs(attrs)
   if type(attrs) ~= "table" then
     return {}
   end
-  
+
   local normalized = {}
-  
+
   -- Copy color attributes
-  if attrs.fg then normalized.fg = M.format_hex_color(attrs.fg) end
-  if attrs.bg then normalized.bg = M.format_hex_color(attrs.bg) end
-  if attrs.sp then normalized.sp = M.format_hex_color(attrs.sp) end
-  
+  if attrs.fg then
+    normalized.fg = M.format_hex_color(attrs.fg)
+  end
+  if attrs.bg then
+    normalized.bg = M.format_hex_color(attrs.bg)
+  end
+  if attrs.sp then
+    normalized.sp = M.format_hex_color(attrs.sp)
+  end
+
   -- Copy style attributes
   local style_attrs = { "bold", "italic", "underline", "undercurl", "strikethrough", "reverse", "standout" }
   for _, attr in ipairs(style_attrs) do
@@ -186,7 +213,7 @@ function M.normalize_highlight_attrs(attrs)
       normalized[attr] = attrs[attr]
     end
   end
-  
+
   -- Handle combined style attribute
   if attrs.style then
     if type(attrs.style) == "string" then
@@ -201,7 +228,7 @@ function M.normalize_highlight_attrs(attrs)
       end
     end
   end
-  
+
   return normalized
 end
 
@@ -214,16 +241,16 @@ function M.create_header_comment(metadata, comment_char)
     fmt("%s Generated: %s", comment_char, metadata.timestamp),
     fmt("%s Base: %s | Accent: %s", comment_char, metadata.base_color, metadata.accent_color),
   }
-  
+
   if metadata.variation and metadata.variation ~= 0 then
     table.insert(lines, fmt("%s Variation: %.1f", comment_char, metadata.variation))
   end
   if metadata.contrast and metadata.contrast ~= 0 then
     table.insert(lines, fmt("%s Contrast: %.1f", comment_char, metadata.contrast))
   end
-  
+
   table.insert(lines, fmt("%s ========================================", comment_char))
-  
+
   return table.concat(lines, "\n")
 end
 
@@ -232,7 +259,7 @@ function M.escape_string(str)
   if not str or type(str) ~= "string" then
     return '""'
   end
-  
+
   -- Escape quotes and backslashes
   return '"' .. str:gsub("\\", "\\\\"):gsub('"', '\\"') .. '"'
 end
@@ -242,7 +269,7 @@ function M.minify_lua(content)
   if not content then
     return ""
   end
-  
+
   -- Simple minification: remove extra whitespace and empty lines
   local lines = {}
   for line in content:gmatch("[^\n]+") do
@@ -251,26 +278,27 @@ function M.minify_lua(content)
       lines[#lines + 1] = trimmed
     end
   end
-  
+
   return table.concat(lines, "\n")
 end
 
--- Minify Vim script by removing unnecessary whitespace  
+-- Minify Vim script by removing unnecessary whitespace
 function M.minify_vim(content)
   if not content then
     return ""
   end
-  
+
   -- Simple minification: remove extra whitespace and empty lines
   local lines = {}
   for line in content:gmatch("[^\n]+") do
     local trimmed = line:match("^%s*(.-)%s*$")
-    if trimmed ~= "" and not trimmed:match("^\"") then -- Skip empty lines and comments
+    if trimmed ~= "" and not trimmed:match('^"') then -- Skip empty lines and comments
       lines[#lines + 1] = trimmed
     end
   end
-  
+
   return table.concat(lines, "\n")
 end
 
 return M
+

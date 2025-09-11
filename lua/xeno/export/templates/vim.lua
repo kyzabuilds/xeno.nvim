@@ -15,26 +15,8 @@ let g:colors_name = '{{THEME_NAME}}'
 " Color definitions
 {{COLOR_DEFINITIONS}}
 
-" Editor UI highlights
-{{EDITOR_HIGHLIGHTS}}
-
-" Syntax highlights
-{{SYNTAX_HIGHLIGHTS}}
-
-" TreeSitter highlights
-{{TREESITTER_HIGHLIGHTS}}
-
-" LSP highlights
-{{LSP_HIGHLIGHTS}}
-
-" Plugin highlights
-{{PLUGIN_HIGHLIGHTS}}
-
-" Additional highlights
-{{OTHER_HIGHLIGHTS}}
-
-" Terminal colors
-{{TERMINAL_COLORS}}]]
+" All highlights
+{{EDITOR_HIGHLIGHTS}}]]
 
 -- Placeholders that will be replaced during generation
 M.placeholders = {
@@ -42,12 +24,7 @@ M.placeholders = {
   "{{THEME_NAME}}",
   "{{COLOR_DEFINITIONS}}",
   "{{EDITOR_HIGHLIGHTS}}",
-  "{{SYNTAX_HIGHLIGHTS}}",
-  "{{TREESITTER_HIGHLIGHTS}}",
-  "{{LSP_HIGHLIGHTS}}",
-  "{{PLUGIN_HIGHLIGHTS}}",
-  "{{OTHER_HIGHLIGHTS}}",
-  "{{TERMINAL_COLORS}}",
 }
 
 return M
+

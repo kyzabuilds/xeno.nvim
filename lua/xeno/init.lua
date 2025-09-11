@@ -112,6 +112,9 @@ function xeno.setup(user_config)
     end
   end
 
+  -- Store highlights for export functionality
+  xeno._generated_highlights = highlights
+  
   -- Apply highlights and setup autocmds
   theme.apply_highlights(highlights, config)
   theme.setup_autocmds(user_config)

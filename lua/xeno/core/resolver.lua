@@ -9,11 +9,14 @@ function M.clear_cache()
   resolved_cache = {}
 end
 
---- Check if a value is a color reference (e.g., "@base.500")
+--- Check if a value is a color reference (e.g., "@base.500" or "@my_color")
 --- @param value any The value to check
 --- @return boolean True if it's a color reference
 function M.is_color_reference(value)
-  return type(value) == "string" and value:match("^@[%w_]+%.[%w_]+$") ~= nil
+  return type(value) == "string" and (
+    value:match("^@[%w_]+%.[%w_]+$") ~= nil or  -- @color.level
+    value:match("^@[%w_]+$") ~= nil             -- @color (fallback to 500)
+  )
 end
 
 --- Check if a value is a highlight reference (e.g., { from = "Normal" })
@@ -48,7 +51,7 @@ function M.resolve_highlight_reference(reference, attribute, highlights)
   end
 end
 
---- Extract color key from reference (e.g., "@base.500" -> "base_500")
+--- Extract color key from reference (e.g., "@base.500" -> "base_500", "@my_color" -> "my_color_500")
 --- @param reference string The color reference
 --- @return string|nil The color key or nil if invalid
 function M.extract_color_key(reference)
@@ -56,8 +59,17 @@ function M.extract_color_key(reference)
     return nil
   end
 
-  -- Remove @ and replace . with _
-  local key = reference:sub(2):gsub("%.", "_")
+  -- Remove @
+  local key = reference:sub(2)
+  
+  -- If it has a level (contains dot), replace . with _
+  if key:match("%.") then
+    key = key:gsub("%.", "_")
+  else
+    -- No level specified, fallback to 500
+    key = key .. "_500"
+  end
+  
   return key
 end
 
@@ -92,6 +104,41 @@ function M.resolve_value(value, colors, highlights)
     -- Handle { from = "GroupName" } references - this should not be resolved here
     -- as we need context about which attribute (bg/fg/etc.) is being set
     return value
+  elseif type(value) == "string" and value:match("^#[0-9a-fA-F]+$") == nil then
+    -- Handle direct semantic color names (e.g., 'green', 'red', 'blue')
+    -- But only if it's not already a hex color and looks like a semantic color
+    local semantic_colors = {"red", "green", "blue", "yellow", "orange", "purple", "cyan", "magenta", "white", "black", "gray", "grey"}
+    local is_semantic_name = false
+    for _, semantic in ipairs(semantic_colors) do
+      if value == semantic then
+        is_semantic_name = true
+        break
+      end
+    end
+    
+    if is_semantic_name then
+      -- Check cache first
+      if resolved_cache[value] then
+        return resolved_cache[value]
+      end
+      
+      local resolved_color = colors[value]
+      if resolved_color then
+        -- Cache the resolved color
+        resolved_cache[value] = resolved_color
+        return resolved_color
+      else
+        -- Semantic color not found in palette, log warning and use fallback
+        vim.notify(fmt("xeno.nvim: Semantic color '%s' not found in palette during resolution", value), vim.log.levels.WARN)
+        -- Don't return the original value as it would cause #000000 fallback later
+        -- Instead, try to find it in fallback colors
+        local fallback = require("xeno.core.fallback")
+        local fallback_colors = fallback.create_safe_color_table({})
+        local fallback_value = fallback_colors[value]
+        resolved_cache[value] = fallback_value
+        return fallback_value
+      end
+    end
   end
 
   return value
@@ -152,15 +199,12 @@ function M.validate_highlights(highlights)
       vim.notify(fmt("xeno.nvim: Highlight category '%s' must be a table", category), vim.log.levels.WARN)
       return false
     end
-    
+
     -- Validate plugin configurations
     if category == "plugins" then
       for plugin_name, plugin_config in pairs(groups) do
         if type(plugin_config) ~= "table" then
-          vim.notify(
-            fmt("xeno.nvim: Plugin config for '%s' must be a table", plugin_name),
-            vim.log.levels.WARN
-          )
+          vim.notify(fmt("xeno.nvim: Plugin config for '%s' must be a table", plugin_name), vim.log.levels.WARN)
           return false
         end
       end

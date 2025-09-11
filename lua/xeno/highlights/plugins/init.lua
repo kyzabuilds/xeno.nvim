@@ -2,7 +2,7 @@ local M = {}
 local utils = require("xeno.core.utils")
 local helpers = require("xeno.core.helpers")
 
-M["nvim-telescope/telescope.nvim"] = function(colors, global_config, plugin_config)
+M["nvim-telescope/telescope.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
     bg = colors.base_800,
@@ -26,19 +26,33 @@ M["nvim-telescope/telescope.nvim"] = function(colors, global_config, plugin_conf
   }
 end
 
-M["ibhagwan/fzf-lua"] = function(colors, global_config, plugin_config)
+M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    bg = colors.base_800,
+    fg = colors.base_200,
+    border = colors.base_200,
+    prompt_fg = colors.accent_200,
+    pointer_fg = colors.accent_200,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
     -- Main Interface Elements
-    FzfLuaNormal = { bg = colors.base_800, fg = colors.base_200 },
-    FzfLuaBorder = { bg = colors.base_800, fg = colors.base_200 },
-    FzfLuaTitle = { bg = colors.base_800, fg = colors.base_200 },
-    FzfLuaHeaderText = { bg = colors.base_800, fg = colors.base_200 },
+    FzfLuaNormal = { bg = config.bg, fg = config.fg },
+    FzfLuaBorder = { bg = config.bg, fg = config.border },
+    FzfLuaTitle = { bg = config.bg, fg = config.fg },
+    FzfLuaHeaderText = { bg = config.bg, fg = config.fg },
 
     -- Fzf-specific Elements
-    FzfLuaFzfGutter = { bg = colors.base_800, fg = colors.base_200 },
-    FzfLuaFzfSeparator = { bg = colors.base_800, fg = colors.base_200 },
-    FzfLuaFzfPrompt = { bg = colors.base_800, fg = colors.base_200 },
-    FzfLuaFzfPointer = { bg = colors.base_800, fg = colors.accent_200 },
+    FzfLuaFzfGutter = { bg = config.bg, fg = config.fg },
+    FzfLuaFzfSeparator = { bg = config.bg, fg = config.border },
+    FzfLuaFzfPrompt = { bg = config.bg, fg = config.prompt_fg },
+    FzfLuaFzfPointer = { bg = config.bg, fg = config.pointer_fg },
 
     -- Search and Buffer Elements
     FzfLuaSearch = { bg = colors.base_800, fg = colors.base_200 },
@@ -56,7 +70,7 @@ M["ibhagwan/fzf-lua"] = function(colors, global_config, plugin_config)
   }
 end
 
-M["hrsh7th/nvim-cmp"] = function(colors, global_config, plugin_config)
+M["hrsh7th/nvim-cmp"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
     match_fg = colors.accent_200,
@@ -80,7 +94,20 @@ M["hrsh7th/nvim-cmp"] = function(colors, global_config, plugin_config)
   }
 end
 
-M["Saghen/blink.cmp"] = function(colors, global_config, plugin_config)
+M["Saghen/blink.cmp"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    label_fg = colors.base_300,
+    match_fg = colors.base_300,
+    kind_fg = colors.base_500,
+    source_fg = colors.base_500,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
     -- Main completion menu
     BlinkCmpMenu = { link = "Pmenu" },
@@ -106,13 +133,13 @@ M["Saghen/blink.cmp"] = function(colors, global_config, plugin_config)
     BlinkCmpGhostText = { link = "NonText" },
 
     -- Item labels and details
-    BlinkCmpLabel = { fg = colors.base_300 },
-    BlinkCmpLabelMatch = { fg = colors.base_300, bold = true },
-    BlinkCmpLabelDeprecated = { fg = colors.base_300, strikethrough = true },
-    BlinkCmpLabelDetail = { fg = colors.base_500, italic = true },
-    BlinkCmpLabelDescription = { fg = colors.base_300, italic = true },
-    BlinkCmpSource = { fg = colors.base_500, italic = true },
-    BlinkCmpKind = { fg = colors.base_500 },
+    BlinkCmpLabel = { fg = config.label_fg },
+    BlinkCmpLabelMatch = { fg = config.match_fg, bold = true },
+    BlinkCmpLabelDeprecated = { fg = config.label_fg, strikethrough = true },
+    BlinkCmpLabelDetail = { fg = config.kind_fg, italic = true },
+    BlinkCmpLabelDescription = { fg = config.label_fg, italic = true },
+    BlinkCmpSource = { fg = config.source_fg, italic = true },
+    BlinkCmpKind = { fg = config.kind_fg },
 
     -- Kind-specific highlights
     BlinkCmpKindText = { fg = colors.accent_300 },
@@ -143,58 +170,121 @@ M["Saghen/blink.cmp"] = function(colors, global_config, plugin_config)
   }
 end
 
-M["SmiteshP/nvim-navic"] = function(colors, global_config, plugin_config)
+M["SmiteshP/nvim-navic"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    text_fg = colors.base_300,
+    separator_fg = colors.base_300,
+    icon_fg = colors.accent_500,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
-    NavicText = { fg = colors.base_300 },
-    NavicSeparator = { fg = colors.base_300 },
-    NavicIconsFile = { fg = colors.accent_500 },
-    NavicIconsModule = { fg = colors.accent_500 },
-    NavicIconsNamespace = { fg = colors.accent_500 },
-    NavicIconsPackage = { fg = colors.accent_500 },
-    NavicIconsClass = { fg = colors.accent_500 },
-    NavicIconsMethod = { fg = colors.accent_500 },
+    NavicText = { fg = config.text_fg },
+    NavicSeparator = { fg = config.separator_fg },
+    NavicIconsFile = { fg = config.icon_fg },
+    NavicIconsModule = { fg = config.icon_fg },
+    NavicIconsNamespace = { fg = config.icon_fg },
+    NavicIconsPackage = { fg = config.icon_fg },
+    NavicIconsClass = { fg = config.icon_fg },
+    NavicIconsMethod = { fg = config.icon_fg },
     NavicIconsProperty = { fg = colors.base_200 },
     NavicIconsField = { fg = colors.base_200 },
-    NavicIconsConstructor = { fg = colors.accent_500 },
-    NavicIconsFunction = { fg = colors.accent_500 },
+    NavicIconsConstructor = { fg = config.icon_fg },
+    NavicIconsFunction = { fg = config.icon_fg },
   }
 end
 
-M["folke/todo-comments.nvim"] = function(colors, global_config, plugin_config)
+M["folke/todo-comments.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    note_fg = colors.accent_500,
+    warn_fg = colors.yellow,
+    fix_fg = colors.red,
+    bg = colors.base_700,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
-    TodoBgNOTE = { fg = colors.base_700, bg = colors.accent_500, bold = true },
-    TodoSignNOTE = { fg = colors.accent_500, bg = colors.base_700 },
-    TodoFgNOTE = { fg = colors.accent_500 },
-    TodoBgWARN = { fg = colors.base_700, bg = colors.yellow, bold = true },
-    TodoSignWARN = { fg = colors.yellow, bg = colors.base_700 },
-    TodoFgWARN = { fg = colors.yellow },
-    TodoBgFIX = { fg = colors.base_700, bg = colors.red, bold = true },
-    TodoSignFIX = { fg = colors.red, bg = colors.base_700 },
-    TodoFgFIX = { fg = colors.red },
+    TodoBgNOTE = { fg = config.bg, bg = config.note_fg, bold = true },
+    TodoSignNOTE = { fg = config.note_fg, bg = config.bg },
+    TodoFgNOTE = { fg = config.note_fg },
+    TodoBgWARN = { fg = config.bg, bg = config.warn_fg, bold = true },
+    TodoSignWARN = { fg = config.warn_fg, bg = config.bg },
+    TodoFgWARN = { fg = config.warn_fg },
+    TodoBgFIX = { fg = config.bg, bg = config.fix_fg, bold = true },
+    TodoSignFIX = { fg = config.fix_fg, bg = config.bg },
+    TodoFgFIX = { fg = config.fix_fg },
   }
 end
 
-M["lukas-reineke/indent-blankline.nvim"] = function(colors, global_config, plugin_config)
+M["lukas-reineke/indent-blankline.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    scope_fg = utils.opaque(colors.base_500, 0.70, nil, colors),
+    indent_fg = utils.opaque(colors.base_500, 0.30, nil, colors),
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
-    IblScope = { fg = utils.opaque(colors.base_500, 0.70, nil, colors), nocombine = true },
-    IblIndent = { fg = utils.opaque(colors.base_500, 0.30, nil, colors), nocombine = true },
-    IblChar = { fg = utils.opaque(colors.base_500, 0.30, nil, colors), nocombine = true },
+    IblScope = { fg = config.scope_fg, nocombine = true },
+    IblIndent = { fg = config.indent_fg, nocombine = true },
+    IblChar = { fg = config.indent_fg, nocombine = true },
   }
 end
 
-M["nvimdev/indentmini.nvim"] = function(colors, global_config, plugin_config)
+M["nvimdev/indentmini.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    line_fg = utils.opaque(colors.base_500, 0.30, nil, colors),
+    current_fg = utils.opaque(colors.base_500, 0.70, nil, colors),
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
-    IndentLine = { fg = utils.opaque(colors.base_500, 0.30, nil, colors), nocombine = true },
-    IndentLineCurrent = { fg = utils.opaque(colors.base_500, 0.70, nil, colors), nocombine = true },
+    IndentLine = { fg = config.line_fg, nocombine = true },
+    IndentLineCurrent = { fg = config.current_fg, nocombine = true },
   }
 end
 
-M["nvim-neo-tree/neo-tree.nvim"] = function(colors, global_config, plugin_config)
-  local neotree = { bg = colors.base_800, fg = colors.base_200 }
+M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    bg = colors.base_800,
+    fg = colors.base_200,
+    root_fg = colors.accent_500,
+    directory_fg = colors.base_200,
+    git_add_fg = colors.green,
+    git_modified_fg = colors.yellow,
+    git_deleted_fg = colors.red,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
+  local neotree = { bg = config.bg, fg = config.fg }
 
   return {
     -- Root and Basic Elements
-    NeoTreeRootName = { fg = colors.accent_500, bold = true, italic = true, underline = true },
+    NeoTreeRootName = { fg = config.root_fg, bold = true, italic = true, underline = true },
     NeoTreeNormal = { bg = neotree.bg, fg = neotree.fg },
     NeoTreeNormalNC = { bg = neotree.bg, fg = neotree.fg },
     NeoTreeEndOfBuffer = { bg = neotree.bg },
@@ -215,24 +305,40 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors, global_config, plugin_config
     NeoTreeIndentMarker = { fg = utils.opaque(colors.base_500, 0.40, nil, colors), nocombine = true },
 
     -- File System Elements
-    NeoTreeDirectoryName = { fg = colors.base_200 },
+    NeoTreeDirectoryName = { fg = config.directory_fg },
     NeoTreeDirectoryIcon = { fg = colors.base_300 },
     NeoTreeDotFile = { fg = colors.base_500 },
     NeoTreeMessage = { fg = colors.base_300 },
 
     -- Git Status Colors
-    NeoTreeGitAdded = { fg = colors.green },
-    NeoTreeGitModified = { fg = colors.yellow },
-    NeoTreeGitDeleted = { fg = colors.red },
+    NeoTreeGitAdded = { fg = config.git_add_fg },
+    NeoTreeGitModified = { fg = config.git_modified_fg },
+    NeoTreeGitDeleted = { fg = config.git_deleted_fg },
   }
 end
 
-M["nvim-tree/nvim-tree.lua"] = function(colors, global_config, plugin_config)
-  local nvimtree = { bg = colors.base_800, fg = colors.base_200 }
+M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    bg = colors.base_800,
+    fg = colors.base_200,
+    root_fg = colors.accent_500,
+    folder_fg = colors.base_200,
+    git_add_fg = colors.green,
+    git_modified_fg = colors.yellow,
+    git_deleted_fg = colors.red,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
+  local nvimtree = { bg = config.bg, fg = config.fg }
 
   return {
     -- Root and Basic Elements
-    NvimTreeRootFolder = { fg = colors.accent_500, bold = true, italic = true, underline = true },
+    NvimTreeRootFolder = { fg = config.root_fg, bold = true, italic = true, underline = true },
     NvimTreeNormal = { bg = nvimtree.bg, fg = nvimtree.fg },
     NvimTreeNormalNC = { bg = nvimtree.bg, fg = nvimtree.fg },
     NvimTreeNormalFloat = { bg = nvimtree.bg, fg = nvimtree.fg },
@@ -254,9 +360,9 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, global_config, plugin_config)
     NvimTreeIndentMarker = { fg = utils.opaque(colors.base_500, 0.40, nil, colors), nocombine = true },
 
     -- Folder Elements
-    NvimTreeFolderName = { fg = colors.base_200 },
+    NvimTreeFolderName = { fg = config.folder_fg },
     NvimTreeEmptyFolderName = { fg = colors.base_300 },
-    NvimTreeOpenedFolderName = { fg = colors.base_200, bold = true },
+    NvimTreeOpenedFolderName = { fg = config.folder_fg, bold = true },
     NvimTreeSymlinkFolderName = { fg = colors.base_300, italic = true },
     NvimTreeFolderIcon = { fg = colors.base_300 },
     NvimTreeOpenedFolderIcon = { fg = colors.base_300 },
@@ -273,8 +379,8 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, global_config, plugin_config)
     NvimTreeSymlinkIcon = { fg = colors.blue },
 
     -- Git Status Colors
-    NvimTreeGitDirty = { fg = colors.yellow },
-    NvimTreeGitStaged = { fg = colors.green },
+    NvimTreeGitDirty = { fg = config.git_modified_fg },
+    NvimTreeGitStaged = { fg = config.git_add_fg },
     NvimTreeGitMerge = { fg = colors.orange },
     NvimTreeGitRenamed = { fg = colors.purple },
     NvimTreeGitNew = { fg = colors.green, bold = true },
@@ -388,7 +494,7 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, global_config, plugin_config)
   }
 end
 
-M["lewis6991/gitsigns.nvim"] = function(colors, global_config, plugin_config)
+M["lewis6991/gitsigns.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
     add_fg = utils.opaque(colors.green, 0.60, nil, colors),
@@ -487,7 +593,7 @@ M["lewis6991/gitsigns.nvim"] = function(colors, global_config, plugin_config)
   }
 end
 
-M["akinsho/bufferline.nvim"] = function(colors, global_config, plugin_config)
+M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
   local is_light = utils.get_variant() == 2
 
   local function palette()
@@ -503,7 +609,7 @@ M["akinsho/bufferline.nvim"] = function(colors, global_config, plugin_config)
       }
     else
       return {
-        fill_bg = colors.base_900,
+        fill_bg = colors.base_950,
         fill_fg = colors.base_300,
         visible_bg = colors.base_900,
         visible_fg = colors.base_300,
@@ -620,12 +726,23 @@ M["akinsho/bufferline.nvim"] = function(colors, global_config, plugin_config)
   return helpers.default(highlights)
 end
 
-M["folke/trouble.nvim"] = function(colors, global_config, plugin_config)
+M["folke/trouble.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    bg = colors.base_800,
+    fg = colors.base_200,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
-    TroubleNormal = { bg = colors.base_800, fg = colors.base_200 },
-    TroubleFile = { bg = colors.base_800, fg = colors.base_200 },
-    TroubleSignOther = { bg = colors.base_800, fg = colors.base_200 },
-    TroubleInformation = { bg = colors.base_800, fg = colors.base_200 },
+    TroubleNormal = { bg = config.bg, fg = config.fg },
+    TroubleFile = { bg = config.bg, fg = config.fg },
+    TroubleSignOther = { bg = config.bg, fg = config.fg },
+    TroubleInformation = { bg = config.bg, fg = config.fg },
   }
 end
 
@@ -767,13 +884,29 @@ M["NeogitOrg/neogit"] = function(colors, config)
   }
 end
 
-M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, global_config, plugin_config)
+M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    heading_fg = colors.base_200,
+    code_bg = colors.base_800,
+    inline_code_fg = colors.accent_500,
+    inline_code_bg = colors.base_950,
+    table_fg = colors.base_200,
+    quote_fg = colors.base_400,
+    link_fg = colors.base_300,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
     -- Headers
-    RenderMarkdownH1 = { fg = colors.base_200, bold = true },
-    RenderMarkdownH2 = { fg = colors.base_200, bold = true },
+    RenderMarkdownH1 = { fg = config.heading_fg, bold = true },
+    RenderMarkdownH2 = { fg = config.heading_fg, bold = true },
     RenderMarkdownH3 = { fg = colors.base_300, bold = true },
-    RenderMarkdownH4 = { fg = colors.base_200, bold = true },
+    RenderMarkdownH4 = { fg = config.heading_fg, bold = true },
     RenderMarkdownH5 = { fg = colors.base_100, bold = true },
     RenderMarkdownH6 = { fg = colors.base_500, bold = true },
 
@@ -786,14 +919,14 @@ M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, global_config,
     RenderMarkdownH6Bg = { clear = true },
 
     -- Code Elements
-    RenderMarkdownCode = { bg = colors.base_800 },
-    RenderMarkdownCodeInline = { fg = colors.accent_500, bg = colors.base_950 },
+    RenderMarkdownCode = { bg = config.code_bg },
+    RenderMarkdownCodeInline = { fg = config.inline_code_fg, bg = config.inline_code_bg },
     RenderMarkdownCodeInfo = { link = "@label" },
     RenderMarkdownCodeBorder = { bg = colors.base_700 },
     RenderMarkdownCodeFallback = { fg = colors.base_500, bg = colors.base_900 },
 
     -- Table Elements
-    RenderMarkdownTableHead = { fg = colors.base_200, bold = true },
+    RenderMarkdownTableHead = { fg = config.table_fg, bold = true },
     RenderMarkdownTableRow = { fg = colors.base_300, bg = colors.base_900 },
     RenderMarkdownTableFill = { fg = colors.base_600 },
 
@@ -805,7 +938,7 @@ M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, global_config,
     RenderMarkdownError = { fg = colors.red },
 
     -- Quote Elements
-    RenderMarkdownQuote = { fg = colors.base_400, italic = true },
+    RenderMarkdownQuote = { fg = config.quote_fg, italic = true },
     RenderMarkdownQuote1 = { link = "RenderMarkdownQuote" },
     RenderMarkdownQuote2 = { link = "RenderMarkdownQuote" },
     RenderMarkdownQuote3 = { link = "RenderMarkdownQuote" },
@@ -814,8 +947,8 @@ M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, global_config,
     RenderMarkdownQuote6 = { link = "RenderMarkdownQuote" },
 
     -- Link Elements
-    RenderMarkdownLink = { fg = colors.base_300, underline = true },
-    RenderMarkdownWikiLink = { fg = colors.base_300, underline = true, bold = true },
+    RenderMarkdownLink = { fg = config.link_fg, underline = true },
+    RenderMarkdownWikiLink = { fg = config.link_fg, underline = true, bold = true },
 
     -- Task List Elements
     RenderMarkdownChecked = { fg = colors.accent_500 },
@@ -837,7 +970,7 @@ M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, global_config,
   }
 end
 
-M["sindrets/diffview.nvim"] = function(colors, global_config, plugin_config)
+M["sindrets/diffview.nvim"] = function(colors, plugin_config)
   return {
     -- Primary UI elements
     DiffviewPrimary = { fg = colors.base_200 },
@@ -897,19 +1030,33 @@ M["sindrets/diffview.nvim"] = function(colors, global_config, plugin_config)
   }
 end
 
-M["Bekaboo/dropbar.nvim"] = function(colors, global_config, plugin_config)
+M["Bekaboo/dropbar.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    fg = colors.base_200,
+    bg = colors.base_800,
+    hover_bg = utils.opaque(colors.base_500, 0.30, nil, colors),
+    separator_fg = colors.base_500,
+    icon_fg = colors.accent_500,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
     -- Core UI elements
-    DropBarCurrentContext = { bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    DropBarHover = { bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    DropBarPreview = { bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    DropBarLinkTarget = { fg = colors.base_200 },
+    DropBarCurrentContext = { bg = config.hover_bg },
+    DropBarHover = { bg = config.hover_bg },
+    DropBarPreview = { bg = config.hover_bg },
+    DropBarLinkTarget = { fg = config.fg },
 
     -- Menu elements
-    DropBarMenuCurrentContext = { bg = colors.base_700, fg = colors.base_200 },
-    DropBarMenuNormalFloat = { bg = colors.base_800, fg = colors.base_200 },
-    DropBarMenuFloatBorder = { bg = colors.base_800, fg = colors.base_700 },
-    DropBarMenuHoverEntry = { bg = colors.base_700, fg = colors.base_200 },
+    DropBarMenuCurrentContext = { bg = colors.base_700, fg = config.fg },
+    DropBarMenuNormalFloat = { bg = config.bg, fg = config.fg },
+    DropBarMenuFloatBorder = { bg = config.bg, fg = colors.base_700 },
+    DropBarMenuHoverEntry = { bg = colors.base_700, fg = config.fg },
     DropBarMenuHoverSymbol = { bold = true },
     DropBarMenuHoverIcon = { reverse = true },
 
@@ -928,10 +1075,10 @@ M["Bekaboo/dropbar.nvim"] = function(colors, global_config, plugin_config)
     DropBarIconKindVariable = { fg = colors.base_200 },
 
     -- UI separators
-    DropBarIconUIIndicator = { fg = colors.accent_500 },
-    DropBarIconUISeparator = { fg = colors.base_500 },
-    DropBarIconUIPickPivot = { fg = colors.accent_500 },
-    DropBarFzfMatch = { fg = colors.accent_500 },
+    DropBarIconUIIndicator = { fg = config.icon_fg },
+    DropBarIconUISeparator = { fg = config.separator_fg },
+    DropBarIconUIPickPivot = { fg = config.icon_fg },
+    DropBarFzfMatch = { fg = config.icon_fg },
   }
 end
 
@@ -969,7 +1116,7 @@ M["DNLHC/glance.nvim"] = function(colors, config)
   }
 end
 
-M["MagicDuck/grug-far.nvim"] = function(colors, global_config, plugin_config)
+M["MagicDuck/grug-far.nvim"] = function(colors, plugin_config)
   return {
     -- Main window and background
     GrugFarNormal = { fg = colors.base_200 },
@@ -1052,7 +1199,7 @@ M["MagicDuck/grug-far.nvim"] = function(colors, global_config, plugin_config)
   }
 end
 
-M["OXY2DEV/markview.nvim"] = function(colors, global_config, plugin_config)
+M["OXY2DEV/markview.nvim"] = function(colors, plugin_config)
   return {
     -- Palette colors (0-6 use base colors, 7 uses green accent)
     MarkviewPalette0 = { fg = colors.base_500, bg = colors.base_800 },
@@ -1177,14 +1324,27 @@ M["OXY2DEV/markview.nvim"] = function(colors, global_config, plugin_config)
   }
 end
 
-M["folke/which-key.nvim"] = function(colors, global_config, plugin_config)
+M["folke/which-key.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    key_fg = colors.accent_500,
+    group_fg = colors.base_400,
+    bg = colors.base_800,
+    border_fg = colors.base_800,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
-    WhichKey = { fg = colors.accent_500 },
+    WhichKey = { fg = config.key_fg },
     WhichKeyIcon = { fg = colors.base_500 },
-    WhichKeyBorder = { bg = colors.base_800, fg = colors.base_800 },
-    WhichKeyGroup = { fg = colors.base_400 },
+    WhichKeyBorder = { bg = config.bg, fg = config.border_fg },
+    WhichKeyGroup = { fg = config.group_fg },
     WhichKeySeparator = { link = "Comment" },
-    WhichKeyTitle = { bg = colors.base_800 },
+    WhichKeyTitle = { bg = config.bg },
     WhichKeyIconRed = { link = "DiagnosticError" },
     WhichKeyIconPurple = { link = "Constant" },
     WhichKeyIconOrange = { link = "DiagnosticWarn" },
@@ -1194,38 +1354,55 @@ M["folke/which-key.nvim"] = function(colors, global_config, plugin_config)
     WhichKeyIconBlue = { link = "DiagnosticInfo" },
     WhichKeyIconAzure = { link = "Function" },
     WhichKeyDesc = { link = "Identifier" },
-    WhichKeyNormal = { bg = colors.base_800 },
+    WhichKeyNormal = { bg = config.bg },
     WhichKeyIconYellow = { link = "DiagnosticWarn" },
     WhichKeyValue = { link = "Comment" },
   }
 end
 
-M["petertriho/nvim-scrollbar"] = function(colors, global_config, plugin_config)
+M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    handle_bg = utils.opaque(colors.base_500, 0.30, nil, colors),
+    git_add_fg = colors.green,
+    git_change_fg = colors.yellow,
+    git_delete_fg = colors.red,
+    error_fg = colors.red,
+    warn_fg = colors.yellow,
+    info_fg = colors.blue,
+    hint_fg = colors.green,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
     -- Base scrollbar elements
-    ScrollbarHandle = { bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarHandle = { bg = config.handle_bg },
 
     -- Miscellaneous scrollbar indicators
     ScrollbarMisc = { fg = colors.base_500 },
     ScrollbarMiscHandle = { fg = colors.base_500, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
 
     -- Git indicators
-    ScrollbarGitAdd = { fg = colors.green },
-    ScrollbarGitAddHandle = { fg = colors.green, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    ScrollbarGitChange = { fg = colors.yellow },
-    ScrollbarGitChangeHandle = { fg = colors.yellow, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    ScrollbarGitDelete = { fg = colors.red },
-    ScrollbarGitDeleteHandle = { fg = colors.red, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarGitAdd = { fg = config.git_add_fg },
+    ScrollbarGitAddHandle = { fg = config.git_add_fg, bg = config.handle_bg },
+    ScrollbarGitChange = { fg = config.git_change_fg },
+    ScrollbarGitChangeHandle = { fg = config.git_change_fg, bg = config.handle_bg },
+    ScrollbarGitDelete = { fg = config.git_delete_fg },
+    ScrollbarGitDeleteHandle = { fg = config.git_delete_fg, bg = config.handle_bg },
 
     -- Diagnostic indicators
-    ScrollbarError = { fg = colors.red },
-    ScrollbarErrorHandle = { fg = colors.red, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    ScrollbarWarn = { fg = colors.yellow },
-    ScrollbarWarnHandle = { fg = colors.yellow, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    ScrollbarInfo = { fg = colors.blue },
-    ScrollbarInfoHandle = { fg = colors.blue, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    ScrollbarHint = { fg = colors.green },
-    ScrollbarHintHandle = { fg = colors.green, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarError = { fg = config.error_fg },
+    ScrollbarErrorHandle = { fg = config.error_fg, bg = config.handle_bg },
+    ScrollbarWarn = { fg = config.warn_fg },
+    ScrollbarWarnHandle = { fg = config.warn_fg, bg = config.handle_bg },
+    ScrollbarInfo = { fg = config.info_fg },
+    ScrollbarInfoHandle = { fg = config.info_fg, bg = config.handle_bg },
+    ScrollbarHint = { fg = config.hint_fg },
+    ScrollbarHintHandle = { fg = config.hint_fg, bg = config.handle_bg },
 
     -- Search indicators
     ScrollbarSearch = { fg = colors.base_100 },
