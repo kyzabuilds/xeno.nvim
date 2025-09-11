@@ -11,33 +11,35 @@ local function organize_color_palette(colors)
     base = {},
     accent = {},
     custom = {},
-    semantic = {}
+    semantic = {},
   }
-  
+
   -- Standard scale levels for proper ordering
-  local scale_levels = {50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950}
-  
+  local scale_levels = { 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950 }
+
   for color_name, color_value in pairs(colors) do
     local name, level = color_name:match("^([^_]+)_(%d+)$")
     if name and level then
       level = tonumber(level)
-      if name == "base" then
+      if level and name == "base" then
         organized.base[level] = color_value
-      elseif name == "accent" then
+      elseif level and name == "accent" then
         organized.accent[level] = color_value
-      else
+      elseif level then
         -- Custom colors (red_stone, martina_olive, etc.)
         if not organized.custom[name] then
           organized.custom[name] = {}
         end
-        organized.custom[name][level] = color_value
+        if organized.custom[name] then
+          organized.custom[name][level] = color_value
+        end
       end
     else
       -- Semantic colors (red, green, blue, etc.)
       organized.semantic[color_name] = color_value
     end
   end
-  
+
   return organized, scale_levels
 end
 
@@ -45,13 +47,13 @@ end
 local function format_color_definitions(colors)
   local lines = {}
   local organized, scale_levels = organize_color_palette(colors)
-  
+
   -- Helper function to add color scale section
   local function add_color_scale(title, colors_table, prefix)
     if next(colors_table) then
       table.insert(lines, "")
       table.insert(lines, fmt("  -- %s", title))
-      
+
       for _, level in ipairs(scale_levels) do
         if colors_table[level] then
           local color_name = fmt("%s_%d", prefix, level)
@@ -60,29 +62,29 @@ local function format_color_definitions(colors)
       end
     end
   end
-  
+
   -- Add base colors
   add_color_scale("Base colors", organized.base, "base")
-  
-  -- Add accent colors  
+
+  -- Add accent colors
   add_color_scale("Accent colors", organized.accent, "accent")
-  
+
   -- Add semantic colors first (these have priority)
   if next(organized.semantic) then
     table.insert(lines, "")
     table.insert(lines, "  -- Semantic colors")
-    
+
     local semantic_names = {}
     for name in pairs(organized.semantic) do
       table.insert(semantic_names, name)
     end
     table.sort(semantic_names)
-    
+
     for _, name in ipairs(semantic_names) do
       table.insert(lines, fmt('  %s = "%s",', name, utils.format_hex_color(organized.semantic[name])))
     end
   end
-  
+
   -- Add custom colors (sorted by name)
   if next(organized.custom) then
     local custom_names = {}
@@ -90,12 +92,12 @@ local function format_color_definitions(colors)
       table.insert(custom_names, name)
     end
     table.sort(custom_names)
-    
+
     for _, name in ipairs(custom_names) do
       local color_scale = organized.custom[name]
       table.insert(lines, "")
       table.insert(lines, fmt("  -- %s colors", name))
-      
+
       for _, level in ipairs(scale_levels) do
         if color_scale[level] then
           local color_name = fmt("%s_%d", name, level)
@@ -104,20 +106,20 @@ local function format_color_definitions(colors)
       end
     end
   end
-  
+
   return table.concat(lines, "\n")
 end
 
 -- Create a reverse lookup table from color values to names for highlights
 local function create_color_lookup(colors)
   local lookup = {}
-  
+
   for color_name, color_value in pairs(colors) do
     if type(color_value) == "string" and color_value:match("^#[0-9a-fA-F]+$") then
       lookup[color_value:upper()] = color_name
     end
   end
-  
+
   return lookup
 end
 
@@ -143,7 +145,7 @@ local function format_highlight_group(group_name, attrs, color_lookup)
   if normalized.fg then
     local var_name = color_lookup[normalized.fg:upper()]
     if var_name then
-      table.insert(parts, fmt('fg = colors.%s', var_name))
+      table.insert(parts, fmt("fg = colors.%s", var_name))
     else
       table.insert(parts, fmt('fg = "%s"', normalized.fg))
     end
@@ -151,7 +153,7 @@ local function format_highlight_group(group_name, attrs, color_lookup)
   if normalized.bg then
     local var_name = color_lookup[normalized.bg:upper()]
     if var_name then
-      table.insert(parts, fmt('bg = colors.%s', var_name))
+      table.insert(parts, fmt("bg = colors.%s", var_name))
     else
       table.insert(parts, fmt('bg = "%s"', normalized.bg))
     end
@@ -159,7 +161,7 @@ local function format_highlight_group(group_name, attrs, color_lookup)
   if normalized.sp then
     local var_name = color_lookup[normalized.sp:upper()]
     if var_name then
-      table.insert(parts, fmt('sp = colors.%s', var_name))
+      table.insert(parts, fmt("sp = colors.%s", var_name))
     else
       table.insert(parts, fmt('sp = "%s"', normalized.sp))
     end
@@ -192,7 +194,7 @@ local function format_all_highlights(highlights, colors)
   -- Separate linked highlights from regular highlights
   local regular_groups = {}
   local linked_groups = {}
-  
+
   for group, attrs in pairs(highlights) do
     if attrs.link then
       table.insert(linked_groups, { group = group, attrs = attrs })
@@ -216,7 +218,7 @@ local function format_all_highlights(highlights, colors)
       table.insert(lines, formatted)
     end
   end
-  
+
   -- Add a comment separator if we have both types
   if #regular_groups > 0 and #linked_groups > 0 then
     table.insert(lines, "")
@@ -233,7 +235,6 @@ local function format_all_highlights(highlights, colors)
 
   return table.concat(lines, "\n")
 end
-
 
 -- Main formatting function
 function M.format_colorscheme(export_data)
@@ -263,4 +264,3 @@ function M.format_colorscheme(export_data)
 end
 
 return M
-

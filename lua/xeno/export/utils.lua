@@ -301,4 +301,3 @@ function M.minify_vim(content)
 end
 
 return M
-

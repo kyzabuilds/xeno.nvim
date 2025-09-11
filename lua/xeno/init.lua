@@ -170,4 +170,7 @@ end
 -- Expose namespace utilities
 xeno.namespace_utils = namespace
 
+-- Expose utils.opaque for user themes
+xeno.opaque = utils.opaque
+
 return xeno

@@ -6,7 +6,7 @@ function M.generate_editor_highlights(colors, config)
   return {
     Normal = { bg = colors.base_900, fg = colors.base_300 },
     NormalNC = { fg = colors.base_200, bg = colors.base_900 },
-    Visual = { bg = utils.opaque(colors.base_500, 0.20, nil, colors) },
+    Visual = { bg = utils.opaque(colors.base_500, 0.20) },
 
     NormalFloat = { fg = colors.base_200, bg = colors.base_800 },
     FloatBorder = { fg = colors.base_700, bg = colors.base_800 },
@@ -15,12 +15,12 @@ function M.generate_editor_highlights(colors, config)
     ColorColumn = { bg = colors.base_800 },
 
     Cursor = { bg = colors.accent_500, fg = "#000000" },
-    CursorColumn = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
-    CursorLine = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
-    CursorLineNr = { bg = utils.opaque(colors.base_500, 0.05, nil, colors), fg = colors.base_200, bold = false },
-    CursorLineFold = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
-    CursorLineSign = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
-    CursorLineSignColumn = { bg = utils.opaque(colors.base_500, 0.05, nil, colors) },
+    CursorColumn = { bg = utils.opaque(colors.base_500, 0.05) },
+    CursorLine = { bg = utils.opaque(colors.base_500, 0.05) },
+    CursorLineNr = { bg = utils.opaque(colors.base_500, 0.05), fg = colors.base_200, bold = false },
+    CursorLineFold = { bg = utils.opaque(colors.base_500, 0.05) },
+    CursorLineSign = { bg = utils.opaque(colors.base_500, 0.05) },
+    CursorLineSignColumn = { bg = utils.opaque(colors.base_500, 0.05) },
 
     LineNr = { fg = colors.base_600 },
     Directory = { fg = colors.base_200 },
@@ -29,9 +29,9 @@ function M.generate_editor_highlights(colors, config)
     WarningMsg = { fg = colors.yellow },
     MoreMsg = { fg = colors.green },
 
-    Search = { bg = utils.opaque(colors.base_500, 0.15, nil, colors) },
+    Search = { bg = utils.opaque(colors.base_500, 0.15) },
     IncSearch = { link = "Cursor" },
-    CurSearch = { bg = utils.opaque(colors.base_500, 0.40, nil, colors) },
+    CurSearch = { bg = utils.opaque(colors.base_500, 0.40) },
 
     MatchParen = { fg = colors.accent_100, bold = true },
     NonText = { fg = colors.base_300 },
@@ -114,7 +114,7 @@ function M.generate_editor_highlights(colors, config)
     PurpleSign = { fg = colors.accent_100 },
     GreenSign = { fg = colors.green },
 
-    CurrentWord = { bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    CurrentWord = { bg = utils.opaque(colors.base_500, 0.30) },
     InlayHints = { fg = colors.base_500 },
 
     LspInfoBorder = { fg = colors.base_400, bg = colors.base_800 },
@@ -137,9 +137,9 @@ function M.generate_editor_highlights(colors, config)
 
     DiagnosticUnnecessary = { fg = colors.base_600 },
 
-    DiffAdd = { bg = utils.opaque(colors.green, 0.25, nil, colors), fg = colors.green },
-    DiffChange = { bg = utils.opaque(colors.yellow, 0.25, nil, colors), fg = colors.yellow },
-    DiffDelete = { bg = utils.opaque(colors.red, 0.25, nil, colors), fg = colors.red },
+    DiffAdd = { bg = utils.opaque(colors.green, 0.25), fg = colors.green },
+    DiffChange = { bg = utils.opaque(colors.yellow, 0.25), fg = colors.yellow },
+    DiffDelete = { bg = utils.opaque(colors.red, 0.25), fg = colors.red },
     DiffText = { bg = colors.base_800 },
 
     GitSignsAdd = { fg = colors.green },
