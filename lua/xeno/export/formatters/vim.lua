@@ -304,13 +304,51 @@ local function format_all_highlights(highlights, color_to_name)
   return table.concat(lines, "\n")
 end
 
+-- Format highlights using the dynamic colors variable for variant-aware exports
+local function format_dynamic_highlights_vim(highlights, organized_colors)
+  if not highlights or not next(highlights) then
+    return ""
+  end
+
+  local lines = {}
+  
+  -- Create a combined color lookup from all color categories
+  local color_lookup = {}
+  
+  -- Add all colors from organized structure
+  for name, color in pairs(organized_colors.base_colors or {}) do
+    color_lookup[color] = name
+  end
+  for name, color in pairs(organized_colors.accent_colors or {}) do
+    color_lookup[color] = name
+  end  
+  for name, color in pairs(organized_colors.semantic_colors or {}) do
+    color_lookup[color] = name
+  end
+
+  -- Sort highlight groups for consistent output
+  local sorted_groups = {}
+  for group, attrs in pairs(highlights) do
+    table.insert(sorted_groups, { group = group, attrs = attrs })
+  end
+  table.sort(sorted_groups, function(a, b)
+    return a.group < b.group
+  end)
+
+  for _, item in ipairs(sorted_groups) do
+    local formatted = format_highlight_group(item.group, item.attrs, color_lookup)
+    if formatted ~= "" then
+      table.insert(lines, "  " .. formatted)
+    end
+  end
+
+  return table.concat(lines, "\n")
+end
+
 -- Main formatting function
 function M.format_colorscheme(export_data)
   local template = vim_template.template
   local replacements = {}
-
-  -- Create xeno-style color names using numbered scale system
-  local color_to_name = create_xeno_color_names(export_data.colors, export_data.highlights)
 
   -- Header comment
   replacements["{{HEADER_COMMENT}}"] = utils.create_header_comment(export_data.metadata, '"')
@@ -319,11 +357,21 @@ function M.format_colorscheme(export_data)
   local theme_name = utils.sanitize_name("xeno_exported_theme")
   replacements["{{THEME_NAME}}"] = theme_name
 
-  -- Color definitions with meaningful names
-  replacements["{{COLOR_DEFINITIONS}}"] = format_color_definitions(export_data.colors, color_to_name)
-
-  -- All highlights in one section with color variable references
-  replacements["{{EDITOR_HIGHLIGHTS}}"] = format_all_highlights(export_data.highlights, color_to_name)
+  -- Check if we have variant-aware data structure
+  if export_data.colors.variant_colors then
+    -- Generate separate color definitions for each variant
+    replacements["{{LIGHT_COLOR_DEFINITIONS_VIM}}"] = utils.generate_variant_color_definitions(export_data.colors, "light", "vim")
+    replacements["{{DARK_COLOR_DEFINITIONS_VIM}}"] = utils.generate_variant_color_definitions(export_data.colors, "dark", "vim")
+    
+    -- Generate dynamic highlights that use the s:colors variable
+    replacements["{{EDITOR_HIGHLIGHTS_VIM}}"] = format_dynamic_highlights_vim(export_data.highlights, export_data.colors)
+  else
+    -- Fallback to original format for backward compatibility
+    local color_to_name = create_xeno_color_names(export_data.raw_colors or export_data.colors, export_data.highlights)
+    replacements["{{LIGHT_COLOR_DEFINITIONS_VIM}}"] = format_color_definitions(export_data.raw_colors or export_data.colors, color_to_name)
+    replacements["{{DARK_COLOR_DEFINITIONS_VIM}}"] = format_color_definitions(export_data.raw_colors or export_data.colors, color_to_name)
+    replacements["{{EDITOR_HIGHLIGHTS_VIM}}"] = format_all_highlights(export_data.highlights, color_to_name)
+  end
 
   -- Apply replacements
   local result = template

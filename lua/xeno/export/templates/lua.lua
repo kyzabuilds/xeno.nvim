@@ -1,7 +1,7 @@
 -- Lua colorscheme template for xeno.nvim exports
 local M = {}
 
--- Template for generating standalone Lua colorschemes
+-- Template for generating standalone Lua colorschemes with variant support
 M.template = [[{{HEADER_COMMENT}}
 
 -- Clear existing highlights
@@ -12,10 +12,22 @@ end
 
 vim.g.colors_name = '{{THEME_NAME}}'
 
--- Color palette
-local colors = {
-{{COLOR_DEFINITIONS}}
-}
+-- Detect current background and set appropriate colors
+local function get_variant_colors()
+  local variant = vim.o.background or "dark"
+  
+  if variant == "light" then
+    return {
+{{LIGHT_COLOR_DEFINITIONS}}
+    }
+  else
+    return {
+{{DARK_COLOR_DEFINITIONS}}
+    }
+  end
+end
+
+local colors = get_variant_colors()
 
 -- Helper function to apply highlights
 local function hi(group, opts)
@@ -80,14 +92,30 @@ local function hi(group, opts)
   end
 end
 
--- All highlights
-{{EDITOR_HIGHLIGHTS}}]]
+-- Apply highlights function
+local function apply_highlights()
+{{EDITOR_HIGHLIGHTS}}
+end
+
+-- Auto-reload colors when background changes
+vim.api.nvim_create_autocmd("OptionSet", {
+  pattern = "background",
+  callback = function()
+    colors = get_variant_colors()
+    -- Re-apply highlights with new colors
+    apply_highlights()
+  end,
+})
+
+-- Initial application
+apply_highlights()]]
 
 -- Placeholders that will be replaced during generation
 M.placeholders = {
   "{{HEADER_COMMENT}}",
   "{{THEME_NAME}}",
-  "{{COLOR_DEFINITIONS}}",
+  "{{LIGHT_COLOR_DEFINITIONS}}",
+  "{{DARK_COLOR_DEFINITIONS}}",
   "{{EDITOR_HIGHLIGHTS}}",
 }
 

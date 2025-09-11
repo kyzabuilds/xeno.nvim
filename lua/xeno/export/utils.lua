@@ -300,4 +300,87 @@ function M.minify_vim(content)
   return table.concat(lines, "\n")
 end
 
+-- Generate variant-specific color definitions for the given variant
+function M.generate_variant_color_definitions(organized_colors, variant, format_type)
+  local lines = {}
+  format_type = format_type or "lua"
+
+  -- Helper function based on format type
+  local function format_color_line(name, color, is_last)
+    if format_type == "vim" then
+      local separator = is_last and "" or ","
+      return string.format("      \\ '%s': '%s'%s", name, M.format_hex_color(color), separator)
+    else -- lua
+      local separator = is_last and "" or ","
+      return string.format('      %s = "%s"%s', name, M.format_hex_color(color), separator)
+    end
+  end
+
+  -- Collect all colors from the appropriate variant
+  local all_colors = {}
+  local variant_colors = organized_colors.variant_colors and organized_colors.variant_colors[variant]
+
+  if variant_colors then
+    -- Use variant-specific colors
+    for name, color in pairs(variant_colors) do
+      local category = "semantic"
+      if name:match("^base_%d+$") then
+        category = "base"
+      elseif name:match("^accent_%d+$") then
+        category = "accent"
+      elseif name:match("^syntax_base_%d+$") then
+        category = "syntax_base"
+      elseif name:match("^syntax_accent_%d+$") then
+        category = "syntax_accent"
+      elseif name:match("^[^_]+_%d+$") then
+        category = "custom"
+      end
+      table.insert(all_colors, { name = name, color = color, category = category })
+    end
+  else
+    -- Fallback to organized colors
+    for name, color in pairs(organized_colors.base_colors or {}) do
+      table.insert(all_colors, { name = name, color = color, category = "base" })
+    end
+
+    for name, color in pairs(organized_colors.accent_colors or {}) do
+      table.insert(all_colors, { name = name, color = color, category = "accent" })
+    end
+
+    for name, color in pairs(organized_colors.syntax_base_colors or {}) do
+      table.insert(all_colors, { name = name, color = color, category = "syntax_base" })
+    end
+
+    for name, color in pairs(organized_colors.syntax_accent_colors or {}) do
+      table.insert(all_colors, { name = name, color = color, category = "syntax_accent" })
+    end
+
+    for name, color in pairs(organized_colors.custom_colors or {}) do
+      table.insert(all_colors, { name = name, color = color, category = "custom" })
+    end
+
+    for name, color in pairs(organized_colors.semantic_colors or {}) do
+      table.insert(all_colors, { name = name, color = color, category = "semantic" })
+    end
+  end
+
+  -- Sort colors for consistent output
+  table.sort(all_colors, function(a, b)
+    if a.category == b.category then
+      return a.name < b.name
+    end
+    -- Order: base, accent, syntax_base, syntax_accent, custom, semantic
+    local category_order = { base = 1, accent = 2, syntax_base = 3, syntax_accent = 4, custom = 5, semantic = 6 }
+    return category_order[a.category] < category_order[b.category]
+  end)
+
+  -- Generate the formatted lines
+  for i, item in ipairs(all_colors) do
+    local is_last = i == #all_colors
+    table.insert(lines, format_color_line(item.name, item.color, is_last))
+  end
+
+  return table.concat(lines, "\n")
+end
+
 return M

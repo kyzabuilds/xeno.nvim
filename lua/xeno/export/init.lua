@@ -337,6 +337,142 @@ local function get_neovim_current_highlights()
   return highlights
 end
 
+-- Generate variant-specific color palette using xeno's palette system
+local function generate_variant_palette(base_color, accent_color, variant, user_config)
+  local palette = require("xeno.core.palette")
+
+  -- Create a complete config matching the user's actual configuration
+  local temp_config = {
+    base = base_color,
+    accent = accent_color,
+    variation = user_config.variation or 0,
+    contrast = user_config.contrast or 0,
+    -- Include any custom colors from the current config
+    _custom_colors = user_config._custom_colors,
+  }
+
+  -- Copy any semantic color overrides from user config
+  local semantic_colors = { "red", "green", "yellow", "orange", "blue", "purple", "cyan" }
+  for _, color_name in ipairs(semantic_colors) do
+    if user_config[color_name] then
+      temp_config[color_name] = user_config[color_name]
+    end
+  end
+
+  -- Temporarily override the variant to generate the right palette
+  local original_variant = vim.o.background
+  vim.o.background = variant
+
+  -- Generate the palette for this variant using xeno's actual mechanism
+  local ok, variant_palette = pcall(palette.generate_palette, temp_config)
+
+  -- Restore original variant immediately
+  vim.o.background = original_variant
+
+  if not ok then
+    vim.notify("xeno.nvim export: Error generating " .. variant .. " palette: " .. tostring(variant_palette), vim.log.levels.WARN)
+    return {}
+  end
+
+  return variant_palette or {}
+end
+
+-- Organize colors by their usage in both light and dark variants
+local function organize_colors_by_variant(color_palette, highlights)
+  -- Get the current xeno configuration - this is crucial for consistency
+  local xeno = package.loaded["xeno"]
+  local user_config = {}
+
+  if xeno and xeno._global_config then
+    user_config = vim.deepcopy(xeno._global_config)
+  else
+    -- Fallback defaults that match xeno's defaults
+    user_config = {
+      base = "#030303",
+      accent = "#7AA2F7",
+      variation = 0,
+      contrast = 0,
+    }
+  end
+
+  local organized = {
+    base_colors = {},
+    accent_colors = {},
+    syntax_base_colors = {},
+    syntax_accent_colors = {},
+    semantic_colors = {},
+    custom_colors = {},
+  }
+
+  -- Separate current colors by type for reference
+  for color_name, color_value in pairs(color_palette) do
+    if color_name:match("^base_%d+$") then
+      organized.base_colors[color_name] = color_value
+    elseif color_name:match("^accent_%d+$") then
+      organized.accent_colors[color_name] = color_value
+    elseif color_name:match("^syntax_base_%d+$") then
+      organized.syntax_base_colors[color_name] = color_value
+    elseif color_name:match("^syntax_accent_%d+$") then
+      organized.syntax_accent_colors[color_name] = color_value
+    elseif color_name:match("^[^_]+_%d+$") then
+      -- Custom color scales (like "custom_red_500")
+      organized.custom_colors[color_name] = color_value
+    elseif not color_name:match("_%d+$") then
+      organized.semantic_colors[color_name] = color_value
+    end
+  end
+
+  -- Generate proper variant-specific palettes using xeno's actual mechanism
+  local dark_palette = generate_variant_palette(user_config.base, user_config.accent, "dark", user_config)
+  local light_palette = generate_variant_palette(user_config.base, user_config.accent, "light", user_config)
+
+  -- Store variant-specific colors
+  organized.variant_colors = {
+    dark = dark_palette,
+    light = light_palette,
+  }
+
+  -- If generation failed, use current colors for both variants as fallback
+  if not next(dark_palette) or not next(light_palette) then
+    vim.notify("xeno.nvim export: Variant palette generation failed, using current colors for both variants", vim.log.levels.WARN)
+    organized.variant_colors.dark = color_palette
+    organized.variant_colors.light = color_palette
+  end
+
+  return organized
+end
+
+-- Validate that variant colors were generated successfully
+local function validate_variant_colors(organized_colors)
+  -- Check if we have essential colors (including syntax variants)
+  local required_colors = {
+    "base_100",
+    "base_300",
+    "base_500",
+    "base_800",
+    "base_900",
+    "accent_300",
+    "accent_500",
+    "syntax_base_300",
+    "syntax_base_500",
+    "syntax_base_700",
+    "syntax_accent_300",
+    "syntax_accent_500",
+    "syntax_accent_700",
+  }
+
+  for _, variant in ipairs({ "dark", "light" }) do
+    local colors = organized_colors.variant_colors[variant]
+    for _, required in ipairs(required_colors) do
+      if not colors[required] then
+        return false, string.format("Missing required color %s in %s variant", required, variant)
+      end
+    end
+  end
+
+  return true
+end
+
 -- Generate basic metadata for the exported theme
 local function generate_metadata()
   local timestamp = os.date("%Y-%m-%d %H:%M:%S")
@@ -346,6 +482,7 @@ local function generate_metadata()
     timestamp = timestamp,
     variant = variant,
     exported_by = "xeno.nvim export",
+    supports_variants = true, -- New flag for dynamic exports
   }
 end
 
@@ -381,10 +518,20 @@ function M.export_theme(config)
   -- Generate metadata
   local metadata = generate_metadata()
 
-  -- Prepare export data with complete color palette
+  -- Organize colors by variant usage
+  local organized_colors = organize_colors_by_variant(color_palette, current_highlights)
+
+  -- Validate that variant color generation succeeded
+  local valid, validation_error = validate_variant_colors(organized_colors)
+  if not valid then
+    return nil, fmt("Error validating variant colors: %s", validation_error)
+  end
+
+  -- Prepare export data with variant-aware color structure
   local export_data = {
     highlights = current_highlights,
-    colors = color_palette,
+    colors = organized_colors,
+    raw_colors = color_palette, -- Keep original palette for backward compatibility
     metadata = metadata,
   }
 
@@ -416,6 +563,7 @@ function M.export_theme(config)
     size = #content,
     highlights_exported = vim.tbl_count(current_highlights),
     colors_exported = vim.tbl_count(color_palette),
+    supports_variants = metadata.supports_variants,
   }
 end
 

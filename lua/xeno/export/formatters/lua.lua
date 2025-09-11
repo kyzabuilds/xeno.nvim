@@ -10,6 +10,8 @@ local function organize_color_palette(colors)
   local organized = {
     base = {},
     accent = {},
+    syntax_base = {},
+    syntax_accent = {},
     custom = {},
     semantic = {},
   }
@@ -18,13 +20,17 @@ local function organize_color_palette(colors)
   local scale_levels = { 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950 }
 
   for color_name, color_value in pairs(colors) do
-    local name, level = color_name:match("^([^_]+)_(%d+)$")
+    local name, level = color_name:match("^([^_]+_?[^_]*)_(%d+)$")
     if name and level then
       level = tonumber(level)
       if level and name == "base" then
         organized.base[level] = color_value
       elseif level and name == "accent" then
         organized.accent[level] = color_value
+      elseif level and name == "syntax_base" then
+        organized.syntax_base[level] = color_value
+      elseif level and name == "syntax_accent" then
+        organized.syntax_accent[level] = color_value
       elseif level then
         -- Custom colors (red_stone, martina_olive, etc.)
         if not organized.custom[name] then
@@ -68,6 +74,12 @@ local function format_color_definitions(colors)
 
   -- Add accent colors
   add_color_scale("Accent colors", organized.accent, "accent")
+
+  -- Add syntax base colors (with variation)
+  add_color_scale("Syntax base colors", organized.syntax_base, "syntax_base")
+
+  -- Add syntax accent colors (with variation)
+  add_color_scale("Syntax accent colors", organized.syntax_accent, "syntax_accent")
 
   -- Add semantic colors first (these have priority)
   if next(organized.semantic) then
@@ -236,6 +248,82 @@ local function format_all_highlights(highlights, colors)
   return table.concat(lines, "\n")
 end
 
+-- Format highlights using the dynamic colors variable for variant-aware exports
+local function format_dynamic_highlights(highlights, organized_colors)
+  if not highlights or not next(highlights) then
+    return ""
+  end
+
+  local lines = {}
+
+  -- Create a combined color lookup from all color categories
+  local color_lookup = {}
+
+  -- Add all colors from organized structure
+  for name, color in pairs(organized_colors.base_colors or {}) do
+    color_lookup[color:upper()] = name
+  end
+  for name, color in pairs(organized_colors.accent_colors or {}) do
+    color_lookup[color:upper()] = name
+  end
+  for name, color in pairs(organized_colors.syntax_base_colors or {}) do
+    color_lookup[color:upper()] = name
+  end
+  for name, color in pairs(organized_colors.syntax_accent_colors or {}) do
+    color_lookup[color:upper()] = name
+  end
+  for name, color in pairs(organized_colors.custom_colors or {}) do
+    color_lookup[color:upper()] = name
+  end
+  for name, color in pairs(organized_colors.semantic_colors or {}) do
+    color_lookup[color:upper()] = name
+  end
+
+  -- Separate linked highlights from regular highlights
+  local regular_groups = {}
+  local linked_groups = {}
+
+  for group, attrs in pairs(highlights) do
+    if attrs.link then
+      table.insert(linked_groups, { group = group, attrs = attrs })
+    else
+      table.insert(regular_groups, { group = group, attrs = attrs })
+    end
+  end
+
+  -- Sort both groups for consistent output
+  table.sort(regular_groups, function(a, b)
+    return a.group < b.group
+  end)
+  table.sort(linked_groups, function(a, b)
+    return a.group < b.group
+  end)
+
+  -- Process regular highlights first
+  for _, item in ipairs(regular_groups) do
+    local formatted = format_highlight_group(item.group, item.attrs, color_lookup)
+    if formatted ~= "" then
+      table.insert(lines, "  " .. formatted)
+    end
+  end
+
+  -- Add a comment separator if we have both types
+  if #regular_groups > 0 and #linked_groups > 0 then
+    table.insert(lines, "")
+    table.insert(lines, "  -- Linked highlights")
+  end
+
+  -- Process linked highlights after regular highlights
+  for _, item in ipairs(linked_groups) do
+    local formatted = format_highlight_group(item.group, item.attrs, color_lookup)
+    if formatted ~= "" then
+      table.insert(lines, "  " .. formatted)
+    end
+  end
+
+  return table.concat(lines, "\n")
+end
+
 -- Main formatting function
 function M.format_colorscheme(export_data)
   local template = lua_template.template
@@ -248,11 +336,20 @@ function M.format_colorscheme(export_data)
   local theme_name = utils.sanitize_name("xeno_exported_theme")
   replacements["{{THEME_NAME}}"] = theme_name
 
-  -- Color definitions with structured format
-  replacements["{{COLOR_DEFINITIONS}}"] = format_color_definitions(export_data.colors)
+  -- Check if we have variant-aware data structure
+  if export_data.colors.variant_colors then
+    -- Generate separate color definitions for each variant
+    replacements["{{LIGHT_COLOR_DEFINITIONS}}"] = utils.generate_variant_color_definitions(export_data.colors, "light", "lua")
+    replacements["{{DARK_COLOR_DEFINITIONS}}"] = utils.generate_variant_color_definitions(export_data.colors, "dark", "lua")
 
-  -- All highlights in one section with color variable references
-  replacements["{{EDITOR_HIGHLIGHTS}}"] = format_all_highlights(export_data.highlights, export_data.colors)
+    -- Generate dynamic highlights that use the colors variable
+    replacements["{{EDITOR_HIGHLIGHTS}}"] = format_dynamic_highlights(export_data.highlights, export_data.colors)
+  else
+    -- Fallback to original format for backward compatibility
+    replacements["{{LIGHT_COLOR_DEFINITIONS}}"] = format_color_definitions(export_data.raw_colors or export_data.colors)
+    replacements["{{DARK_COLOR_DEFINITIONS}}"] = format_color_definitions(export_data.raw_colors or export_data.colors)
+    replacements["{{EDITOR_HIGHLIGHTS}}"] = format_all_highlights(export_data.highlights, export_data.raw_colors or export_data.colors)
+  end
 
   -- Apply replacements
   local result = template

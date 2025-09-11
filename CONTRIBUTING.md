@@ -4,18 +4,20 @@ We welcome contributions to xeno.nvim! Here are some features we'd particularly 
 
 ## Planned Features
 
-### Live Theme Updates
-Real-time theme preview as you modify colors - allowing users to see changes instantly without reloading their colorscheme.
+### On-going Language & Syntax Support
+If you notice any inconsistencies with syntax highlighting for your language or have ideas for improvements to the syntax highlighting system, pull requests are very welcome! We're always looking to enhance language support and fix highlighting issues.
 
-### Theme Management Interface
-Interactive UI for creating and managing themes - a user-friendly interface that simplifies the theme creation process.
+### Highlight Preview Buffer
+Command to display all generated highlights in a buffer - users can run `Xeno theme` to see all current highlight groups and their colors in an organized preview buffer.
+
+### Interactive Theme Management Interface
+UI for creating and managing themes - a user-friendly interface that simplifies the theme creation process.
 
 ### Enhanced Theme Editor
 Visual interface for customizing highlight groups - making it easier to fine-tune specific syntax highlighting elements.
 
-## Language & Syntax Support
-
-If you notice any inconsistencies with syntax highlighting for your language or have ideas for improvements to the syntax highlighting system, pull requests are very welcome! We're always looking to enhance language support and fix highlighting issues.
+### Live Theme Updates
+Real-time theme preview as you modify colors - allowing users to see changes instantly without reloading their colorscheme.
 
 ## How to Contribute
 

@@ -21,8 +21,8 @@ M["nvim-telescope/telescope.nvim"] = function(colors, plugin_config)
     TelescopeTitle = { bg = config.bg, fg = config.fg },
     TelescopePromptPrefix = { fg = colors.accent_500 },
     TelescopePromptCounter = { fg = colors.base_500 },
-    TelescopeSelection = { bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    TelescopeSelectionCaret = { bg = utils.opaque(colors.base_500, 0.30, nil, colors), fg = colors.accent_500 },
+    TelescopeSelection = { bg = utils.opaque(colors.base_500, 0.30) },
+    TelescopeSelectionCaret = { bg = utils.opaque(colors.base_500, 0.30), fg = colors.accent_500 },
   }
 end
 
@@ -229,8 +229,8 @@ end
 M["lukas-reineke/indent-blankline.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    scope_fg = utils.opaque(colors.base_500, 0.70, nil, colors),
-    indent_fg = utils.opaque(colors.base_500, 0.30, nil, colors),
+    scope_fg = utils.opaque(colors.base_500, 0.70),
+    indent_fg = utils.opaque(colors.base_500, 0.30),
   }
 
   -- Merge with user overrides if provided
@@ -248,8 +248,8 @@ end
 M["nvimdev/indentmini.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    line_fg = utils.opaque(colors.base_500, 0.30, nil, colors),
-    current_fg = utils.opaque(colors.base_500, 0.70, nil, colors),
+    line_fg = utils.opaque(colors.base_500, 0.30),
+    current_fg = utils.opaque(colors.base_500, 0.70),
   }
 
   -- Merge with user overrides if provided
@@ -301,8 +301,8 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
     NeoTreeTabSeparatorInactive = { fg = colors.base_700, bg = colors.base_800 },
 
     -- Selection and Navigation
-    NeoTreeCursorLine = { bg = utils.opaque(colors.base_500, 0.15, nil, colors) },
-    NeoTreeIndentMarker = { fg = utils.opaque(colors.base_500, 0.40, nil, colors), nocombine = true },
+    NeoTreeCursorLine = { bg = utils.opaque(colors.base_500, 0.15) },
+    NeoTreeIndentMarker = { fg = utils.opaque(colors.base_500, 0.40), nocombine = true },
 
     -- File System Elements
     NeoTreeDirectoryName = { fg = config.directory_fg },
@@ -355,9 +355,9 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
     NvimTreeCursorLineNr = { bg = nvimtree.bg, fg = colors.base_300 },
 
     -- Selection and Navigation
-    NvimTreeCursorLine = { bg = utils.opaque(colors.base_500, 0.15, nil, colors) },
-    NvimTreeCursorColumn = { bg = utils.opaque(colors.base_500, 0.15, nil, colors) },
-    NvimTreeIndentMarker = { fg = utils.opaque(colors.base_500, 0.40, nil, colors), nocombine = true },
+    NvimTreeCursorLine = { bg = utils.opaque(colors.base_500, 0.15) },
+    NvimTreeCursorColumn = { bg = utils.opaque(colors.base_500, 0.15) },
+    NvimTreeIndentMarker = { fg = utils.opaque(colors.base_500, 0.40), nocombine = true },
 
     -- Folder Elements
     NvimTreeFolderName = { fg = config.folder_fg },
@@ -497,9 +497,9 @@ end
 M["lewis6991/gitsigns.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    add_fg = utils.opaque(colors.green, 0.60, nil, colors),
-    change_fg = utils.opaque(colors.yellow, 0.60, nil, colors),
-    delete_fg = utils.opaque(colors.red, 0.60, nil, colors),
+    add_fg = utils.opaque(colors.green, 0.60),
+    change_fg = utils.opaque(colors.yellow, 0.60),
+    delete_fg = utils.opaque(colors.red, 0.60),
   }
 
   -- Merge with user overrides if provided
@@ -512,64 +512,64 @@ M["lewis6991/gitsigns.nvim"] = function(colors, plugin_config)
     GitSignsAdd = { fg = config.add_fg },
     GitSignsChange = { fg = config.change_fg },
     GitSignsDelete = { fg = config.delete_fg },
-    GitSignsUntracked = { fg = utils.opaque(colors.green, 0.60, nil, colors) },
+    GitSignsUntracked = { fg = utils.opaque(colors.green, 0.60) },
 
     -- Number line highlights
-    GitSignsAddNr = { fg = utils.opaque(colors.green, 0.60, nil, colors) },
-    GitSignsChangeNr = { fg = utils.opaque(colors.yellow, 0.60, nil, colors) },
-    GitSignsDeleteNr = { fg = utils.opaque(colors.red, 0.60, nil, colors) },
-    GitSignsChangedeleteNr = { fg = utils.opaque(colors.yellow, 0.60, nil, colors) },
-    GitSignsTopdeleteNr = { fg = utils.opaque(colors.red, 0.60, nil, colors) },
-    GitSignsUntrackedNr = { fg = utils.opaque(colors.green, 0.60, nil, colors) },
+    GitSignsAddNr = { fg = utils.opaque(colors.green, 0.60) },
+    GitSignsChangeNr = { fg = utils.opaque(colors.yellow, 0.60) },
+    GitSignsDeleteNr = { fg = utils.opaque(colors.red, 0.60) },
+    GitSignsChangedeleteNr = { fg = utils.opaque(colors.yellow, 0.60) },
+    GitSignsTopdeleteNr = { fg = utils.opaque(colors.red, 0.60) },
+    GitSignsUntrackedNr = { fg = utils.opaque(colors.green, 0.60) },
 
     -- Line highlights
-    GitSignsAddLn = { bg = utils.opaque(colors.green, 0.15, nil, colors) },
-    GitSignsChangeLn = { bg = utils.opaque(colors.yellow, 0.15, nil, colors) },
-    GitSignsDeleteLn = { bg = utils.opaque(colors.red, 0.15, nil, colors) },
-    GitSignsChangedeleteLn = { bg = utils.opaque(colors.yellow, 0.15, nil, colors) },
-    GitSignsTopdeleteLn = { bg = utils.opaque(colors.red, 0.15, nil, colors) },
-    GitSignsUntrackedLn = { bg = utils.opaque(colors.green, 0.15, nil, colors) },
+    GitSignsAddLn = { bg = utils.opaque(colors.green, 0.15) },
+    GitSignsChangeLn = { bg = utils.opaque(colors.yellow, 0.15) },
+    GitSignsDeleteLn = { bg = utils.opaque(colors.red, 0.15) },
+    GitSignsChangedeleteLn = { bg = utils.opaque(colors.yellow, 0.15) },
+    GitSignsTopdeleteLn = { bg = utils.opaque(colors.red, 0.15) },
+    GitSignsUntrackedLn = { bg = utils.opaque(colors.green, 0.15) },
 
     -- Current line highlights
-    GitSignsAddCul = { fg = utils.opaque(colors.green, 0.60, nil, colors) },
-    GitSignsChangeCul = { fg = utils.opaque(colors.yellow, 0.60, nil, colors) },
-    GitSignsDeleteCul = { fg = utils.opaque(colors.red, 0.60, nil, colors) },
-    GitSignsChangedeleteCul = { fg = utils.opaque(colors.yellow, 0.60, nil, colors) },
-    GitSignsTopdeleteCul = { fg = utils.opaque(colors.red, 0.60, nil, colors) },
-    GitSignsUntrackedCul = { fg = utils.opaque(colors.green, 0.60, nil, colors) },
+    GitSignsAddCul = { fg = utils.opaque(colors.green, 0.60) },
+    GitSignsChangeCul = { fg = utils.opaque(colors.yellow, 0.60) },
+    GitSignsDeleteCul = { fg = utils.opaque(colors.red, 0.60) },
+    GitSignsChangedeleteCul = { fg = utils.opaque(colors.yellow, 0.60) },
+    GitSignsTopdeleteCul = { fg = utils.opaque(colors.red, 0.60) },
+    GitSignsUntrackedCul = { fg = utils.opaque(colors.green, 0.60) },
 
     -- Staged highlights
-    GitSignsStagedAdd = { fg = utils.opaque(colors.green, 0.40, nil, colors) },
-    GitSignsStagedChange = { fg = utils.opaque(colors.yellow, 0.40, nil, colors) },
-    GitSignsStagedDelete = { fg = utils.opaque(colors.red, 0.40, nil, colors) },
-    GitSignsStagedChangedelete = { fg = utils.opaque(colors.yellow, 0.40, nil, colors) },
-    GitSignsStagedTopdelete = { fg = utils.opaque(colors.red, 0.40, nil, colors) },
-    GitSignsStagedUntracked = { fg = utils.opaque(colors.green, 0.40, nil, colors) },
+    GitSignsStagedAdd = { fg = utils.opaque(colors.green, 0.40) },
+    GitSignsStagedChange = { fg = utils.opaque(colors.yellow, 0.40) },
+    GitSignsStagedDelete = { fg = utils.opaque(colors.red, 0.40) },
+    GitSignsStagedChangedelete = { fg = utils.opaque(colors.yellow, 0.40) },
+    GitSignsStagedTopdelete = { fg = utils.opaque(colors.red, 0.40) },
+    GitSignsStagedUntracked = { fg = utils.opaque(colors.green, 0.40) },
 
     -- Staged number line highlights
-    GitSignsStagedAddNr = { fg = utils.opaque(colors.green, 0.40, nil, colors) },
-    GitSignsStagedChangeNr = { fg = utils.opaque(colors.yellow, 0.40, nil, colors) },
-    GitSignsStagedDeleteNr = { fg = utils.opaque(colors.red, 0.40, nil, colors) },
-    GitSignsStagedChangedeleteNr = { fg = utils.opaque(colors.yellow, 0.40, nil, colors) },
-    GitSignsStagedTopdeleteNr = { fg = utils.opaque(colors.red, 0.40, nil, colors) },
-    GitSignsStagedUntrackedNr = { fg = utils.opaque(colors.green, 0.40, nil, colors) },
+    GitSignsStagedAddNr = { fg = utils.opaque(colors.green, 0.40) },
+    GitSignsStagedChangeNr = { fg = utils.opaque(colors.yellow, 0.40) },
+    GitSignsStagedDeleteNr = { fg = utils.opaque(colors.red, 0.40) },
+    GitSignsStagedChangedeleteNr = { fg = utils.opaque(colors.yellow, 0.40) },
+    GitSignsStagedTopdeleteNr = { fg = utils.opaque(colors.red, 0.40) },
+    GitSignsStagedUntrackedNr = { fg = utils.opaque(colors.green, 0.40) },
 
     -- Staged line highlights
-    GitSignsStagedAddLn = { fg = utils.opaque(colors.green, 0.50, nil, colors), bg = utils.opaque(colors.green, 0.10, nil, colors) },
-    GitSignsStagedChangeLn = { fg = utils.opaque(colors.yellow, 0.50, nil, colors), bg = utils.opaque(colors.yellow, 0.10, nil, colors) },
+    GitSignsStagedAddLn = { fg = utils.opaque(colors.green, 0.50), bg = utils.opaque(colors.green, 0.10) },
+    GitSignsStagedChangeLn = { fg = utils.opaque(colors.yellow, 0.50), bg = utils.opaque(colors.yellow, 0.10) },
     GitSignsStagedChangedeleteLn = {
-      fg = utils.opaque(colors.yellow, 0.50, nil, colors),
-      bg = utils.opaque(colors.yellow, 0.10, nil, colors),
+      fg = utils.opaque(colors.yellow, 0.50),
+      bg = utils.opaque(colors.yellow, 0.10),
     },
-    GitSignsStagedUntrackedLn = { fg = utils.opaque(colors.green, 0.50, nil, colors), bg = utils.opaque(colors.green, 0.10, nil, colors) },
+    GitSignsStagedUntrackedLn = { fg = utils.opaque(colors.green, 0.50), bg = utils.opaque(colors.green, 0.10) },
 
     -- Staged current line highlights
-    GitSignsStagedAddCul = { fg = utils.opaque(colors.green, 0.40, nil, colors) },
-    GitSignsStagedChangeCul = { fg = utils.opaque(colors.yellow, 0.40, nil, colors) },
-    GitSignsStagedDeleteCul = { fg = utils.opaque(colors.red, 0.40, nil, colors) },
-    GitSignsStagedChangedeleteCul = { fg = utils.opaque(colors.yellow, 0.40, nil, colors) },
-    GitSignsStagedTopdeleteCul = { fg = utils.opaque(colors.red, 0.40, nil, colors) },
-    GitSignsStagedUntrackedCul = { fg = utils.opaque(colors.green, 0.40, nil, colors) },
+    GitSignsStagedAddCul = { fg = utils.opaque(colors.green, 0.40) },
+    GitSignsStagedChangeCul = { fg = utils.opaque(colors.yellow, 0.40) },
+    GitSignsStagedDeleteCul = { fg = utils.opaque(colors.red, 0.40) },
+    GitSignsStagedChangedeleteCul = { fg = utils.opaque(colors.yellow, 0.40) },
+    GitSignsStagedTopdeleteCul = { fg = utils.opaque(colors.red, 0.40) },
+    GitSignsStagedUntrackedCul = { fg = utils.opaque(colors.green, 0.40) },
 
     -- Preview highlights
     GitSignsAddPreview = { link = "DiffAdd" },
@@ -589,7 +589,7 @@ M["lewis6991/gitsigns.nvim"] = function(colors, plugin_config)
     GitSignsVirtLnum = { link = "GitSignsDeleteVirtLn" },
 
     -- Blame and other features
-    GitSignsCurrentLineBlame = { fg = utils.opaque(colors.base_300, 0.60, nil, colors), italic = true },
+    GitSignsCurrentLineBlame = { fg = utils.opaque(colors.base_300, 0.60), italic = true },
   }
 end
 
@@ -783,28 +783,28 @@ M["NeogitOrg/neogit"] = function(colors, config)
     NeogitRecentcommits = { fg = neogit.subtle_fg },
 
     -- Change Types
-    NeogitChangeAdded = { fg = utils.opaque(colors.green, 0.7, nil, colors), bold = true, italic = true },
-    NeogitChangeModified = { fg = utils.opaque(colors.green, 0.7, nil, colors), bold = true, italic = true },
-    NeogitChangeDeleted = { fg = utils.opaque(colors.red, 0.7, nil, colors), bold = true, italic = true },
-    NeogitChangeRenamed = { fg = utils.opaque(colors.green, 0.7, nil, colors), bold = true, italic = true },
-    NeogitChangeUpdated = { fg = utils.opaque(neogit.subtle_fg, 0.7, nil, colors), bold = true, italic = true },
-    NeogitChangeCopied = { fg = utils.opaque(colors.base_300, 0.7, nil, colors), bold = true, italic = true },
-    NeogitChangeUnmerged = { fg = utils.opaque(colors.base_200, 0.7, nil, colors), bold = true, italic = true },
-    NeogitChangeNewFile = { fg = utils.opaque(colors.green, 0.7, nil, colors), bold = true, italic = true },
+    NeogitChangeAdded = { fg = utils.opaque(colors.green, 0.7), bold = true, italic = true },
+    NeogitChangeModified = { fg = utils.opaque(colors.green, 0.7), bold = true, italic = true },
+    NeogitChangeDeleted = { fg = utils.opaque(colors.red, 0.7), bold = true, italic = true },
+    NeogitChangeRenamed = { fg = utils.opaque(colors.green, 0.7), bold = true, italic = true },
+    NeogitChangeUpdated = { fg = utils.opaque(neogit.subtle_fg, 0.7), bold = true, italic = true },
+    NeogitChangeCopied = { fg = utils.opaque(colors.base_300, 0.7), bold = true, italic = true },
+    NeogitChangeUnmerged = { fg = utils.opaque(colors.base_200, 0.7), bold = true, italic = true },
+    NeogitChangeNewFile = { fg = utils.opaque(colors.green, 0.7), bold = true, italic = true },
     NeogitChangeUntrackedstaged = { clear = true },
     NeogitChangeUntrackedunstaged = { clear = true },
     NeogitChangeUntrackeduntracked = { clear = true },
 
     -- Diff Additions
-    NeogitDiffAdd = { fg = colors.green, bg = utils.opaque(colors.green, 0.15, nil, colors) },
-    NeogitDiffAddHighlight = { fg = colors.green, bg = utils.opaque(colors.green, 0.15, nil, colors) },
-    NeogitDiffAddCursor = { fg = colors.green, bg = utils.opaque(colors.green, 0.20, nil, colors) },
+    NeogitDiffAdd = { fg = colors.green, bg = utils.opaque(colors.green, 0.15) },
+    NeogitDiffAddHighlight = { fg = colors.green, bg = utils.opaque(colors.green, 0.15) },
+    NeogitDiffAddCursor = { fg = colors.green, bg = utils.opaque(colors.green, 0.20) },
     NeogitDiffAdditions = { fg = colors.green },
 
     -- Diff Deletions
-    NeogitDiffDelete = { fg = colors.red, bg = utils.opaque(colors.red, 0.15, nil, colors) },
-    NeogitDiffDeleteHighlight = { fg = colors.red, bg = utils.opaque(colors.red, 0.15, nil, colors) },
-    NeogitDiffDeleteCursor = { fg = colors.red, bg = utils.opaque(colors.red, 0.20, nil, colors) },
+    NeogitDiffDelete = { fg = colors.red, bg = utils.opaque(colors.red, 0.15) },
+    NeogitDiffDeleteHighlight = { fg = colors.red, bg = utils.opaque(colors.red, 0.15) },
+    NeogitDiffDeleteCursor = { fg = colors.red, bg = utils.opaque(colors.red, 0.20) },
     NeogitDiffDeletions = { fg = colors.red },
 
     -- Diff Context
@@ -1002,11 +1002,11 @@ M["sindrets/diffview.nvim"] = function(colors, plugin_config)
     DiffviewStatusIgnored = { link = "Comment" },
 
     -- Diff highlights
-    DiffviewDiffAdd = { fg = "none", bg = utils.opaque(colors.green, 0.15, nil, colors) },
-    DiffviewDiffChange = { fg = "none", bg = utils.opaque(colors.yellow, 0.15, nil, colors) },
-    DiffviewDiffText = { fg = "none", bg = utils.opaque(colors.yellow, 0.20, nil, colors) },
-    DiffviewDiffDelete = { fg = colors.base_900, bg = utils.opaque(colors.red, 0.20, nil, colors) },
-    DiffviewDiffAddAsDelete = { fg = colors.red, bg = utils.opaque(colors.red, 0.20, nil, colors) },
+    DiffviewDiffAdd = { fg = "none", bg = utils.opaque(colors.green, 0.15) },
+    DiffviewDiffChange = { fg = "none", bg = "none" },
+    DiffviewDiffText = { fg = "none", bg = utils.opaque(colors.yellow, 0.20) },
+    DiffviewDiffDelete = { fg = colors.base_900, bg = utils.opaque(colors.red, 0.20) },
+    DiffviewDiffAddAsDelete = { fg = colors.red, bg = utils.opaque(colors.red, 0.20) },
     DiffviewDiffDeleteDim = { link = "Comment" },
 
     -- Window and UI elements
@@ -1035,7 +1035,7 @@ M["Bekaboo/dropbar.nvim"] = function(colors, plugin_config)
   local config = {
     fg = colors.base_200,
     bg = colors.base_800,
-    hover_bg = utils.opaque(colors.base_500, 0.30, nil, colors),
+    hover_bg = utils.opaque(colors.base_500, 0.30),
     separator_fg = colors.base_500,
     icon_fg = colors.accent_500,
   }
@@ -1092,7 +1092,7 @@ M["DNLHC/glance.nvim"] = function(colors, config)
 
     -- List panel
     GlanceListNormal = { fg = colors.base_200, bg = colors.base_800 },
-    GlanceListCursorLine = { bg = utils.opaque(colors.base_500, 0.10, nil, colors) },
+    GlanceListCursorLine = { bg = utils.opaque(colors.base_500, 0.10) },
     GlanceListFilepath = { fg = colors.base_500 },
     GlanceListFilename = { link = "Directory" },
     GlanceListCount = { link = "Number" },
@@ -1102,7 +1102,7 @@ M["DNLHC/glance.nvim"] = function(colors, config)
 
     -- Preview panel
     GlancePreviewNormal = { bg = colors.base_800 },
-    GlancePreviewCursorLine = { bg = utils.opaque(colors.base_500, 0.10, nil, colors) },
+    GlancePreviewCursorLine = { bg = utils.opaque(colors.base_500, 0.10) },
     GlancePreviewMatch = { bg = colors.base_700 },
     GlancePreviewSignColumn = { fg = colors.base_800 },
     GlancePreviewLineNr = { fg = colors.base_500 },
@@ -1111,7 +1111,7 @@ M["DNLHC/glance.nvim"] = function(colors, config)
 
     -- Borders and separators
     GlanceBorderTop = { fg = colors.base_600, bg = colors.base_800 },
-    GlanceIndent = { fg = utils.opaque(colors.base_500, 0.20, nil, colors) },
+    GlanceIndent = { fg = utils.opaque(colors.base_500, 0.20) },
     GlanceFoldIcon = { fg = colors.base_500 },
   }
 end
@@ -1139,9 +1139,9 @@ M["MagicDuck/grug-far.nvim"] = function(colors, plugin_config)
     GrugFarResultsPathIcon = { fg = colors.accent_500 },
 
     -- Match highlighting with base colors
-    GrugFarResultsMatch = { bg = utils.opaque(colors.base_500, 0.25, nil, colors), bold = true },
-    GrugFarResultsMatchRemoved = { bg = utils.opaque(colors.red, 0.30, nil, colors), bold = true },
-    GrugFarResultsMatchAdded = { bg = utils.opaque(colors.green, 0.30, nil, colors), bold = true },
+    GrugFarResultsMatch = { bg = utils.opaque(colors.base_500, 0.25), bold = true },
+    GrugFarResultsMatchRemoved = { bg = utils.opaque(colors.red, 0.30), bold = true },
+    GrugFarResultsMatchAdded = { bg = utils.opaque(colors.green, 0.30), bold = true },
 
     -- Context lines
     GrugFarResultsLine = { fg = colors.base_500 },
@@ -1175,8 +1175,8 @@ M["MagicDuck/grug-far.nvim"] = function(colors, plugin_config)
     GrugFarHelpHeader = { fg = colors.base_300, bold = true },
 
     -- Selection and cursor highlights
-    GrugFarCursorLine = { bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
-    GrugFarSelection = { bg = utils.opaque(colors.accent_500, 0.20, nil, colors) },
+    GrugFarCursorLine = { bg = utils.opaque(colors.base_500, 0.30) },
+    GrugFarSelection = { bg = utils.opaque(colors.accent_500, 0.20) },
 
     -- Search progress and status
     GrugFarProgressBar = { bg = colors.accent_500 },
@@ -1185,7 +1185,7 @@ M["MagicDuck/grug-far.nvim"] = function(colors, plugin_config)
     -- Miscellaneous elements with base colors
     GrugFarResultsLongLineStr = { fg = colors.base_500, italic = true },
     GrugFarResultsNumberLabel = { fg = colors.base_500, bold = true },
-    GrugFarVisualBufrange = { bg = utils.opaque(colors.accent_500, 0.25, nil, colors) },
+    GrugFarVisualBufrange = { bg = utils.opaque(colors.accent_500, 0.25) },
     GrugFarResultsDiffSeparatorIndicator = { fg = colors.base_600 },
 
     -- Folding
@@ -1363,7 +1363,7 @@ end
 M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    handle_bg = utils.opaque(colors.base_500, 0.30, nil, colors),
+    handle_bg = utils.opaque(colors.base_500, 0.30),
     git_add_fg = colors.green,
     git_change_fg = colors.yellow,
     git_delete_fg = colors.red,
@@ -1384,7 +1384,7 @@ M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
 
     -- Miscellaneous scrollbar indicators
     ScrollbarMisc = { fg = colors.base_500 },
-    ScrollbarMiscHandle = { fg = colors.base_500, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarMiscHandle = { fg = colors.base_500, bg = utils.opaque(colors.base_500, 0.30) },
 
     -- Git indicators
     ScrollbarGitAdd = { fg = config.git_add_fg },
@@ -1406,11 +1406,11 @@ M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
 
     -- Search indicators
     ScrollbarSearch = { fg = colors.base_100 },
-    ScrollbarSearchHandle = { fg = colors.base_100, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarSearchHandle = { fg = colors.base_100, bg = utils.opaque(colors.base_500, 0.30) },
 
     -- Cursor position indicator
     ScrollbarCursor = { fg = colors.base_500 },
-    ScrollbarCursorHandle = { fg = colors.base_500, bg = utils.opaque(colors.base_500, 0.30, nil, colors) },
+    ScrollbarCursorHandle = { fg = colors.base_500, bg = utils.opaque(colors.base_500, 0.30) },
   }
 end
 
@@ -1486,14 +1486,14 @@ M["yetone/avante.nvim"] = function(colors, global_config, plugin_config)
     AvanteConfirmTitle = { fg = colors.base_900, bg = colors.red },
 
     -- Diff and change indicators
-    AvanteToBeDeleted = { strikethrough = true, bg = utils.opaque(colors.red, 0.20, nil, colors) },
-    AvanteToBeDeletedWOStrikethrough = { bg = utils.opaque(colors.red, 0.15, nil, colors) },
+    AvanteToBeDeleted = { strikethrough = true, bg = utils.opaque(colors.red, 0.20) },
+    AvanteToBeDeletedWOStrikethrough = { bg = utils.opaque(colors.red, 0.15) },
 
     -- Conflict resolution
-    AvanteConflictCurrent = { bold = true, bg = utils.opaque(colors.red, 0.15, nil, colors) },
-    AvanteConflictCurrentLabel = { bg = utils.opaque(colors.red, 0.25, nil, colors) },
-    AvanteConflictIncoming = { bold = true, bg = utils.opaque(colors.blue, 0.15, nil, colors) },
-    AvanteConflictIncomingLabel = { bg = utils.opaque(colors.blue, 0.25, nil, colors) },
+    AvanteConflictCurrent = { bold = true, bg = utils.opaque(colors.red, 0.15) },
+    AvanteConflictCurrentLabel = { bg = utils.opaque(colors.red, 0.25) },
+    AvanteConflictIncoming = { bold = true, bg = utils.opaque(colors.blue, 0.15) },
+    AvanteConflictIncomingLabel = { bg = utils.opaque(colors.blue, 0.25) },
   }
 end
 
