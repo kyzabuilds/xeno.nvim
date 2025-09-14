@@ -111,7 +111,8 @@ end
 utils.opaque = function(fg_color, opacity, bg_color, colors)
   -- Set default values for optional parameters
   bg_color = bg_color or nil
-  colors = colors or require('xeno').colors
+  colors = colors or require("xeno").colors
+
   -- Validate inputs
   if type(fg_color) ~= "string" then
     log_warn("utils.opaque: fg_color must be a hex string")

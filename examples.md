@@ -50,25 +50,6 @@ You can reference colors in multiple ways:
 
 ### Shading System
 
-Xeno supports a comprehensive shading system with levels from 50-950 for any color:
-
-```lua
-xeno.setup({
-  highlights = {
-    core = {
-      -- Specific shade levels (50-950)
-      Normal = { fg = '@base.500', bg = '@base.900' },
-      Comment = { fg = '@base.400' },
-      Error = { fg = '@red.600', bg = '@red.50' },
-      
-      -- Unspecified ranges fallback to 500 level
-      Cursor = { bg = '@accent' },      -- equivalent to @accent.500
-      Visual = { bg = '@my_color' },    -- equivalent to @my_color.500
-    }
-  }
-})
-```
-
 **Available shade levels:** 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950
 
 **Fallback behavior:** When no shade level is specified (e.g., `@my_color`), it automatically falls back to the 500 level (`@my_color.500`).

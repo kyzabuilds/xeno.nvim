@@ -332,7 +332,7 @@ function M.generate_variant_color_definitions(organized_colors, variant, format_
         category = "syntax_base"
       elseif name:match("^syntax_accent_%d+$") then
         category = "syntax_accent"
-      elseif name:match("^[^_]+_%d+$") then
+      elseif name:match("^.+_%d+$") and not name:match("^base_%d+$") and not name:match("^accent_%d+$") and not name:match("^syntax_base_%d+$") and not name:match("^syntax_accent_%d+$") then
         category = "custom"
       end
       table.insert(all_colors, { name = name, color = color, category = category })

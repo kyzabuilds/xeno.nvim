@@ -256,27 +256,40 @@ local function format_dynamic_highlights(highlights, organized_colors)
 
   local lines = {}
 
-  -- Create a combined color lookup from all color categories
+  -- Create a combined color lookup from variant colors if available, otherwise from organized structure
   local color_lookup = {}
 
-  -- Add all colors from organized structure
-  for name, color in pairs(organized_colors.base_colors or {}) do
-    color_lookup[color:upper()] = name
-  end
-  for name, color in pairs(organized_colors.accent_colors or {}) do
-    color_lookup[color:upper()] = name
-  end
-  for name, color in pairs(organized_colors.syntax_base_colors or {}) do
-    color_lookup[color:upper()] = name
-  end
-  for name, color in pairs(organized_colors.syntax_accent_colors or {}) do
-    color_lookup[color:upper()] = name
-  end
-  for name, color in pairs(organized_colors.custom_colors or {}) do
-    color_lookup[color:upper()] = name
-  end
-  for name, color in pairs(organized_colors.semantic_colors or {}) do
-    color_lookup[color:upper()] = name
+  -- Determine current variant for color lookup
+  local current_variant = vim.o.background or "dark"
+  local variant_colors = organized_colors.variant_colors and organized_colors.variant_colors[current_variant]
+  
+  if variant_colors then
+    -- Use variant-specific colors for lookup (includes all color types including custom colors)
+    for name, color in pairs(variant_colors) do
+      if type(color) == "string" and color:match("^#[0-9a-fA-F]+$") then
+        color_lookup[color:upper()] = name
+      end
+    end
+  else
+    -- Fallback to organized structure for backwards compatibility
+    for name, color in pairs(organized_colors.base_colors or {}) do
+      color_lookup[color:upper()] = name
+    end
+    for name, color in pairs(organized_colors.accent_colors or {}) do
+      color_lookup[color:upper()] = name
+    end
+    for name, color in pairs(organized_colors.syntax_base_colors or {}) do
+      color_lookup[color:upper()] = name
+    end
+    for name, color in pairs(organized_colors.syntax_accent_colors or {}) do
+      color_lookup[color:upper()] = name
+    end
+    for name, color in pairs(organized_colors.custom_colors or {}) do
+      color_lookup[color:upper()] = name
+    end
+    for name, color in pairs(organized_colors.semantic_colors or {}) do
+      color_lookup[color:upper()] = name
+    end
   end
 
   -- Separate linked highlights from regular highlights
