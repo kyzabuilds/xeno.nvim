@@ -184,7 +184,15 @@ utils.opaque = function(fg_color, opacity, bg_color, colors)
 
   -- Clamp and convert to hex
   r, g, b = utils.rgb_clamp(r, g, b)
-  return utils.rgb2hex(r, g, b)
+  local result = utils.rgb2hex(r, g, b)
+
+  -- Register the opaque color if export mode is active
+  local ok, opaque_registry = pcall(require, "xeno.core.opaque_registry")
+  if ok and opaque_registry.is_export_mode() then
+    opaque_registry.register_opaque_call(fg_color, opacity, bg_color, result, colors)
+  end
+
+  return result
 end
 
 --- Adjust the lightness of a hex color.

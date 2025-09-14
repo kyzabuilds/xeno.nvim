@@ -332,6 +332,9 @@ function M.generate_variant_color_definitions(organized_colors, variant, format_
         category = "syntax_base"
       elseif name:match("^syntax_accent_%d+$") then
         category = "syntax_accent"
+      elseif name:match("^.+_%d%d%d$") and not name:match("^base_%d+$") and not name:match("^accent_%d+$") and not name:match("^syntax_base_%d+$") and not name:match("^syntax_accent_%d+$") then
+        -- Opaque colors (end with 3-digit opacity like _050, _025, etc.)
+        category = "opaque"
       elseif name:match("^.+_%d+$") and not name:match("^base_%d+$") and not name:match("^accent_%d+$") and not name:match("^syntax_base_%d+$") and not name:match("^syntax_accent_%d+$") then
         category = "custom"
       end
@@ -362,6 +365,11 @@ function M.generate_variant_color_definitions(organized_colors, variant, format_
     for name, color in pairs(organized_colors.semantic_colors or {}) do
       table.insert(all_colors, { name = name, color = color, category = "semantic" })
     end
+
+    -- Include opaque colors if available
+    for name, color in pairs(organized_colors.opaque_colors or {}) do
+      table.insert(all_colors, { name = name, color = color, category = "opaque" })
+    end
   end
 
   -- Sort colors for consistent output
@@ -369,8 +377,8 @@ function M.generate_variant_color_definitions(organized_colors, variant, format_
     if a.category == b.category then
       return a.name < b.name
     end
-    -- Order: base, accent, syntax_base, syntax_accent, custom, semantic
-    local category_order = { base = 1, accent = 2, syntax_base = 3, syntax_accent = 4, custom = 5, semantic = 6 }
+    -- Order: base, accent, syntax_base, syntax_accent, custom, semantic, opaque
+    local category_order = { base = 1, accent = 2, syntax_base = 3, syntax_accent = 4, custom = 5, semantic = 6, opaque = 7 }
     return category_order[a.category] < category_order[b.category]
   end)
 

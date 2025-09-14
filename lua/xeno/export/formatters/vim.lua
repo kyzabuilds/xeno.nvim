@@ -320,7 +320,7 @@ local function format_dynamic_highlights_vim(highlights, organized_colors)
   local variant_colors = organized_colors.variant_colors and organized_colors.variant_colors[current_variant]
 
   if variant_colors then
-    -- Use variant-specific colors for lookup (includes all color types including custom colors)
+    -- Use variant-specific colors for lookup (includes all color types including custom colors and opaque colors)
     for name, color in pairs(variant_colors) do
       if type(color) == "string" and color:match("^#[0-9a-fA-F]+$") then
         color_lookup[color] = name
@@ -344,6 +344,10 @@ local function format_dynamic_highlights_vim(highlights, organized_colors)
       color_lookup[color] = name
     end
     for name, color in pairs(organized_colors.semantic_colors or {}) do
+      color_lookup[color] = name
+    end
+    -- Also include opaque colors in the lookup
+    for name, color in pairs(organized_colors.opaque_colors or {}) do
       color_lookup[color] = name
     end
   end

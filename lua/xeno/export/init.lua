@@ -340,6 +340,7 @@ end
 -- Generate variant-specific color palette using xeno's palette system
 local function generate_variant_palette(base_color, accent_color, variant, user_config)
   local palette = require("xeno.core.palette")
+  local opaque_registry = require("xeno.core.opaque_registry")
 
   -- Create a complete config matching the user's actual configuration
   local temp_config = {
@@ -363,8 +364,31 @@ local function generate_variant_palette(base_color, accent_color, variant, user_
   local original_variant = vim.o.background
   vim.o.background = variant
 
+  -- Enable export mode to capture opaque calls
+  opaque_registry.set_export_mode(true)
+
   -- Generate the palette for this variant using xeno's actual mechanism
   local ok, variant_palette = pcall(palette.generate_palette, temp_config)
+
+  -- Generate highlights to capture any opaque calls during highlight generation
+  if ok and variant_palette then
+    -- Use the highlights generator to capture opaque calls
+    local highlights = require("xeno.highlights")
+    pcall(highlights.generate_base_highlights, variant_palette, temp_config)
+  end
+
+  -- Get any opaque colors that were registered during palette/highlight generation
+  local opaque_colors = opaque_registry.get_opaque_colors(variant)
+
+  -- Add opaque colors to the variant palette
+  if variant_palette and opaque_colors then
+    for name, info in pairs(opaque_colors) do
+      variant_palette[name] = info.hex
+    end
+  end
+
+  -- Disable export mode
+  opaque_registry.set_export_mode(false)
 
   -- Restore original variant immediately
   vim.o.background = original_variant
@@ -402,6 +426,7 @@ local function organize_colors_by_variant(color_palette, highlights)
     syntax_accent_colors = {},
     semantic_colors = {},
     custom_colors = {},
+    opaque_colors = {}, -- Add opaque colors category
   }
 
   -- Separate current colors by type for reference
@@ -414,6 +439,9 @@ local function organize_colors_by_variant(color_palette, highlights)
       organized.syntax_base_colors[color_name] = color_value
     elseif color_name:match("^syntax_accent_%d+$") then
       organized.syntax_accent_colors[color_name] = color_value
+    elseif color_name:match("^.+_%d%d%d$") and not color_name:match("^base_%d+$") and not color_name:match("^accent_%d+$") and not color_name:match("^syntax_base_%d+$") and not color_name:match("^syntax_accent_%d+$") then
+      -- Opaque colors (end with 3-digit opacity like _050, _025, etc.)
+      organized.opaque_colors[color_name] = color_value
     elseif color_name:match("^[^_]+_%d+$") then
       -- Custom color scales (like "custom_red_500")
       organized.custom_colors[color_name] = color_value
