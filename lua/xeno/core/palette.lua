@@ -185,9 +185,21 @@ function M.generate_palette(config)
     add_scale_to_colors(colors, scale_data.scale, scale_data.prefix)
   end
 
-  -- Add custom color scales
+  -- Add custom color scales (optionally filtered)
   if config._custom_colors then
-    for name, hex_value in pairs(config._custom_colors) do
+    local custom_colors_to_include = config._custom_colors
+    
+    -- If filtering is specified, only include requested custom colors
+    if config._filtered_custom_colors then
+      custom_colors_to_include = {}
+      for name, _ in pairs(config._filtered_custom_colors) do
+        if config._custom_colors[name] then
+          custom_colors_to_include[name] = config._custom_colors[name]
+        end
+      end
+    end
+    
+    for name, hex_value in pairs(custom_colors_to_include) do
       local custom_scale = generate_color_scale(hex_value, scale_options.standard)
       add_scale_to_colors(colors, custom_scale, name)
     end

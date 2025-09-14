@@ -68,6 +68,32 @@ local function extract_used_colors_from_highlights(highlights)
   return used_colors, used_semantic_colors
 end
 
+-- Detect custom color references in user configuration before resolution
+local function extract_custom_color_references(config)
+  local used_custom_colors = {}
+  
+  local function scan_value(value)
+    if type(value) == "string" then
+      -- Match custom color references like @my_color or @my_color.500
+      local color_name = value:match("^@([%w_]+)")
+      if color_name then
+        used_custom_colors[color_name] = true
+      end
+    elseif type(value) == "table" then
+      for k, v in pairs(value) do
+        scan_value(v)
+      end
+    end
+  end
+  
+  -- Scan all sections of the config that might contain color references
+  if config and type(config) == "table" then
+    scan_value(config)
+  end
+  
+  return used_custom_colors
+end
+
 -- Filter the xeno color palette to only include color families that are actually used
 local function get_filtered_color_palette(highlights)
   local xeno = package.loaded["xeno"]
@@ -77,7 +103,13 @@ local function get_filtered_color_palette(highlights)
 
   local used_color_values, used_semantic_colors = extract_used_colors_from_highlights(highlights)
   local used_color_families = {}
+  local used_custom_colors = {}
   local filtered_colors = {}
+
+  -- Extract custom color references from the original user configuration
+  if xeno._global_config then
+    used_custom_colors = extract_custom_color_references(xeno._global_config)
+  end
 
   -- Also check original user configuration for semantic color references
   if xeno._global_config and xeno._global_config.highlights then
@@ -133,11 +165,12 @@ local function get_filtered_color_palette(highlights)
   -- List of semantic color names that should always be included
   local semantic_colors = { "red", "green", "yellow", "orange", "blue", "purple", "cyan" }
 
-  -- Second pass: Include all colors from the used families and referenced semantic colors
+  -- Second pass: Include all colors from the used families, referenced semantic colors, and used custom colors
   for color_name, color_value in pairs(xeno.colors) do
     if type(color_value) == "string" and color_value:match("^#[0-9a-fA-F]+$") then
       local family = color_name:match("^(.-)_%d+$") or color_name
       local is_semantic = false
+      local is_custom_color = false
 
       -- Check if this is a semantic color
       for _, semantic in ipairs(semantic_colors) do
@@ -146,12 +179,18 @@ local function get_filtered_color_palette(highlights)
           break
         end
       end
+      
+      -- Check if this is a custom color or part of a custom color family
+      if used_custom_colors[family] then
+        is_custom_color = true
+      end
 
       -- Include if:
       -- 1. It's from a used color family (color scale)
       -- 2. It's a semantic color that was referenced by name in the original config
       -- 3. It's directly used as a hex value in highlights
-      if used_color_families[family] or not color_name:match("_") then
+      -- 4. It's part of a custom color family that was referenced
+      if used_color_families[family] or is_custom_color or not color_name:match("_") then
         -- For non-scale colors (semantic colors), include if:
         -- - It's a semantic color that was referenced by name in user config
         -- - It's a standard semantic color (for safety)
@@ -161,10 +200,34 @@ local function get_filtered_color_palette(highlights)
             filtered_colors[color_name] = color_value
           end
         else
-          -- For scale colors, include entire family if any level is used
-          filtered_colors[color_name] = color_value
+          -- For scale colors, include entire family if any level is used OR if it's a used custom color
+          if is_custom_color or used_color_families[family] then
+            filtered_colors[color_name] = color_value
+          end
         end
       end
+    end
+  end
+
+  -- Debug information for development
+  if vim.env.XENO_DEBUG_EXPORT then
+    local custom_color_count = 0
+    local used_custom_count = 0
+    if xeno._global_config and xeno._global_config._custom_colors then
+      for name, _ in pairs(xeno._global_config._custom_colors) do
+        custom_color_count = custom_color_count + 1
+      end
+    end
+    for name, _ in pairs(used_custom_colors) do
+      used_custom_count = used_custom_count + 1
+    end
+    print(fmt("xeno export: %d custom colors defined, %d used in theme", custom_color_count, used_custom_count))
+    if used_custom_count > 0 then
+      local used_names = {}
+      for name, _ in pairs(used_custom_colors) do
+        table.insert(used_names, name)
+      end
+      print(fmt("xeno export: Used custom colors: %s", table.concat(used_names, ", ")))
     end
   end
 
@@ -338,7 +401,7 @@ local function get_neovim_current_highlights()
 end
 
 -- Generate variant-specific color palette using xeno's palette system
-local function generate_variant_palette(base_color, accent_color, variant, user_config)
+local function generate_variant_palette(base_color, accent_color, variant, user_config, filtered_custom_colors)
   local palette = require("xeno.core.palette")
   local opaque_registry = require("xeno.core.opaque_registry")
 
@@ -350,6 +413,8 @@ local function generate_variant_palette(base_color, accent_color, variant, user_
     contrast = user_config.contrast or 0,
     -- Include any custom colors from the current config
     _custom_colors = user_config._custom_colors,
+    -- Apply filtering if provided
+    _filtered_custom_colors = filtered_custom_colors,
   }
 
   -- Copy any semantic color overrides from user config
@@ -450,9 +515,18 @@ local function organize_colors_by_variant(color_palette, highlights)
     end
   end
 
+  -- Get the filtered custom colors from our usage detection
+  local filtered_custom_colors = nil
+  if user_config._custom_colors then
+    local xeno = package.loaded["xeno"]
+    if xeno and xeno._global_config then
+      filtered_custom_colors = extract_custom_color_references(xeno._global_config)
+    end
+  end
+
   -- Generate proper variant-specific palettes using xeno's actual mechanism
-  local dark_palette = generate_variant_palette(user_config.base, user_config.accent, "dark", user_config)
-  local light_palette = generate_variant_palette(user_config.base, user_config.accent, "light", user_config)
+  local dark_palette = generate_variant_palette(user_config.base, user_config.accent, "dark", user_config, filtered_custom_colors)
+  local light_palette = generate_variant_palette(user_config.base, user_config.accent, "light", user_config, filtered_custom_colors)
 
   -- Store variant-specific colors
   organized.variant_colors = {
