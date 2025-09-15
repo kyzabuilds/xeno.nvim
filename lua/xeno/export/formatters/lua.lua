@@ -262,7 +262,7 @@ local function format_dynamic_highlights(highlights, organized_colors)
   -- Determine current variant for color lookup
   local current_variant = vim.o.background or "dark"
   local variant_colors = organized_colors.variant_colors and organized_colors.variant_colors[current_variant]
-  
+
   if variant_colors then
     -- Use variant-specific colors for lookup (includes all color types including custom colors and opaque colors)
     for name, color in pairs(variant_colors) do

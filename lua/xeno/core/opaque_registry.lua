@@ -36,7 +36,7 @@ function M.generate_opaque_name(base_color_name, opacity)
 
   -- Convert opacity to 3-digit padded percentage (e.g., 0.05 -> "005", 0.55 -> "055", 1.0 -> "100")
   local opacity_padded = fmt("%03d", math.floor(opacity * 100 + 0.5))
-  
+
   return fmt("%s_%s", base_color_name, opacity_padded)
 end
 
@@ -62,7 +62,7 @@ local function extract_color_name(color_value, colors)
   if not sanitized:match("^[%a_]") then
     sanitized = "_" .. sanitized
   end
-  
+
   return sanitized
 end
 
@@ -82,7 +82,7 @@ function M.register_opaque_call(fg_color, opacity, bg_color, result_hex, colors,
 
   -- Extract the base color name
   local base_color_name = extract_color_name(fg_color, colors)
-  
+
   -- Generate the opaque color name
   local opaque_name = M.generate_opaque_name(base_color_name, opacity)
   if not opaque_name then
@@ -146,7 +146,7 @@ function M.debug_print()
   print("Opaque Color Registry Debug:")
   print(fmt("Export mode: %s", tostring(registry.export_mode)))
   print(fmt("Total colors: %d", M.get_color_count()))
-  
+
   for variant, colors in pairs(registry.colors) do
     print(fmt("\n%s variant:", variant))
     for name, info in pairs(colors) do
@@ -156,3 +156,4 @@ function M.debug_print()
 end
 
 return M
+

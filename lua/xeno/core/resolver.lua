@@ -13,10 +13,11 @@ end
 --- @param value any The value to check
 --- @return boolean True if it's a color reference
 function M.is_color_reference(value)
-  return type(value) == "string" and (
-    value:match("^@[%w_]+%.[%w_]+$") ~= nil or  -- @color.level
-    value:match("^@[%w_]+$") ~= nil             -- @color (fallback to 500)
-  )
+  return type(value) == "string"
+    and (
+      value:match("^@[%w_]+%.[%w_]+$") ~= nil -- @color.level
+      or value:match("^@[%w_]+$") ~= nil -- @color (fallback to 500)
+    )
 end
 
 --- Check if a value is a highlight reference (e.g., { from = "Normal" })
@@ -61,7 +62,7 @@ function M.extract_color_key(reference)
 
   -- Remove @
   local key = reference:sub(2)
-  
+
   -- If it has a level (contains dot), replace . with _
   if key:match("%.") then
     key = key:gsub("%.", "_")
@@ -69,7 +70,7 @@ function M.extract_color_key(reference)
     -- No level specified, fallback to 500
     key = key .. "_500"
   end
-  
+
   return key
 end
 
@@ -107,7 +108,7 @@ function M.resolve_value(value, colors, highlights)
   elseif type(value) == "string" and value:match("^#[0-9a-fA-F]+$") == nil then
     -- Handle direct semantic color names (e.g., 'green', 'red', 'blue')
     -- But only if it's not already a hex color and looks like a semantic color
-    local semantic_colors = {"red", "green", "blue", "yellow", "orange", "purple", "cyan", "magenta", "white", "black", "gray", "grey"}
+    local semantic_colors = { "red", "green", "blue", "yellow", "orange", "purple", "cyan", "magenta", "white", "black", "gray", "grey" }
     local is_semantic_name = false
     for _, semantic in ipairs(semantic_colors) do
       if value == semantic then
@@ -115,13 +116,13 @@ function M.resolve_value(value, colors, highlights)
         break
       end
     end
-    
+
     if is_semantic_name then
       -- Check cache first
       if resolved_cache[value] then
         return resolved_cache[value]
       end
-      
+
       local resolved_color = colors[value]
       if resolved_color then
         -- Cache the resolved color
@@ -170,94 +171,6 @@ function M.resolve_highlights(tbl, colors, highlights)
   end
 
   return resolved
-end
-
---- Replace utils.opaque() function calls with color references for export
---- @param value any The value that may contain utils.opaque() calls
---- @param opaque_registry table The opaque color registry
---- @param variant string The current variant (light/dark)
---- @return any The value with opaque calls replaced
-function M.replace_opaque_calls(value, opaque_registry, variant)
-  if type(value) ~= "string" then
-    return value
-  end
-
-  -- Pattern to match utils.opaque() calls: utils.opaque(color, opacity, ...)
-  local pattern = "utils%.opaque%s*%(%s*([^,]+)%s*,%s*([%d%.]+)[^%)]*%)"
-  
-  local result = value:gsub(pattern, function(color_arg, opacity_arg)
-    -- Clean up the arguments
-    color_arg = color_arg:match("^%s*(.-)%s*$") -- trim whitespace
-    opacity_arg = tonumber(opacity_arg)
-    
-    if not opacity_arg then
-      return "utils.opaque(" .. color_arg .. ", " .. (opacity_arg or "0.5") .. ")" -- fallback to original
-    end
-
-    -- Extract base color name - handle both hex colors and color references
-    local base_color_name
-    if color_arg:match("^[\"']#[0-9a-fA-F]+[\"']$") then
-      -- Direct hex color like "#FF0000"
-      local hex = color_arg:match("^[\"'](#[0-9a-fA-F]+)[\"']$")
-      base_color_name = fmt("color_%s", hex:sub(2):lower())
-    elseif color_arg:match("^colors%.") then
-      -- Color reference like colors.base_500
-      base_color_name = color_arg:match("^colors%.(.+)$")
-    else
-      -- Handle other patterns
-      base_color_name = color_arg:gsub("[^%w_]", "_")
-    end
-
-    if not base_color_name then
-      return "utils.opaque(" .. color_arg .. ", " .. opacity_arg .. ")" -- fallback to original
-    end
-
-    -- Generate the opaque color name
-    local opaque_registry_obj = require("xeno.core.opaque_registry")
-    local opaque_name = opaque_registry_obj.generate_opaque_name(base_color_name, opacity_arg)
-    
-    if opaque_name and opaque_registry_obj.has_opaque_color(opaque_name, variant) then
-      return "colors." .. opaque_name
-    else
-      -- Fallback to original call if not found in registry
-      return "utils.opaque(" .. color_arg .. ", " .. opacity_arg .. ")"
-    end
-  end)
-
-  return result
-end
-
---- Process highlights to replace utils.opaque() calls with color references
---- @param highlights table The highlights table
---- @param variant string The current variant (light/dark)
---- @return table The processed highlights
-function M.process_highlights_for_export(highlights, variant)
-  if type(highlights) ~= "table" then
-    return highlights
-  end
-
-  local processed = {}
-  
-  for group_name, attrs in pairs(highlights) do
-    if type(attrs) == "table" then
-      local processed_attrs = {}
-      
-      for attr_name, attr_value in pairs(attrs) do
-        -- Only process color-related attributes that might contain opaque calls
-        if attr_name == "fg" or attr_name == "bg" or attr_name == "sp" then
-          processed_attrs[attr_name] = M.replace_opaque_calls(attr_value, nil, variant)
-        else
-          processed_attrs[attr_name] = attr_value
-        end
-      end
-      
-      processed[group_name] = processed_attrs
-    else
-      processed[group_name] = attrs
-    end
-  end
-
-  return processed
 end
 
 --- Validate highlight configuration structure

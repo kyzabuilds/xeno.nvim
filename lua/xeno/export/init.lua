@@ -71,7 +71,7 @@ end
 -- Detect custom color references in user configuration before resolution
 local function extract_custom_color_references(config)
   local used_custom_colors = {}
-  
+
   local function scan_value(value)
     if type(value) == "string" then
       -- Match custom color references like @my_color or @my_color.500
@@ -85,12 +85,12 @@ local function extract_custom_color_references(config)
       end
     end
   end
-  
+
   -- Scan all sections of the config that might contain color references
   if config and type(config) == "table" then
     scan_value(config)
   end
-  
+
   return used_custom_colors
 end
 
@@ -179,7 +179,7 @@ local function get_filtered_color_palette(highlights)
           break
         end
       end
-      
+
       -- Check if this is a custom color or part of a custom color family
       if used_custom_colors[family] then
         is_custom_color = true
@@ -504,7 +504,13 @@ local function organize_colors_by_variant(color_palette, highlights)
       organized.syntax_base_colors[color_name] = color_value
     elseif color_name:match("^syntax_accent_%d+$") then
       organized.syntax_accent_colors[color_name] = color_value
-    elseif color_name:match("^.+_%d%d%d$") and not color_name:match("^base_%d+$") and not color_name:match("^accent_%d+$") and not color_name:match("^syntax_base_%d+$") and not color_name:match("^syntax_accent_%d+$") then
+    elseif
+      color_name:match("^.+_%d%d%d$")
+      and not color_name:match("^base_%d+$")
+      and not color_name:match("^accent_%d+$")
+      and not color_name:match("^syntax_base_%d+$")
+      and not color_name:match("^syntax_accent_%d+$")
+    then
       -- Opaque colors (end with 3-digit opacity like _050, _025, etc.)
       organized.opaque_colors[color_name] = color_value
     elseif color_name:match("^[^_]+_%d+$") then

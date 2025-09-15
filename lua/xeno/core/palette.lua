@@ -113,6 +113,65 @@ local function apply_variation(level, lightness, saturation, variation)
   return new_sat, new_light
 end
 
+-- Check if a color hue is problematic in light mode
+local function is_problematic_hue(hue)
+  -- Cyan range: ~180-210 degrees
+  if hue >= 180 and hue <= 210 then
+    return true
+  end
+  -- Yellow range: ~45-65 degrees
+  if hue >= 45 and hue <= 65 then
+    return true
+  end
+  -- Green range: ~90-130 degrees
+  if hue >= 90 and hue <= 130 then
+    return true
+  end
+  return false
+end
+
+-- Apply light mode contrast improvement for problematic colors
+local function improve_light_contrast(hue, saturation, lightness, level)
+  if not is_problematic_hue(hue) then
+    return saturation, lightness
+  end
+
+  -- For problematic colors in light mode, make them darker and more saturated
+  -- Focus adjustment on the mid-range levels (400-600) that are most commonly used
+  if level >= 400 and level <= 600 then
+    -- Reduce lightness significantly for better contrast
+    local lightness_reduction = 0.15 + (level - 400) * 0.0005 -- Stronger reduction for higher levels
+    lightness = math.max(0.15, lightness - lightness_reduction)
+
+    -- Increase saturation to maintain color identity
+    local saturation_boost = math.min(0.15, (1 - saturation) * 0.3)
+    saturation = math.min(1.0, saturation + saturation_boost)
+  end
+
+  return saturation, lightness
+end
+
+-- Apply light mode contrast improvement to semantic colors
+local function improve_semantic_color(color, theme)
+  if theme ~= "light" then
+    return color
+  end
+
+  local h, s, l = parse_color(color)
+  if not h or not is_problematic_hue(h) then
+    return color
+  end
+
+  -- Apply similar improvements as level 500 in color scales
+  local lightness_reduction = 0.15
+  l = math.max(0.15, l - lightness_reduction)
+
+  local saturation_boost = math.min(0.15, (1 - s) * 0.3)
+  s = math.min(1.0, s + saturation_boost)
+
+  return utils.hsl2hex(h, s, l)
+end
+
 -- Main color scale generator
 local function generate_color_scale(color, options)
   options = options or {}
@@ -129,6 +188,11 @@ local function generate_color_scale(color, options)
     local final_sat, final_light = s, adjusted_lightness
     if options.with_variation then
       final_sat, final_light = apply_variation(level, adjusted_lightness, s, options.variation or 0)
+    end
+
+    -- Apply light mode contrast improvement for problematic colors
+    if theme == "light" then
+      final_sat, final_light = improve_light_contrast(h, final_sat, final_light, level)
     end
 
     scale[level] = utils.hsl2hex(h, final_sat, final_light)
@@ -188,7 +252,7 @@ function M.generate_palette(config)
   -- Add custom color scales (optionally filtered)
   if config._custom_colors then
     local custom_colors_to_include = config._custom_colors
-    
+
     -- If filtering is specified, only include requested custom colors
     if config._filtered_custom_colors then
       custom_colors_to_include = {}
@@ -198,17 +262,18 @@ function M.generate_palette(config)
         end
       end
     end
-    
+
     for name, hex_value in pairs(custom_colors_to_include) do
       local custom_scale = generate_color_scale(hex_value, scale_options.standard)
       add_scale_to_colors(colors, custom_scale, name)
     end
   end
 
-  -- Add semantic colors
+  -- Add semantic colors with contrast improvements
   local semantic = SEMANTIC_COLORS[theme]
   for name, default_color in pairs(semantic) do
-    colors[name] = config[name] or default_color
+    local color = config[name] or default_color
+    colors[name] = improve_semantic_color(color, theme)
   end
 
   return colors
