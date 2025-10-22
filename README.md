@@ -201,6 +201,17 @@ Not directly - xeno is built around the concept of minimalism with just a base a
 
 </details>
 
+<details>
+<summary><strong>No colors on tmux?</strong></summary>
+
+Try add this line of code to your config:
+
+```lua
+vim.cmd("set termguicolors")
+```
+
+</details>
+
 ## Customization
 
 MIT
