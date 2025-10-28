@@ -13,10 +13,6 @@ This document showcases example themes for the Xeno styling plugin, demonstratin
   - [Minimal Themes](#minimal-themes)
   - [Standard Themes](#standard-themes)
   - [Extensive Themes](#extensive-themes)
-- [IPC Integration](#ipc-integration)
-  - [Terminal Emulator Sync](#terminal-emulator-sync)
-  - [System Theming Script](#system-theming-script)
-  - [Live Theme Picker](#live-theme-picker)
 
 ## Custom Highlights
 

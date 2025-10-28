@@ -3,7 +3,6 @@ local defaults = require("xeno.config.defaults")
 local highlight_generator = require("xeno.highlights")
 local palette = require("xeno.core.palette")
 local terminal = require("xeno.integrations.terminal")
-local ipc = require("xeno.integrations.ipc")
 local theme = require("xeno.theme.apply")
 local fallback = require("xeno.core.fallback")
 local generator = require("xeno.core.generator")
@@ -89,10 +88,6 @@ function xeno.setup(user_config)
 
   -- Setup terminal colors (includes Ghostty integration)
   terminal.setup_terminal_colors(xeno.colors, config)
-
-  -- Setup IPC adapter
-  local ipc_config = config.integrations and config.integrations.ipc or { enabled = false }
-  ipc.setup_ipc(ipc_config)
 
   -- Generate base highlights
   local ok_highlights, highlights = pcall(highlight_generator.generate_base_highlights, xeno.colors, config)

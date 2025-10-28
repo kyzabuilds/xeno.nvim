@@ -32,10 +32,6 @@ defaults.config = {
       enabled = true,
       update_config = true,
     },
-    ipc = {
-      enabled = false,
-      debug = false,
-    },
   },
 }
 
