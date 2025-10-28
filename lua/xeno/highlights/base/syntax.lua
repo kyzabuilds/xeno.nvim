@@ -7,7 +7,7 @@ function M.generate_syntax_highlights(colors)
     Character = { fg = colors.syntax_base_300 },
     Boolean = { fg = colors.syntax_base_300 },
     Float = { fg = colors.syntax_base_300 },
-    Identifier = { fg = colors.syntax_base_300 },
+    Identifier = { fg = colors.syntax_base_500 },
     Function = { fg = colors.syntax_base_100 },
     Operator = { fg = colors.syntax_base_300 },
     Special = { fg = colors.syntax_base_300 },
