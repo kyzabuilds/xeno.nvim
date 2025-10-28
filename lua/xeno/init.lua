@@ -3,6 +3,7 @@ local defaults = require("xeno.config.defaults")
 local highlight_generator = require("xeno.highlights")
 local palette = require("xeno.core.palette")
 local terminal = require("xeno.integrations.terminal")
+local ipc = require("xeno.integrations.ipc")
 local theme = require("xeno.theme.apply")
 local fallback = require("xeno.core.fallback")
 local generator = require("xeno.core.generator")
@@ -89,6 +90,10 @@ function xeno.setup(user_config)
   -- Setup terminal colors (includes Ghostty integration)
   terminal.setup_terminal_colors(xeno.colors, config)
 
+  -- Setup IPC adapter
+  local ipc_config = config.integrations and config.integrations.ipc or { enabled = false }
+  ipc.setup_ipc(ipc_config)
+
   -- Generate base highlights
   local ok_highlights, highlights = pcall(highlight_generator.generate_base_highlights, xeno.colors, config)
   if not ok_highlights then
@@ -129,6 +134,15 @@ function xeno.theme(name, config)
   merged_config._custom_colors = custom_colors
 
   generator.theme(name, merged_config, xeno._global_config)
+end
+
+-- Deprecated: Use xeno.theme() instead
+function xeno.new_theme(name, config)
+  vim.notify(
+    "xeno.nvim: xeno.new_theme() is deprecated. Please use xeno.theme() instead.",
+    vim.log.levels.WARN
+  )
+  return xeno.theme(name, config)
 end
 
 -- Create a namespaced variant of the theme
