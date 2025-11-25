@@ -146,38 +146,51 @@ local function format_highlight_group(group_name, attrs, color_lookup)
     return fmt("hi('%s', { link = '%s' })", group_name, attrs.link)
   end
 
-  local normalized = utils.normalize_highlight_attrs(attrs)
-  if not next(normalized) then
-    return ""
-  end
-
   local parts = {}
 
-  -- Add color attributes using variable references
-  if normalized.fg then
-    local var_name = color_lookup[normalized.fg:upper()]
+  -- Process color attributes with proper lookup before normalization
+  -- This prevents valid colors from being converted to #000000
+  if attrs.fg then
+    -- First try to look up the color as-is
+    local fg_normalized = utils.format_hex_color(attrs.fg)
+    local var_name = color_lookup[fg_normalized:upper()]
     if var_name then
       table.insert(parts, fmt("fg = colors.%s", var_name))
     else
-      table.insert(parts, fmt('fg = "%s"', normalized.fg))
+      -- If not found and it's not already black, debug log it
+      if vim.env.XENO_DEBUG_EXPORT and fg_normalized ~= "#000000" then
+        print(fmt("xeno.export debug: fg %s not found in lookup for group %s", fg_normalized, group_name))
+      end
+      table.insert(parts, fmt('fg = "%s"', fg_normalized))
     end
   end
-  if normalized.bg then
-    local var_name = color_lookup[normalized.bg:upper()]
+  if attrs.bg then
+    -- First try to look up the color as-is
+    local bg_normalized = utils.format_hex_color(attrs.bg)
+    local var_name = color_lookup[bg_normalized:upper()]
     if var_name then
       table.insert(parts, fmt("bg = colors.%s", var_name))
     else
-      table.insert(parts, fmt('bg = "%s"', normalized.bg))
+      -- If not found and it's not already black, debug log it
+      if vim.env.XENO_DEBUG_EXPORT and bg_normalized ~= "#000000" then
+        print(fmt("xeno.export debug: bg %s not found in lookup for group %s", bg_normalized, group_name))
+      end
+      table.insert(parts, fmt('bg = "%s"', bg_normalized))
     end
   end
-  if normalized.sp then
-    local var_name = color_lookup[normalized.sp:upper()]
+  if attrs.sp then
+    -- First try to look up the color as-is
+    local sp_normalized = utils.format_hex_color(attrs.sp)
+    local var_name = color_lookup[sp_normalized:upper()]
     if var_name then
       table.insert(parts, fmt("sp = colors.%s", var_name))
     else
-      table.insert(parts, fmt('sp = "%s"', normalized.sp))
+      table.insert(parts, fmt('sp = "%s"', sp_normalized))
     end
   end
+
+  -- Now handle style attributes
+  local normalized = utils.normalize_highlight_attrs(attrs)
 
   -- Add style attributes
   local style_attrs = { "bold", "italic", "underline", "undercurl", "strikethrough", "reverse", "standout" }
@@ -256,44 +269,89 @@ local function format_dynamic_highlights(highlights, organized_colors)
 
   local lines = {}
 
-  -- Create a combined color lookup from variant colors if available, otherwise from organized structure
+  -- Create comprehensive color lookup with preference for simpler names
+  -- We need to ensure all colors in the highlights can be looked up
   local color_lookup = {}
+  local xeno = package.loaded["xeno"]
 
-  -- Determine current variant for color lookup
-  local current_variant = vim.o.background or "dark"
-  local variant_colors = organized_colors.variant_colors and organized_colors.variant_colors[current_variant]
+  -- Helper function to add colors to lookup, preferring simpler color names
+  -- When multiple color names map to the same hex value, prefer:
+  -- 1. Non-syntax names (base_300 over syntax_base_300)
+  -- 2. Shorter names (red over semantic_red)
+  local function add_to_lookup(name, color)
+    if type(color) == "string" and color:match("^#[0-9a-fA-F]+$") then
+      local hex_upper = color:upper()
+      if not color_lookup[hex_upper] then
+        color_lookup[hex_upper] = name
+      else
+        local current = color_lookup[hex_upper]
+        local should_replace = false
 
-  if variant_colors then
-    -- Use variant-specific colors for lookup (includes all color types including custom colors and opaque colors)
-    for name, color in pairs(variant_colors) do
+        -- Prefer non-syntax names: base_900 over syntax_base_900
+        if current:match("^syntax_") and not name:match("^syntax_") then
+          should_replace = true
+        -- Prefer shorter names
+        elseif #name < #current then
+          should_replace = true
+        end
+
+        if should_replace then
+          color_lookup[hex_upper] = name
+        end
+      end
+    end
+  end
+
+  -- Build comprehensive lookup from multiple sources
+  -- First, try to use the variant-specific colors from export
+  if organized_colors.variant_colors then
+    local variant = vim.o.background or "dark"
+    local variant_palette = organized_colors.variant_colors[variant]
+    if variant_palette then
+      for name, color in pairs(variant_palette) do
+        add_to_lookup(name, color)
+      end
+    end
+  end
+
+  -- Add base/accent/syntax colors from organized colors (includes current setup)
+  for name, color in pairs(organized_colors.base_colors or {}) do
+    add_to_lookup(name, color)
+  end
+  for name, color in pairs(organized_colors.accent_colors or {}) do
+    add_to_lookup(name, color)
+  end
+  for name, color in pairs(organized_colors.syntax_base_colors or {}) do
+    add_to_lookup(name, color)
+  end
+  for name, color in pairs(organized_colors.syntax_accent_colors or {}) do
+    add_to_lookup(name, color)
+  end
+  for name, color in pairs(organized_colors.custom_colors or {}) do
+    add_to_lookup(name, color)
+  end
+  for name, color in pairs(organized_colors.semantic_colors or {}) do
+    add_to_lookup(name, color)
+  end
+  for name, color in pairs(organized_colors.opaque_colors or {}) do
+    add_to_lookup(name, color)
+  end
+
+  -- Also include xeno.colors for compatibility (but don't override organized_colors)
+  if xeno and xeno.colors then
+    if vim.env.XENO_DEBUG_EXPORT then
+      print(fmt("xeno.export debug: xeno.colors has %d entries", vim.tbl_count(xeno.colors) or 0))
+    end
+    for name, color in pairs(xeno.colors) do
       if type(color) == "string" and color:match("^#[0-9a-fA-F]+$") then
-        color_lookup[color:upper()] = name
+        -- Only add if not already in lookup from organized_colors
+        if not color_lookup[color:upper()] then
+          add_to_lookup(name, color)
+        end
       end
     end
   else
-    -- Fallback to organized structure for backwards compatibility
-    for name, color in pairs(organized_colors.base_colors or {}) do
-      color_lookup[color:upper()] = name
-    end
-    for name, color in pairs(organized_colors.accent_colors or {}) do
-      color_lookup[color:upper()] = name
-    end
-    for name, color in pairs(organized_colors.syntax_base_colors or {}) do
-      color_lookup[color:upper()] = name
-    end
-    for name, color in pairs(organized_colors.syntax_accent_colors or {}) do
-      color_lookup[color:upper()] = name
-    end
-    for name, color in pairs(organized_colors.custom_colors or {}) do
-      color_lookup[color:upper()] = name
-    end
-    for name, color in pairs(organized_colors.semantic_colors or {}) do
-      color_lookup[color:upper()] = name
-    end
-    -- Also include opaque colors in the lookup
-    for name, color in pairs(organized_colors.opaque_colors or {}) do
-      color_lookup[color:upper()] = name
-    end
+    print("xeno.export debug: xeno.colors not available!")
   end
 
   -- Separate linked highlights from regular highlights

@@ -95,11 +95,14 @@ local function extract_custom_color_references(config)
 end
 
 -- Filter the xeno color palette to only include color families that are actually used
-local function get_filtered_color_palette(highlights)
+local function get_filtered_color_palette(highlights, variant_palette)
   local xeno = package.loaded["xeno"]
   if not xeno or not xeno.colors then
     return nil, "xeno.nvim colors not available. Please run xeno.setup() first"
   end
+
+  -- Use provided variant_palette for filtering, fall back to xeno.colors if not provided
+  local palette_to_filter = variant_palette or xeno.colors
 
   local used_color_values, used_semantic_colors = extract_used_colors_from_highlights(highlights)
   local used_color_families = {}
@@ -150,7 +153,7 @@ local function get_filtered_color_palette(highlights)
   end
 
   -- First pass: Determine which color families are being used
-  for color_name, color_value in pairs(xeno.colors) do
+  for color_name, color_value in pairs(palette_to_filter) do
     if type(color_value) == "string" and color_value:match("^#[0-9a-fA-F]+$") then
       if used_color_values[color_value:upper()] then
         -- Extract the color family name (e.g., "red_stone" from "red_stone_300")
@@ -166,7 +169,7 @@ local function get_filtered_color_palette(highlights)
   local semantic_colors = { "red", "green", "yellow", "orange", "blue", "purple", "cyan" }
 
   -- Second pass: Include all colors from the used families, referenced semantic colors, and used custom colors
-  for color_name, color_value in pairs(xeno.colors) do
+  for color_name, color_value in pairs(palette_to_filter) do
     if type(color_value) == "string" and color_value:match("^#[0-9a-fA-F]+$") then
       local family = color_name:match("^(.-)_%d+$") or color_name
       local is_semantic = false
@@ -235,13 +238,16 @@ local function get_filtered_color_palette(highlights)
 end
 
 -- Get xeno's generated highlights with resolved colors
-local function get_xeno_generated_highlights()
+-- If palette_colors is provided, use those instead of xeno.colors for resolution
+local function get_xeno_generated_highlights(palette_colors)
   local xeno = package.loaded["xeno"]
   if not xeno or not xeno._generated_highlights then
     return nil, "xeno.nvim highlights not available. Please run xeno.setup() first"
   end
 
   local resolver = require("xeno.core.resolver")
+  -- Use provided palette_colors for resolution if available, otherwise fall back to xeno.colors
+  local colors_for_resolution = palette_colors or xeno.colors
   local resolved_highlights = {}
 
   -- Resolve all color references in the generated highlights
@@ -252,7 +258,7 @@ local function get_xeno_generated_highlights()
       -- Resolve color references
       for attr_name, attr_value in pairs(attrs) do
         if attr_name == "fg" or attr_name == "bg" or attr_name == "sp" then
-          resolved_attrs[attr_name] = resolver.resolve_value(attr_value, xeno.colors)
+          resolved_attrs[attr_name] = resolver.resolve_value(attr_value, colors_for_resolution)
         else
           -- Copy style attributes as-is
           resolved_attrs[attr_name] = attr_value
@@ -467,7 +473,8 @@ local function generate_variant_palette(base_color, accent_color, variant, user_
 end
 
 -- Organize colors by their usage in both light and dark variants
-local function organize_colors_by_variant(color_palette, highlights)
+-- If current_variant_palette is provided, use it instead of regenerating
+local function organize_colors_by_variant(color_palette, highlights, current_variant_palette, current_variant)
   -- Get the current xeno configuration - this is crucial for consistency
   local xeno = package.loaded["xeno"]
   local user_config = {}
@@ -530,9 +537,26 @@ local function organize_colors_by_variant(color_palette, highlights)
     end
   end
 
-  -- Generate proper variant-specific palettes using xeno's actual mechanism
-  local dark_palette = generate_variant_palette(user_config.base, user_config.accent, "dark", user_config, filtered_custom_colors)
-  local light_palette = generate_variant_palette(user_config.base, user_config.accent, "light", user_config, filtered_custom_colors)
+  -- If a pre-generated palette is provided for the current variant, use it
+  -- Otherwise, generate both variants as fallback
+  local dark_palette, light_palette
+
+  if current_variant_palette and current_variant then
+    -- Use the provided palette for the current variant
+    if current_variant == "dark" then
+      dark_palette = current_variant_palette
+      -- Generate light palette for completeness if needed
+      light_palette = generate_variant_palette(user_config.base, user_config.accent, "light", user_config, filtered_custom_colors)
+    else
+      light_palette = current_variant_palette
+      -- Generate dark palette for completeness if needed
+      dark_palette = generate_variant_palette(user_config.base, user_config.accent, "dark", user_config, filtered_custom_colors)
+    end
+  else
+    -- Fallback: Generate both palettes
+    dark_palette = generate_variant_palette(user_config.base, user_config.accent, "dark", user_config, filtered_custom_colors)
+    light_palette = generate_variant_palette(user_config.base, user_config.accent, "light", user_config, filtered_custom_colors)
+  end
 
   -- Store variant-specific colors
   organized.variant_colors = {
@@ -586,9 +610,27 @@ local function generate_metadata()
   local timestamp = os.date("%Y-%m-%d %H:%M:%S")
   local variant = vim.o.background or "dark"
 
+  -- Get xeno configuration for base and accent colors
+  local xeno = package.loaded["xeno"]
+  local base_color = "unknown"
+  local accent_color = "unknown"
+  local variation = 0
+  local contrast = 0
+
+  if xeno and xeno._global_config then
+    base_color = xeno._global_config.base or base_color
+    accent_color = xeno._global_config.accent or accent_color
+    variation = xeno._global_config.variation or variation
+    contrast = xeno._global_config.contrast or contrast
+  end
+
   return {
     timestamp = timestamp,
     variant = variant,
+    base_color = base_color,
+    accent_color = accent_color,
+    variation = variation,
+    contrast = contrast,
     exported_by = "xeno.nvim export",
     supports_variants = true, -- New flag for dynamic exports
   }
@@ -610,24 +652,78 @@ function M.export_theme(config)
     return nil, "xeno.nvim theme is not currently loaded. Please run xeno.setup() first"
   end
 
-  -- Get xeno's generated highlights (with fallback to Neovim API)
-  local current_highlights, err = get_xeno_generated_highlights()
+  -- Get the current variant to determine which palette to use for resolution
+  local current_variant = vim.o.background or "dark"
+
+  -- Generate metadata first (we'll need it)
+  local metadata = generate_metadata()
+
+  -- IMPORTANT: Generate variant-specific palettes BEFORE resolving highlights
+  -- This ensures highlights are resolved with the correct colors for the current variant
+  local user_config = xeno._global_config or {}
+  local palette = require("xeno.core.palette")
+  local opaque_registry = require("xeno.core.opaque_registry")
+
+  -- Generate the palette for the CURRENT variant only (we're exporting the active variant)
+  local temp_config = {
+    base = user_config.base or "#030303",
+    accent = user_config.accent or "#7AA2F7",
+    variation = user_config.variation or 0,
+    contrast = user_config.contrast or 0,
+    _custom_colors = user_config._custom_colors,
+  }
+
+  -- Copy semantic color overrides
+  local semantic_colors = { "red", "green", "yellow", "orange", "blue", "purple", "cyan" }
+  for _, color_name in ipairs(semantic_colors) do
+    if user_config[color_name] then
+      temp_config[color_name] = user_config[color_name]
+    end
+  end
+
+  -- Generate the current variant's palette
+  opaque_registry.set_export_mode(true)
+  local ok, variant_palette = pcall(palette.generate_palette, temp_config)
+
+  -- Capture opaque colors
+  local opaque_colors = opaque_registry.get_opaque_colors(current_variant)
+  if variant_palette and opaque_colors then
+    for name, info in pairs(opaque_colors) do
+      variant_palette[name] = info.hex
+    end
+  end
+  opaque_registry.set_export_mode(false)
+
+  if not ok or not variant_palette then
+    vim.notify(fmt("xeno.nvim export: Error generating %s variant palette", current_variant), vim.log.levels.WARN)
+    variant_palette = xeno.colors -- Fallback to current colors
+  end
+
+  -- NOW resolve highlights using the variant-specific palette
+  local current_highlights, err = get_xeno_generated_highlights(variant_palette)
   if not current_highlights then
     vim.notify(fmt("xeno.nvim export: %s. Using Neovim API fallback.", err), vim.log.levels.WARN)
     current_highlights = get_neovim_current_highlights()
   end
 
+  -- Debug: Check what's in a sample highlight
+  if vim.env.XENO_DEBUG_EXPORT then
+    local normal = current_highlights["Normal"]
+    if normal then
+      print(fmt("xeno.export debug: Normal.fg = %s (type: %s)", normal.fg, type(normal.fg)))
+      print(fmt("xeno.export debug: Normal.bg = %s (type: %s)", normal.bg, type(normal.bg)))
+    end
+  end
+
   -- Get only the colors that are actually used in the current highlights
-  local color_palette, palette_err = get_filtered_color_palette(current_highlights)
+  -- Pass the variant_palette so filtering matches the colors used in highlight resolution
+  local color_palette, palette_err = get_filtered_color_palette(current_highlights, variant_palette)
   if not color_palette then
     return nil, fmt("Error getting color palette: %s", palette_err)
   end
 
-  -- Generate metadata
-  local metadata = generate_metadata()
-
-  -- Organize colors by variant usage
-  local organized_colors = organize_colors_by_variant(color_palette, current_highlights)
+  -- Organize colors by variant usage, passing the pre-generated palette for the current variant
+  local organized_colors = organize_colors_by_variant(color_palette, current_highlights, variant_palette, current_variant)
 
   -- Validate that variant color generation succeeded
   local valid, validation_error = validate_variant_colors(organized_colors)
