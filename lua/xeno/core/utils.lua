@@ -189,7 +189,17 @@ utils.opaque = function(fg_color, opacity, bg_color, colors)
   -- Register the opaque color if export mode is active
   local ok, opaque_registry = pcall(require, "xeno.core.opaque_registry")
   if ok and opaque_registry.is_export_mode() then
-    opaque_registry.register_opaque_call(fg_color, opacity, bg_color, result, colors)
+    -- Find the color name for the fg_color by searching the colors table
+    local fg_color_name = nil
+    if colors then
+      for name, hex in pairs(colors) do
+        if type(hex) == "string" and hex:upper() == fg_color:upper() then
+          fg_color_name = name
+          break
+        end
+      end
+    end
+    opaque_registry.register_opaque_call(fg_color, opacity, bg_color, result, colors, nil, fg_color_name)
   end
 
   return result
@@ -214,98 +224,188 @@ utils.adjust_lightness = function(hex, amount)
   return utils.rgb2hex(r, g, b)
 end
 
---- Convert a hex color string to HSL values.
---- @param hex string The hex color string.
---- @return number? h Hue (0-360) or nil on failure.
---- @return number? s Saturation (0-1) or nil on failure.
---- @return number? l Lightness (0-1) or nil on failure.
-utils.hex2hsl = function(hex)
-  local r_orig, g_orig, b_orig = utils.hex2rgb(hex)
-  if not r_orig then
+
+-- OKLCH Color Space Conversion Functions
+-- Reference: Part 3 of OKLCH_MIGRATION_ANALYSIS.md
+-- OKLCH is a perceptually uniform color space ideal for generating color palettes
+
+--- Apply inverse sRGB gamma correction (normalize RGB to linear RGB).
+--- @param r number Red component in [0, 255].
+--- @param g number Green component in [0, 255].
+--- @param b number Blue component in [0, 255].
+--- @return number Linear red [0, 1].
+--- @return number Linear green [0, 1].
+--- @return number Linear blue [0, 1].
+utils.rgb2linear_rgb = function(r, g, b)
+  -- Normalize to [0, 1]
+  local norm_r = r / 255
+  local norm_g = g / 255
+  local norm_b = b / 255
+
+  -- Apply inverse sRGB companding function (EOTF)
+  local function apply_inverse_gamma(value)
+    if value <= 0.04045 then
+      return value / 12.92
+    else
+      return math.pow((value + 0.055) / 1.055, 2.4)
+    end
+  end
+
+  return apply_inverse_gamma(norm_r), apply_inverse_gamma(norm_g), apply_inverse_gamma(norm_b)
+end
+
+--- Convert linear RGB to OKLab color space.
+--- Uses matrix transformations with cube roots.
+--- @param r number Linear red [0, 1].
+--- @param g number Linear green [0, 1].
+--- @param b number Linear blue [0, 1].
+--- @return number L OKLab lightness [0, 1].
+--- @return number a OKLab a component (green-red axis).
+--- @return number b OKLab b component (blue-yellow axis).
+utils.linear_rgb2oklab = function(r, g, b)
+  -- Step 1: Convert linear RGB to LMS cone response space
+  local l = 0.3 * r + 0.622 * g + 0.078 * b
+  local m = 0.23 * r + 0.692 * g + 0.078 * b
+  local s = 0.24342268924547819 * r + 0.20476744424496821 * g + 0.55356137790893145 * b
+
+  -- Step 2: Apply nonlinearity (cube root)
+  local l_ = l > 0 and math.pow(l, 1 / 3) or 0
+  local m_ = m > 0 and math.pow(m, 1 / 3) or 0
+  local s_ = s > 0 and math.pow(s, 1 / 3) or 0
+
+  -- Step 3: Linear combination to get OKLab values
+  local L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_
+  local a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_
+  local b_out = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
+
+  return L, a, b_out
+end
+
+--- Convert OKLab to OKLCH (Cartesian to polar coordinates).
+--- @param L number OKLab lightness [0, 1].
+--- @param a number OKLab a component.
+--- @param b number OKLab b component.
+--- @return number L Lightness [0, 1].
+--- @return number C Chroma [0, 0.4+].
+--- @return number H Hue [0, 360) degrees.
+utils.oklab2oklch = function(L, a, b)
+  local C = math.sqrt(a * a + b * b)
+  local H = math.atan2(b, a) * (180 / math.pi)
+  if H < 0 then
+    H = H + 360
+  end
+  return L, C, H
+end
+
+--- Convert OKLCH to OKLab (polar to Cartesian coordinates).
+--- @param L number Lightness [0, 1].
+--- @param C number Chroma [0, 0.4+].
+--- @param H number Hue [0, 360) degrees.
+--- @return number L Lightness [0, 1].
+--- @return number a OKLab a component.
+--- @return number b OKLab b component.
+utils.oklch2oklab = function(L, C, H)
+  local H_rad = H * (math.pi / 180)
+  local a = C * math.cos(H_rad)
+  local b = C * math.sin(H_rad)
+  return L, a, b
+end
+
+--- Convert OKLab to linear RGB (inverse of linear_rgb2oklab).
+--- @param L number OKLab lightness [0, 1].
+--- @param a number OKLab a component.
+--- @param b number OKLab b component.
+--- @return number r Linear red [0, 1].
+--- @return number g Linear green [0, 1].
+--- @return number b_out Linear blue [0, 1].
+utils.oklab2linear_rgb = function(L, a, b)
+  -- Step 1: Reverse OKLab → LMS' (inverse linear combination)
+  local l_ = L + 0.3963377774 * a + 0.2158037573 * b
+  local m_ = L - 0.1055613458 * a - 0.0638541728 * b
+  local s_ = L - 0.0894841775 * a - 1.2914855480 * b
+
+  -- Step 2: Reverse nonlinearity (cube: reverse the cube root)
+  local l = l_ * l_ * l_
+  local m = m_ * m_ * m_
+  local s = s_ * s_ * s_
+
+  -- Step 3: Inverse matrix to get linear RGB (LMS → Linear RGB)
+  -- This is the mathematical inverse of the RGB → LMS matrix
+  local r = 11.0305154984 * l - 9.8661643235 * m - 0.1640638153 * s
+  local g = -3.2551987873 * l + 4.4195499622 * m - 0.1640638153 * s
+  local b_out = -3.6464231263 * l + 2.7037079562 * m + 1.9393184317 * s
+
+  return r, g, b_out
+end
+
+--- Apply sRGB gamma correction (linear RGB to RGB).
+--- @param value number Linear value [0, 1].
+--- @return number Gamma-corrected value [0, 1].
+utils.linear2rgb = function(value)
+  -- Apply sRGB companding function
+  if value <= 0.0031308 then
+    return value * 12.92
+  else
+    return 1.055 * math.pow(value, 1 / 2.4) - 0.055
+  end
+end
+
+--- Convert hex color to OKLCH color space.
+--- Complete pipeline: Hex → RGB → Linear RGB → OKLab → OKLCH
+--- @param hex string Hex color string (e.g., "#5B8DEF").
+--- @return number? L Lightness [0, 1] or nil on failure.
+--- @return number? C Chroma [0, 0.4+] or nil on failure.
+--- @return number? H Hue [0, 360) or nil on failure.
+utils.hex2oklch = function(hex)
+  -- Hex → RGB
+  local r, g, b = utils.hex2rgb(hex)
+  if not r then
     return nil, nil, nil
   end
 
-  local r, g, b = r_orig / 255, g_orig / 255, b_orig / 255
+  -- RGB → Linear RGB
+  r, g, b = utils.rgb2linear_rgb(r, g, b)
 
-  local min_val = math.min(r, g, b)
-  local max_val = math.max(r, g, b)
-  local delta = max_val - min_val
+  -- Linear RGB → OKLab
+  local L, a, b_lab = utils.linear_rgb2oklab(r, g, b)
 
-  local h, s, l
-  l = (max_val + min_val) / 2
+  -- OKLab → OKLCH
+  local C, H
+  L, C, H = utils.oklab2oklch(L, a, b_lab)
 
-  if delta == 0 then
-    h = 0
-    s = 0 -- Achromatic
-  else
-    s = l > 0.5 and delta / (2 - max_val - min_val) or delta / (max_val + min_val)
-    if max_val == r then
-      h = (g - b) / delta + (g < b and 6 or 0)
-    elseif max_val == g then
-      h = (b - r) / delta + 2
-    else -- max_val == b
-      h = (r - g) / delta + 4
-    end
-    h = h / 6 -- Normalize to [0,1)
-    h = h * 360 -- Convert to degrees
-    if h < 0 then
-      h = h + 360
-    end -- Ensure hue is positive [0, 360)
-  end
-  return h, s, l
+  return L, C, H
 end
 
---- Helper function for HSL to RGB conversion.
-local function hue_to_rgb_component(p, q, t)
-  if t < 0 then
-    t = t + 1
-  end
-  if t > 1 then
-    t = t - 1
-  end
-  if t < 1 / 6 then
-    return p + (q - p) * 6 * t
-  end
-  if t < 1 / 2 then
-    return q
-  end
-  if t < 2 / 3 then
-    return p + (q - p) * (2 / 3 - t) * 6
-  end
-  return p
-end
+--- Convert OKLCH color to hex string.
+--- Complete pipeline: OKLCH → OKLab → Linear RGB → RGB → Hex
+--- Uses simple clamping for gamut mapping.
+--- @param L number Lightness [0, 1].
+--- @param C number Chroma [0, 0.4+].
+--- @param H number Hue [0, 360) degrees.
+--- @return string Hex color string (e.g., "#5B8DEF").
+utils.oklch2hex = function(L, C, H)
+  -- OKLCH → OKLab
+  local a, b
+  L, a, b = utils.oklch2oklab(L, C, H)
 
---- Convert HSL values to RGB values.
---- @param h number Hue (0-360).
---- @param s number Saturation (0-1).
---- @param l number Lightness (0-1).
---- @return number r Red component (0-255).
---- @return number g Green component (0-255).
---- @return number b Blue component (0-255).
-utils.hsl2rgb = function(h, s, l)
-  local r, g, b
+  -- OKLab → Linear RGB
+  local r, g, b_lin = utils.oklab2linear_rgb(L, a, b)
 
-  if s == 0 then
-    r, g, b = l, l, l -- Achromatic
-  else
-    h = h / 360 -- Normalize h to be in [0,1) for calculations
-    local q = l < 0.5 and l * (1 + s) or l + s - l * s
-    local p = 2 * l - q
-    r = hue_to_rgb_component(p, q, h + 1 / 3)
-    g = hue_to_rgb_component(p, q, h)
-    b = hue_to_rgb_component(p, q, h - 1 / 3)
-  end
-  return r * 255, g * 255, b * 255
-end
+  -- Linear RGB → RGB (gamma correction)
+  r = utils.linear2rgb(r)
+  g = utils.linear2rgb(g)
+  b_lin = utils.linear2rgb(b_lin)
 
---- Convert HSL values to a hex color string.
---- @param h number Hue (0-360).
---- @param s number Saturation (0-1).
---- @param l number Lightness (0-1).
---- @return string Hex color string.
-utils.hsl2hex = function(h, s, l)
-  local r, g, b = utils.hsl2rgb(h, s, l)
-  return utils.rgb2hex(r, g, b)
+  -- Normalize to [0, 255]
+  r = r * 255
+  g = g * 255
+  b_lin = b_lin * 255
+
+  -- Clamp to valid RGB range for gamut mapping
+  r, g, b_lin = utils.rgb_clamp(r, g, b_lin)
+
+  -- RGB → Hex
+  return utils.rgb2hex(r, g, b_lin)
 end
 
 return utils
