@@ -301,7 +301,7 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
     NeoTreeTabSeparatorInactive = { fg = colors.base_700, bg = colors.base_800 },
 
     -- Selection and Navigation
-    NeoTreeCursorLine = { bg = utils.opaque(colors.base_500, 0.15) },
+    NeoTreeCursorLine = { bg = utils.opaque(colors.base_500, 0.30) },
     NeoTreeIndentMarker = { fg = utils.opaque(colors.base_500, 0.40), nocombine = true },
 
     -- File System Elements

@@ -67,7 +67,7 @@ local function extract_color_name(color_value, colors)
 end
 
 -- Register an opaque color call for the current variant
-function M.register_opaque_call(fg_color, opacity, bg_color, result_hex, colors, variant)
+function M.register_opaque_call(fg_color, opacity, bg_color, result_hex, colors, variant, fg_color_name)
   if not registry.export_mode then
     return
   end
@@ -80,8 +80,8 @@ function M.register_opaque_call(fg_color, opacity, bg_color, result_hex, colors,
     registry.colors[variant] = {}
   end
 
-  -- Extract the base color name
-  local base_color_name = extract_color_name(fg_color, colors)
+  -- Use provided color name if available, otherwise extract it
+  local base_color_name = fg_color_name or extract_color_name(fg_color, colors)
 
   -- Generate the opaque color name
   local opaque_name = M.generate_opaque_name(base_color_name, opacity)

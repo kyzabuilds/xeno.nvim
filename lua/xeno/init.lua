@@ -42,8 +42,8 @@ function xeno.color(name, hex_value)
     return xeno
   end
 
-  local h, s, l = utils.hex2hsl(hex_value)
-  if not h then
+  local L, C, H = utils.hex2oklch(hex_value)
+  if not L then
     vim.notify(fmt("xeno.nvim: Invalid color hex value '%s' for '%s'. Must be a valid hex color.", hex_value, name), vim.log.levels.ERROR)
     return xeno
   end
@@ -71,8 +71,17 @@ function xeno.setup(user_config)
   -- Store the merged config globally for export functionality
   xeno._global_config = config
 
-  -- Add custom colors to config for palette generation
-  config._custom_colors = custom_colors
+  -- Add custom colors to config for palette generation (merge with any passed in config)
+  local merged_custom_colors = {}
+  if user_config and user_config._custom_colors then
+    for name, hex in pairs(user_config._custom_colors) do
+      merged_custom_colors[name] = hex
+    end
+  end
+  for name, hex in pairs(custom_colors) do
+    merged_custom_colors[name] = hex
+  end
+  config._custom_colors = merged_custom_colors
 
   if config.background and not config.base then
     config.base = config.background

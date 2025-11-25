@@ -127,6 +127,12 @@ function M.theme(name, config, global_config)
     table.insert(config_parts, fmt('  cyan = "%s"', user_config.cyan))
   end
 
+  -- Add custom colors if present (colors registered with xeno.color())
+  if user_config._custom_colors and next(user_config._custom_colors) then
+    local custom_colors_code = serialize_value(user_config._custom_colors, 1)
+    table.insert(config_parts, fmt("  _custom_colors = %s", custom_colors_code))
+  end
+
   -- Add decorations if present
   if user_config.decorations then
     local decorations_code = serialize_value(user_config.decorations, 1)
