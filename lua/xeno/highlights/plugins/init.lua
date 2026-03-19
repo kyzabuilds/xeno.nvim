@@ -1085,46 +1085,55 @@ M["Bekaboo/dropbar.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["DNLHC/glance.nvim"] = function(colors, config)
+M["DNLHC/glance.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    fg = colors.foreground_100,
+    muted_fg = colors.foreground_300,
+    -- bg = colors.background_900,
+    bg = colors.background_900,
+    border_fg = colors.background_700,
+    border_sp = colors.background_800,
+    cursorline_bg = utils.opaque(colors.background_600, 0.10),
+    match_bg = colors.background_800,
+    indent_fg = utils.opaque(colors.foreground_400, 0.20),
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
     -- Main window elements
     GlanceNone = { clear = true },
-    GlanceWinBarTitle = helpers.with_borders(
-      { fg = colors.foreground_100, bg = colors.background_900, sp = colors.background_800 },
-      config
-    ),
-    GlanceWinBarFilepath = helpers.with_borders(
-      { fg = colors.foreground_300, bg = colors.background_900, sp = colors.background_800 },
-      config
-    ),
-    GlanceWinBarFilename = helpers.with_borders(
-      { fg = colors.foreground_100, bg = colors.background_900, sp = colors.background_800 },
-      config
-    ),
+    GlanceWinBarTitle = helpers.with_borders({ fg = config.fg, bg = config.bg, sp = config.border_sp }, config),
+    GlanceWinBarFilepath = helpers.with_borders({ fg = config.muted_fg, bg = config.bg, sp = config.border_sp }, config),
+    GlanceWinBarFilename = helpers.with_borders({ fg = config.fg, bg = config.bg, sp = config.border_sp }, config),
 
     -- List panel
-    GlanceListNormal = { fg = colors.foreground_100, bg = colors.background_900 },
-    GlanceListCursorLine = { bg = utils.opaque(colors.background_600, 0.10) },
-    GlanceListFilepath = { fg = colors.foreground_300 },
+    GlanceListNormal = { fg = config.fg, bg = config.bg },
+    GlanceListCursorLine = { bg = config.cursorline_bg },
+    GlanceListFilepath = { fg = config.muted_fg },
     GlanceListFilename = { link = "Directory" },
     GlanceListCount = { link = "Number" },
     GlanceListMatch = { link = "Search" },
-    GlanceListEndOfBuffer = { fg = colors.background_900, bg = colors.background_900 },
-    GlanceListBorderBottom = { fg = colors.background_700, bg = colors.background_900 },
+    GlanceListEndOfBuffer = { fg = config.bg, bg = config.bg },
+    GlanceListBorderBottom = { fg = config.border_fg, bg = config.bg },
 
     -- Preview panel
-    GlancePreviewNormal = { bg = colors.background_900 },
-    GlancePreviewCursorLine = { bg = utils.opaque(colors.background_600, 0.10) },
-    GlancePreviewMatch = { bg = colors.background_800 },
-    GlancePreviewSignColumn = { fg = colors.background_900 },
-    GlancePreviewLineNr = { fg = colors.foreground_300 },
-    GlancePreviewEndOfBuffer = { fg = colors.background_900, bg = colors.background_900 },
-    GlancePreviewBorderBottom = { fg = colors.background_700, bg = colors.background_900 },
+    GlancePreviewNormal = { bg = config.bg },
+    GlancePreviewCursorLine = { bg = config.cursorline_bg },
+    GlancePreviewMatch = { bg = config.match_bg },
+    GlancePreviewSignColumn = { fg = config.bg },
+    GlancePreviewLineNr = { fg = config.muted_fg },
+    GlancePreviewEndOfBuffer = { fg = config.bg, bg = config.bg },
+    GlancePreviewBorderBottom = { fg = config.border_fg, bg = config.bg },
 
     -- Borders and separators
-    GlanceBorderTop = { fg = colors.background_700, bg = colors.background_900 },
-    GlanceIndent = { fg = utils.opaque(colors.foreground_400, 0.20) },
-    GlanceFoldIcon = { fg = colors.foreground_300 },
+    GlanceBorderTop = { fg = config.border_fg, bg = config.bg },
+    GlanceIndent = { fg = config.indent_fg },
+    GlanceFoldIcon = { fg = config.muted_fg },
   }
 end
 
