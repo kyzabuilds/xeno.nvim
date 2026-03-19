@@ -9,7 +9,7 @@ function M.clear_cache()
   resolved_cache = {}
 end
 
---- Check if a value is a color reference (e.g., "@base.500" or "@my_color")
+--- Check if a value is a color reference (e.g., "@background.500" or "@my_color")
 --- @param value any The value to check
 --- @return boolean True if it's a color reference
 function M.is_color_reference(value)
@@ -52,7 +52,7 @@ function M.resolve_highlight_reference(reference, attribute, highlights)
   end
 end
 
---- Extract color key from reference (e.g., "@base.500" -> "base_500", "@my_color" -> "my_color_500")
+--- Extract color key from reference (e.g., "@background.500" -> "background_500", "@my_color" -> "my_color_500")
 --- @param reference string The color reference
 --- @return string|nil The color key or nil if invalid
 function M.extract_color_key(reference)

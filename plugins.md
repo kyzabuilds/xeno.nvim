@@ -40,9 +40,9 @@ Configure Telescope highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["nvim-telescope/telescope.nvim"] = {
-      bg = colors.base_800,        -- Background color
-      fg = colors.base_300,        -- Foreground text color
-      border = colors.base_700,    -- Border color
+      bg = colors.background_800,  -- Background color
+      fg = colors.foreground_300,  -- Foreground text color
+      border = colors.background_700, -- Border color
     }
   }
 })
@@ -69,9 +69,9 @@ Configure FZF-Lua highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["ibhagwan/fzf-lua"] = {
-      bg = colors.base_800,           -- Background color
-      fg = colors.base_200,           -- Foreground text color
-      border = colors.base_200,       -- Border color
+      bg = colors.background_800,     -- Background color
+      fg = colors.foreground_200,     -- Foreground text color
+      border = colors.foreground_200, -- Border color
       prompt_fg = colors.accent_200,  -- Prompt text color
       pointer_fg = colors.accent_200, -- Pointer color
     }
@@ -105,9 +105,9 @@ require("xeno").setup({
   plugins = {
     ["hrsh7th/nvim-cmp"] = {
       match_fg = colors.accent_200,  -- Matched text color
-      kind_fg = colors.base_200,     -- Completion kind color
-      menu_fg = colors.base_300,     -- Menu text color
-      item_fg = colors.base_200,     -- Item text color
+      kind_fg = colors.foreground_200, -- Completion kind color
+      menu_fg = colors.foreground_300, -- Menu text color
+      item_fg = colors.foreground_200, -- Item text color
     }
   }
 })
@@ -133,10 +133,10 @@ Configure blink.cmp highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["Saghen/blink.cmp"] = {
-      label_fg = colors.base_300,   -- Label text color
-      match_fg = colors.base_300,   -- Matched text color
-      kind_fg = colors.base_500,    -- Kind icon color
-      source_fg = colors.base_500,  -- Source text color
+      label_fg = colors.foreground_300, -- Label text color
+      match_fg = colors.foreground_300, -- Matched text color
+      kind_fg = colors.background_500,  -- Kind icon color
+      source_fg = colors.background_500, -- Source text color
     }
   }
 })
@@ -166,8 +166,8 @@ Configure nvim-navic highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["SmiteshP/nvim-navic"] = {
-      text_fg = colors.base_300,      -- Text color
-      separator_fg = colors.base_300, -- Separator color
+      text_fg = colors.foreground_300,      -- Text color
+      separator_fg = colors.foreground_300, -- Separator color
       icon_fg = colors.accent_500,    -- Icon color
     }
   }
@@ -203,7 +203,7 @@ require("xeno").setup({
       note_fg = colors.accent_500,  -- NOTE comment color
       warn_fg = colors.yellow,      -- WARN comment color
       fix_fg = colors.red,          -- FIX comment color
-      bg = colors.base_700,         -- Background color
+      bg = colors.background_700,   -- Background color
     }
   }
 })
@@ -232,8 +232,8 @@ Configure indent-blankline highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["lukas-reineke/indent-blankline.nvim"] = {
-      scope_fg = utils.opaque(colors.base_500, 0.70, nil, colors),  -- Scope line color
-      indent_fg = utils.opaque(colors.base_500, 0.30, nil, colors), -- Indent line color
+      scope_fg = utils.opaque(colors.background_500, 0.70, nil, colors),  -- Scope line color
+      indent_fg = utils.opaque(colors.background_500, 0.30, nil, colors), -- Indent line color
     }
   }
 })
@@ -256,8 +256,8 @@ Configure indentmini highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["nvimdev/indentmini.nvim"] = {
-      line_fg = utils.opaque(colors.base_500, 0.30, nil, colors),    -- Regular indent line color
-      current_fg = utils.opaque(colors.base_500, 0.70, nil, colors), -- Current indent line color
+      line_fg = utils.opaque(colors.background_500, 0.30, nil, colors),    -- Regular indent line color
+      current_fg = utils.opaque(colors.background_500, 0.70, nil, colors), -- Current indent line color
     }
   }
 })
@@ -279,10 +279,10 @@ Configure neo-tree highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["nvim-neo-tree/neo-tree.nvim"] = {
-      bg = colors.base_800,              -- Background color
-      fg = colors.base_200,              -- Foreground color
+      bg = colors.background_800,        -- Background color
+      fg = colors.foreground_200,        -- Foreground color
       root_fg = colors.accent_500,       -- Root directory color
-      directory_fg = colors.base_200,    -- Directory color
+      directory_fg = colors.foreground_200, -- Directory color
       git_add_fg = colors.green,         -- Git added color
       git_modified_fg = colors.yellow,   -- Git modified color
       git_deleted_fg = colors.red,       -- Git deleted color
@@ -318,10 +318,10 @@ Configure nvim-tree highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["nvim-tree/nvim-tree.lua"] = {
-      bg = colors.base_800,              -- Background color
-      fg = colors.base_200,              -- Foreground color
+      bg = colors.background_800,        -- Background color
+      fg = colors.foreground_200,        -- Foreground color
       root_fg = colors.accent_500,       -- Root folder color
-      folder_fg = colors.base_200,       -- Folder color
+      folder_fg = colors.foreground_200, -- Folder color
       git_add_fg = colors.green,         -- Git added color
       git_modified_fg = colors.yellow,   -- Git modified color
       git_deleted_fg = colors.red,       -- Git deleted color
@@ -379,9 +379,9 @@ Configure bufferline highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["akinsho/bufferline.nvim"] = {
-      selected_bg = colors.base_800,  -- Selected buffer background
-      visible_bg = colors.base_900,   -- Visible buffer background
-      separator = colors.base_800,    -- Separator color
+      selected_bg = colors.background_800, -- Selected buffer background
+      visible_bg = colors.background_900,  -- Visible buffer background
+      separator = colors.background_800,   -- Separator color
     }
   }
 })
@@ -411,8 +411,8 @@ Configure trouble highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["folke/trouble.nvim"] = {
-      bg = colors.base_800,  -- Background color
-      fg = colors.base_200,  -- Foreground color
+      bg = colors.background_800, -- Background color
+      fg = colors.foreground_200, -- Foreground color
     }
   }
 })
@@ -458,13 +458,13 @@ Configure render-markdown highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["MeanderingProgrammer/render-markdown.nvim"] = {
-      heading_fg = colors.base_200,       -- Heading text color
-      code_bg = colors.base_800,          -- Code block background
+      heading_fg = colors.foreground_200, -- Heading text color
+      code_bg = colors.background_800,    -- Code block background
       inline_code_fg = colors.accent_500, -- Inline code text color
-      inline_code_bg = colors.base_950,   -- Inline code background
-      table_fg = colors.base_200,         -- Table text color
-      quote_fg = colors.base_400,         -- Quote text color
-      link_fg = colors.base_300,          -- Link text color
+      inline_code_bg = colors.background_950, -- Inline code background
+      table_fg = colors.foreground_200,       -- Table text color
+      quote_fg = colors.foreground_400,       -- Quote text color
+      link_fg = colors.foreground_300,        -- Link text color
     }
   }
 })
@@ -519,10 +519,10 @@ Configure dropbar highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["Bekaboo/dropbar.nvim"] = {
-      fg = colors.base_200,                                  -- Foreground color
-      bg = colors.base_800,                                  -- Background color
-      hover_bg = utils.opaque(colors.base_500, 0.30, nil, colors), -- Hover background
-      separator_fg = colors.base_500,                        -- Separator color
+      fg = colors.foreground_200,                                -- Foreground color
+      bg = colors.background_800,                                -- Background color
+      hover_bg = utils.opaque(colors.background_500, 0.30, nil, colors), -- Hover background
+      separator_fg = colors.background_500,                      -- Separator color
       icon_fg = colors.accent_500,                           -- Icon color
     }
   }
@@ -594,9 +594,9 @@ require("xeno").setup({
   plugins = {
     ["folke/which-key.nvim"] = {
       key_fg = colors.accent_500,    -- Key color
-      group_fg = colors.base_400,    -- Group color
-      bg = colors.base_800,          -- Background color
-      border_fg = colors.base_800,   -- Border color
+      group_fg = colors.foreground_400, -- Group color
+      bg = colors.background_800,       -- Background color
+      border_fg = colors.background_800, -- Border color
     }
   }
 })
@@ -626,7 +626,7 @@ Configure nvim-scrollbar highlights through the plugin configuration:
 require("xeno").setup({
   plugins = {
     ["petertriho/nvim-scrollbar"] = {
-      handle_bg = utils.opaque(colors.base_500, 0.30, nil, colors), -- Handle background
+      handle_bg = utils.opaque(colors.background_500, 0.30, nil, colors), -- Handle background
       git_add_fg = colors.green,      -- Git added color
       git_change_fg = colors.yellow,  -- Git changed color
       git_delete_fg = colors.red,     -- Git deleted color
@@ -675,4 +675,3 @@ Avante uses predefined color schemes and doesn't expose configuration options.
 - `AvanteConfirmTitle` - Confirmation dialog
 - `AvanteToBeDeleted*` - Deletion indicators
 - `AvanteConflict*` - Conflict resolution highlights
-

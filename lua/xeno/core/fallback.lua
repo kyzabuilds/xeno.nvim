@@ -2,26 +2,24 @@ local M = {}
 local fmt = string.format
 
 local fallback_colors = {
-  base_100 = "#f8f8f2",
-  base_200 = "#e6e6e6",
-  base_300 = "#cccccc",
-  base_400 = "#999999",
-  base_500 = "#666666",
-  base_600 = "#444444",
-  base_700 = "#333333",
-  base_800 = "#222222",
-  base_900 = "#111111",
-  base_950 = "#080808",
+  foreground_50 = "#f8f8f2",
+  foreground_100 = "#e6e6e6",
+  foreground_200 = "#cccccc",
+  foreground_300 = "#999999",
+  foreground_400 = "#666666",
+  background_500 = "#444444",
+  background_600 = "#333333",
+  background_700 = "#222222",
+  background_800 = "#1a1a1a",
+  background_900 = "#111111",
+  background_950 = "#080808",
+  accent_50 = "#8cb2ff",
   accent_100 = "#7aa2f7",
   accent_200 = "#6699ff",
   accent_300 = "#5588ee",
   accent_400 = "#4477dd",
   accent_500 = "#3366cc",
   accent_600 = "#2255bb",
-  accent_700 = "#1144aa",
-  accent_800 = "#003399",
-  accent_900 = "#002288",
-  accent_950 = "#001177",
   red = "#e86671",
   green = "#a9dc76",
   yellow = "#e7c547",
@@ -51,9 +49,9 @@ end
 function M.initialize_default_colors()
   local palette = require("xeno.core.palette")
   local default_config = {
-    base = "#030303",
+    foreground = nil,
+    background = "#030303",
     accent = "#7AA2F7",
-    variation = 0.0,
     contrast = 0,
   }
 

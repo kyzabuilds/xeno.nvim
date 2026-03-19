@@ -5,9 +5,9 @@ local helpers = require("xeno.core.helpers")
 M["nvim-telescope/telescope.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    bg = colors.base_800,
-    fg = colors.base_300,
-    border = colors.base_700,
+    bg = colors.background_900,
+    fg = colors.foreground_100,
+    border = colors.background_800,
   }
 
   -- Merge with user overrides if provided
@@ -20,18 +20,18 @@ M["nvim-telescope/telescope.nvim"] = function(colors, plugin_config)
     TelescopeBorder = { bg = config.bg, fg = config.border },
     TelescopeTitle = { bg = config.bg, fg = config.fg },
     TelescopePromptPrefix = { fg = colors.accent_500 },
-    TelescopePromptCounter = { fg = colors.base_500 },
-    TelescopeSelection = { bg = utils.opaque(colors.base_500, 0.30) },
-    TelescopeSelectionCaret = { bg = utils.opaque(colors.base_500, 0.30), fg = colors.accent_500 },
+    TelescopePromptCounter = { fg = colors.foreground_400 },
+    TelescopeSelection = { bg = utils.opaque(colors.background_600, 0.30) },
+    TelescopeSelectionCaret = { bg = utils.opaque(colors.background_600, 0.30), fg = colors.accent_500 },
   }
 end
 
 M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    bg = colors.base_800,
-    fg = colors.base_200,
-    border = colors.base_200,
+    bg = colors.background_900,
+    fg = colors.foreground_100,
+    border = colors.background_800,
     prompt_fg = colors.accent_200,
     pointer_fg = colors.accent_200,
   }
@@ -55,18 +55,18 @@ M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
     FzfLuaFzfPointer = { bg = config.bg, fg = config.pointer_fg },
 
     -- Search and Buffer Elements
-    FzfLuaSearch = { bg = colors.base_800, fg = colors.base_200 },
-    FzfLuaBufFlagCurl = { bg = colors.base_800, fg = colors.base_200 },
+    FzfLuaSearch = { bg = colors.background_900, fg = colors.foreground_100 },
+    FzfLuaBufFlagCurl = { bg = colors.background_900, fg = colors.foreground_100 },
 
     -- Scroll Elements
-    FzfLuaScrollBorderEmpty = { bg = colors.base_700, fg = colors.base_200 },
-    FzfLuaScrollBorderFull = { bg = colors.base_700, fg = colors.base_200 },
-    FzfLuaScrollFloatEmpty = { bg = colors.base_700, fg = colors.base_200 },
-    FzfLuaScrollFloatFull = { bg = colors.base_700, fg = colors.base_200 },
+    FzfLuaScrollBorderEmpty = { bg = colors.background_800, fg = colors.foreground_100 },
+    FzfLuaScrollBorderFull = { bg = colors.background_800, fg = colors.foreground_100 },
+    FzfLuaScrollFloatEmpty = { bg = colors.background_800, fg = colors.foreground_100 },
+    FzfLuaScrollFloatFull = { bg = colors.background_800, fg = colors.foreground_100 },
 
     -- Help Elements
-    FzfLuaHelpNormal = { bg = colors.base_700, fg = colors.base_200 },
-    FzfLuaHelpBorder = { bg = colors.base_700, fg = colors.base_200 },
+    FzfLuaHelpNormal = { bg = colors.background_800, fg = colors.foreground_100 },
+    FzfLuaHelpBorder = { bg = colors.background_800, fg = colors.foreground_100 },
   }
 end
 
@@ -74,9 +74,9 @@ M["hrsh7th/nvim-cmp"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
     match_fg = colors.accent_200,
-    kind_fg = colors.base_200,
-    menu_fg = colors.base_300,
-    item_fg = colors.base_200,
+    kind_fg = colors.foreground_100,
+    menu_fg = colors.foreground_200,
+    item_fg = colors.foreground_100,
   }
 
   -- Merge with user overrides if provided
@@ -90,17 +90,17 @@ M["hrsh7th/nvim-cmp"] = function(colors, plugin_config)
     CmpItemKind = { fg = config.kind_fg },
     CmpItemMenu = { fg = config.menu_fg, italic = true },
     CmpItemAbbr = { fg = config.item_fg },
-    CmpItemAbbrDeprecated = { fg = colors.base_300, strikethrough = true },
+    CmpItemAbbrDeprecated = { fg = colors.foreground_200, strikethrough = true },
   }
 end
 
 M["Saghen/blink.cmp"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    label_fg = colors.base_300,
-    match_fg = colors.base_300,
-    kind_fg = colors.base_500,
-    source_fg = colors.base_500,
+    label_fg = colors.foreground_200,
+    match_fg = colors.foreground_200,
+    kind_fg = colors.foreground_300,
+    source_fg = colors.foreground_300,
   }
 
   -- Merge with user overrides if provided
@@ -127,7 +127,7 @@ M["Saghen/blink.cmp"] = function(colors, plugin_config)
 
     -- Scrollbar
     BlinkCmpScrollBarThumb = { link = "PmenuThumb" },
-    BlinkCmpScrollBarGutter = { bg = colors.base_800 },
+    BlinkCmpScrollBarGutter = { bg = colors.background_900 },
 
     -- Ghost text
     BlinkCmpGhostText = { link = "NonText" },
@@ -146,15 +146,15 @@ M["Saghen/blink.cmp"] = function(colors, plugin_config)
     BlinkCmpKindMethod = { fg = colors.accent_300 },
     BlinkCmpKindFunction = { fg = colors.accent_300 },
     BlinkCmpKindConstructor = { fg = colors.accent_300 },
-    BlinkCmpKindField = { fg = colors.base_500 },
-    BlinkCmpKindVariable = { fg = colors.base_500 },
-    BlinkCmpKindClass = { fg = colors.base_500 },
-    BlinkCmpKindInterface = { fg = colors.base_500 },
-    BlinkCmpKindModule = { fg = colors.base_500 },
-    BlinkCmpKindProperty = { fg = colors.base_500 },
-    BlinkCmpKindUnit = { fg = colors.base_500 },
-    BlinkCmpKindValue = { fg = colors.base_500 },
-    BlinkCmpKindEnum = { fg = colors.base_500 },
+    BlinkCmpKindField = { fg = colors.foreground_300 },
+    BlinkCmpKindVariable = { fg = colors.foreground_300 },
+    BlinkCmpKindClass = { fg = colors.foreground_300 },
+    BlinkCmpKindInterface = { fg = colors.foreground_300 },
+    BlinkCmpKindModule = { fg = colors.foreground_300 },
+    BlinkCmpKindProperty = { fg = colors.foreground_300 },
+    BlinkCmpKindUnit = { fg = colors.foreground_300 },
+    BlinkCmpKindValue = { fg = colors.foreground_300 },
+    BlinkCmpKindEnum = { fg = colors.foreground_300 },
     BlinkCmpKindKeyword = { fg = colors.accent_300 },
     BlinkCmpKindSnippet = { fg = colors.accent_300 },
     BlinkCmpKindColor = { fg = colors.accent_300 },
@@ -173,8 +173,8 @@ end
 M["SmiteshP/nvim-navic"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    text_fg = colors.base_300,
-    separator_fg = colors.base_300,
+    text_fg = colors.foreground_200,
+    separator_fg = colors.foreground_200,
     icon_fg = colors.accent_500,
   }
 
@@ -192,8 +192,8 @@ M["SmiteshP/nvim-navic"] = function(colors, plugin_config)
     NavicIconsPackage = { fg = config.icon_fg },
     NavicIconsClass = { fg = config.icon_fg },
     NavicIconsMethod = { fg = config.icon_fg },
-    NavicIconsProperty = { fg = colors.base_200 },
-    NavicIconsField = { fg = colors.base_200 },
+    NavicIconsProperty = { fg = colors.foreground_100 },
+    NavicIconsField = { fg = colors.foreground_100 },
     NavicIconsConstructor = { fg = config.icon_fg },
     NavicIconsFunction = { fg = config.icon_fg },
   }
@@ -205,7 +205,7 @@ M["folke/todo-comments.nvim"] = function(colors, plugin_config)
     note_fg = colors.accent_500,
     warn_fg = colors.yellow,
     fix_fg = colors.red,
-    bg = colors.base_700,
+    bg = colors.background_800,
   }
 
   -- Merge with user overrides if provided
@@ -229,8 +229,8 @@ end
 M["lukas-reineke/indent-blankline.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    scope_fg = utils.opaque(colors.base_500, 0.70),
-    indent_fg = utils.opaque(colors.base_500, 0.30),
+    scope_fg = utils.opaque(colors.foreground_400, 0.70),
+    indent_fg = utils.opaque(colors.foreground_400, 0.30),
   }
 
   -- Merge with user overrides if provided
@@ -248,8 +248,8 @@ end
 M["nvimdev/indentmini.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    line_fg = utils.opaque(colors.base_500, 0.30),
-    current_fg = utils.opaque(colors.base_500, 0.70),
+    line_fg = utils.opaque(colors.foreground_400, 0.30),
+    current_fg = utils.opaque(colors.foreground_400, 0.70),
   }
 
   -- Merge with user overrides if provided
@@ -266,10 +266,10 @@ end
 M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    bg = colors.base_800,
-    fg = colors.base_200,
+    bg = colors.background_900,
+    fg = colors.foreground_200,
     root_fg = colors.accent_500,
-    directory_fg = colors.base_200,
+    directory_fg = colors.foreground_200,
     git_add_fg = colors.green,
     git_modified_fg = colors.yellow,
     git_deleted_fg = colors.red,
@@ -292,23 +292,23 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
     -- Status Line
     NeoTreeStatusLine = { bg = neotree.bg, fg = neotree.fg },
     NeoTreeStatusLineNC = { bg = neotree.bg, fg = neotree.fg },
-    NeoTreeWinSeparator = { bg = neotree.bg, fg = colors.base_700 },
+    NeoTreeWinSeparator = { bg = neotree.bg, fg = colors.background_800 },
 
     -- Tabs
-    NeoTreeTabActive = { bg = colors.base_700, bold = true },
-    NeoTreeTabInactive = { bg = colors.base_800, fg = colors.base_300 },
-    NeoTreeTabSeparatorActive = { fg = colors.base_300, bg = colors.base_700 },
-    NeoTreeTabSeparatorInactive = { fg = colors.base_700, bg = colors.base_800 },
+    NeoTreeTabActive = { bg = colors.background_800, bold = true },
+    NeoTreeTabInactive = { bg = colors.background_900, fg = colors.foreground_200 },
+    NeoTreeTabSeparatorActive = { fg = colors.foreground_200, bg = colors.background_800 },
+    NeoTreeTabSeparatorInactive = { fg = colors.background_800, bg = colors.background_900 },
 
     -- Selection and Navigation
-    NeoTreeCursorLine = { bg = utils.opaque(colors.base_500, 0.30) },
-    NeoTreeIndentMarker = { fg = utils.opaque(colors.base_500, 0.40), nocombine = true },
+    NeoTreeCursorLine = { bg = utils.opaque(colors.background_600, 0.30) },
+    NeoTreeIndentMarker = { fg = utils.opaque(colors.foreground_400, 0.40), nocombine = true },
 
     -- File System Elements
     NeoTreeDirectoryName = { fg = config.directory_fg },
-    NeoTreeDirectoryIcon = { fg = colors.base_300 },
-    NeoTreeDotFile = { fg = colors.base_500 },
-    NeoTreeMessage = { fg = colors.base_300 },
+    NeoTreeDirectoryIcon = { fg = colors.foreground_200 },
+    NeoTreeDotFile = { fg = colors.foreground_300 },
+    NeoTreeMessage = { fg = colors.foreground_200 },
 
     -- Git Status Colors
     NeoTreeGitAdded = { fg = config.git_add_fg },
@@ -320,10 +320,10 @@ end
 M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    bg = colors.base_800,
-    fg = colors.base_200,
+    bg = colors.background_900,
+    fg = colors.foreground_100,
     root_fg = colors.accent_500,
-    folder_fg = colors.base_200,
+    folder_fg = colors.foreground_100,
     git_add_fg = colors.green,
     git_modified_fg = colors.yellow,
     git_deleted_fg = colors.red,
@@ -342,7 +342,7 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
     NvimTreeNormal = { bg = nvimtree.bg, fg = nvimtree.fg },
     NvimTreeNormalNC = { bg = nvimtree.bg, fg = nvimtree.fg },
     NvimTreeNormalFloat = { bg = nvimtree.bg, fg = nvimtree.fg },
-    NvimTreeNormalFloatBorder = { bg = nvimtree.bg, fg = colors.base_700 },
+    NvimTreeNormalFloatBorder = { bg = nvimtree.bg, fg = colors.background_800 },
     NvimTreeEndOfBuffer = { bg = nvimtree.bg },
     NvimTreePopup = { bg = nvimtree.bg, fg = nvimtree.fg },
     NvimTreeSignColumn = { bg = nvimtree.bg, fg = nvimtree.fg },
@@ -350,28 +350,28 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
     -- Status Line
     NvimTreeStatusLine = { bg = nvimtree.bg, fg = nvimtree.fg },
     NvimTreeStatusLineNC = { bg = nvimtree.bg, fg = nvimtree.fg },
-    NvimTreeWinSeparator = { bg = nvimtree.bg, fg = colors.base_700 },
-    NvimTreeLineNr = { bg = nvimtree.bg, fg = colors.base_500 },
-    NvimTreeCursorLineNr = { bg = nvimtree.bg, fg = colors.base_300 },
+    NvimTreeWinSeparator = { bg = nvimtree.bg, fg = colors.background_800 },
+    NvimTreeLineNr = { bg = nvimtree.bg, fg = colors.foreground_300 },
+    NvimTreeCursorLineNr = { bg = nvimtree.bg, fg = colors.foreground_200 },
 
     -- Selection and Navigation
-    NvimTreeCursorLine = { bg = utils.opaque(colors.base_500, 0.15) },
-    NvimTreeCursorColumn = { bg = utils.opaque(colors.base_500, 0.15) },
-    NvimTreeIndentMarker = { fg = utils.opaque(colors.base_500, 0.40), nocombine = true },
+    NvimTreeCursorLine = { bg = utils.opaque(colors.background_600, 0.15) },
+    NvimTreeCursorColumn = { bg = utils.opaque(colors.background_600, 0.15) },
+    NvimTreeIndentMarker = { fg = utils.opaque(colors.foreground_400, 0.40), nocombine = true },
 
     -- Folder Elements
     NvimTreeFolderName = { fg = config.folder_fg },
-    NvimTreeEmptyFolderName = { fg = colors.base_300 },
+    NvimTreeEmptyFolderName = { fg = colors.foreground_200 },
     NvimTreeOpenedFolderName = { fg = config.folder_fg, bold = true },
-    NvimTreeSymlinkFolderName = { fg = colors.base_300, italic = true },
-    NvimTreeFolderIcon = { fg = colors.base_300 },
-    NvimTreeOpenedFolderIcon = { fg = colors.base_300 },
-    NvimTreeClosedFolderIcon = { fg = colors.base_300 },
-    NvimTreeFolderArrowOpen = { fg = colors.base_300 },
-    NvimTreeFolderArrowClosed = { fg = colors.base_300 },
+    NvimTreeSymlinkFolderName = { fg = colors.foreground_200, italic = true },
+    NvimTreeFolderIcon = { fg = colors.foreground_200 },
+    NvimTreeOpenedFolderIcon = { fg = colors.foreground_200 },
+    NvimTreeClosedFolderIcon = { fg = colors.foreground_200 },
+    NvimTreeFolderArrowOpen = { fg = colors.foreground_200 },
+    NvimTreeFolderArrowClosed = { fg = colors.foreground_200 },
 
     -- File Elements
-    NvimTreeFileIcon = { fg = colors.base_200 },
+    NvimTreeFileIcon = { fg = colors.foreground_100 },
     NvimTreeExecFile = { fg = colors.green, bold = true },
     NvimTreeImageFile = { fg = colors.purple },
     NvimTreeSpecialFile = { fg = colors.yellow, underline = true },
@@ -385,7 +385,7 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
     NvimTreeGitRenamed = { fg = colors.purple },
     NvimTreeGitNew = { fg = colors.green, bold = true },
     NvimTreeGitDeleted = { fg = colors.red },
-    NvimTreeGitIgnored = { fg = colors.base_500 },
+    NvimTreeGitIgnored = { fg = colors.foreground_300 },
 
     -- Git Icons
     NvimTreeGitDirtyIcon = { fg = colors.yellow },
@@ -394,7 +394,7 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
     NvimTreeGitRenamedIcon = { fg = colors.purple },
     NvimTreeGitNewIcon = { fg = colors.green },
     NvimTreeGitDeletedIcon = { fg = colors.red },
-    NvimTreeGitIgnoredIcon = { fg = colors.base_500 },
+    NvimTreeGitIgnoredIcon = { fg = colors.foreground_300 },
 
     -- Git File Highlights
     NvimTreeGitFileDirtyHL = { fg = colors.yellow },
@@ -403,7 +403,7 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
     NvimTreeGitFileRenamedHL = { fg = colors.purple },
     NvimTreeGitFileNewHL = { fg = colors.green },
     NvimTreeGitFileDeletedHL = { fg = colors.red },
-    NvimTreeGitFileIgnoredHL = { fg = colors.base_500 },
+    NvimTreeGitFileIgnoredHL = { fg = colors.foreground_300 },
 
     -- Git Folder Highlights
     NvimTreeGitFolderDirtyHL = { fg = colors.yellow },
@@ -412,21 +412,21 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
     NvimTreeGitFolderRenamedHL = { fg = colors.purple },
     NvimTreeGitFolderNewHL = { fg = colors.green },
     NvimTreeGitFolderDeletedHL = { fg = colors.red },
-    NvimTreeGitFolderIgnoredHL = { fg = colors.base_500 },
+    NvimTreeGitFolderIgnoredHL = { fg = colors.foreground_300 },
 
     -- File/Folder Status
     NvimTreeFileStaged = { fg = colors.green },
     NvimTreeFileRenamed = { fg = colors.purple },
     NvimTreeFileNew = { fg = colors.green },
     NvimTreeFileMerge = { fg = colors.orange },
-    NvimTreeFileIgnored = { fg = colors.base_500 },
+    NvimTreeFileIgnored = { fg = colors.foreground_300 },
     NvimTreeFileDirty = { fg = colors.yellow },
     NvimTreeFileDeleted = { fg = colors.red },
     NvimTreeFolderStaged = { fg = colors.green },
     NvimTreeFolderRenamed = { fg = colors.purple },
     NvimTreeFolderNew = { fg = colors.green },
     NvimTreeFolderMerge = { fg = colors.orange },
-    NvimTreeFolderIgnored = { fg = colors.base_500 },
+    NvimTreeFolderIgnored = { fg = colors.foreground_300 },
     NvimTreeFolderDirty = { fg = colors.yellow },
     NvimTreeFolderDeleted = { fg = colors.red },
 
@@ -484,13 +484,13 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
     NvimTreeCopiedHL = { fg = colors.green, bold = true },
 
     -- Hidden Files
-    NvimTreeHiddenIcon = { fg = colors.base_500 },
-    NvimTreeHiddenFileHL = { fg = colors.base_500 },
-    NvimTreeHiddenFolderHL = { fg = colors.base_500 },
-    NvimTreeHiddenDisplay = { fg = colors.base_500 },
+    NvimTreeHiddenIcon = { fg = colors.foreground_300 },
+    NvimTreeHiddenFileHL = { fg = colors.foreground_300 },
+    NvimTreeHiddenFolderHL = { fg = colors.foreground_300 },
+    NvimTreeHiddenDisplay = { fg = colors.foreground_300 },
 
     -- Window Picker
-    NvimTreeWindowPicker = { fg = colors.base_950, bg = colors.accent_500, bold = true },
+    NvimTreeWindowPicker = { fg = colors.background_950, bg = colors.accent_500, bold = true },
   }
 end
 
@@ -589,7 +589,7 @@ M["lewis6991/gitsigns.nvim"] = function(colors, plugin_config)
     GitSignsVirtLnum = { link = "GitSignsDeleteVirtLn" },
 
     -- Blame and other features
-    GitSignsCurrentLineBlame = { fg = utils.opaque(colors.base_300, 0.60), italic = true },
+    GitSignsCurrentLineBlame = { fg = utils.opaque(colors.foreground_200, 0.60), italic = true },
   }
 end
 
@@ -599,23 +599,23 @@ M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
   local function palette()
     if is_light then
       return {
-        fill_bg = colors.base_700,
-        fill_fg = colors.base_500,
-        visible_bg = colors.base_900,
-        visible_fg = colors.base_500,
-        selected_bg = colors.base_900,
-        selected_fg = colors.base_400,
-        separator = colors.base_400,
+        fill_bg = colors.background_800,
+        fill_fg = colors.foreground_300,
+        visible_bg = colors.background_950,
+        visible_fg = colors.foreground_300,
+        selected_bg = colors.background_950,
+        selected_fg = colors.foreground_200,
+        separator = colors.background_800,
       }
     else
       return {
-        fill_bg = colors.base_950,
-        fill_fg = colors.base_300,
-        visible_bg = colors.base_900,
-        visible_fg = colors.base_300,
-        selected_bg = colors.base_800,
-        selected_fg = colors.base_100,
-        separator = colors.base_800,
+        fill_bg = colors.background_950,
+        fill_fg = colors.foreground_200,
+        visible_bg = colors.background_950,
+        visible_fg = colors.foreground_200,
+        selected_bg = colors.background_900,
+        selected_fg = colors.foreground_50,
+        separator = colors.background_900,
       }
     end
   end
@@ -650,15 +650,15 @@ M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
 
   local highlights = {
     -- General/Default
-    Defaults = helpers.with_borders({ sp = colors.base_700 }, config),
+    Defaults = helpers.with_borders({ sp = colors.background_800 }, config),
 
     -- Fill & Separators
     BufferLineFill = { fg = bufferline.fill_fg, bg = bufferline.fill_bg },
     BufferLineSeparator = { fg = bufferline.separator, bg = bufferline.fill_bg },
     BufferLineTabSeparator = { fg = bufferline.separator, bg = bufferline.visible_bg },
-    BufferLineOffsetSeparator = { fg = colors.base_600, bg = bufferline.visible_bg },
-    BufferLineGroupSeparator = { fg = colors.base_300, bg = bufferline.visible_bg },
-    BufferLineGroupLabel = { fg = bufferline.visible_bg, bg = colors.base_300 },
+    BufferLineOffsetSeparator = { fg = colors.background_700, bg = bufferline.visible_bg },
+    BufferLineGroupSeparator = { fg = colors.foreground_200, bg = bufferline.visible_bg },
+    BufferLineGroupLabel = { fg = colors.background_950, bg = colors.foreground_200 },
 
     -- Base Buffer States (using buffer_visible reference)
     BufferLineBuffer = buffer_visible,
@@ -673,9 +673,9 @@ M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
     BufferLineNumbersVisible = buffer_visible,
     BufferLineCloseButtonVisible = buffer_visible,
     BufferLineDuplicateVisible = { fg = bufferline.visible_fg, bg = bufferline.visible_bg, italic = true },
-    BufferLineModifiedVisible = { fg = colors.base_100, bg = colors.base_900 },
-    BufferLineSeparatorVisible = { fg = colors.base_200, bg = bufferline.visible_bg },
-    BufferLineIndicatorVisible = { fg = colors.base_600, bg = bufferline.visible_bg },
+    BufferLineModifiedVisible = { fg = colors.foreground_50, bg = colors.background_950 },
+    BufferLineSeparatorVisible = { fg = colors.foreground_100, bg = bufferline.visible_bg },
+    BufferLineIndicatorVisible = { fg = colors.foreground_300, bg = bufferline.visible_bg },
 
     -- Visible Diagnostics
     BufferLineInfoVisible = buffer_visible,
@@ -705,9 +705,9 @@ M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
     BufferLineTabSelected = { fg = colors.accent_400, bg = bufferline.selected_bg, sp = colors.accent_400 },
     BufferLineModifiedSelected = { fg = bufferline.selected_fg, bg = bufferline.selected_bg, sp = colors.accent_400 },
     BufferLineIndicatorSelected = { fg = colors.accent_400, bg = bufferline.selected_bg, sp = colors.accent_400 },
-    BufferLineSeparatorSelected = { fg = colors.base_300, bg = bufferline.selected_bg, sp = colors.accent_400 },
-    BufferLineTabSeparatorSelected = { fg = colors.base_600, bg = bufferline.selected_bg, sp = colors.accent_400 },
-    BufferLineDuplicateSelected = { fg = colors.base_300, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineSeparatorSelected = { fg = colors.foreground_200, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineTabSeparatorSelected = { fg = colors.foreground_300, bg = bufferline.selected_bg, sp = colors.accent_400 },
+    BufferLineDuplicateSelected = { fg = colors.foreground_200, bg = bufferline.selected_bg, sp = colors.accent_400 },
 
     -- Selected Diagnostics
     BufferLineInfoSelected = { fg = diagnostic_colors.Info, bg = bufferline.selected_bg, bold = true, sp = colors.accent_400 },
@@ -729,8 +729,8 @@ end
 M["folke/trouble.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    bg = colors.base_800,
-    fg = colors.base_200,
+    bg = colors.background_900,
+    fg = colors.foreground_100,
   }
 
   -- Merge with user overrides if provided
@@ -748,25 +748,25 @@ end
 
 M["NeogitOrg/neogit"] = function(colors, config)
   local neogit = {
-    bg = colors.base_900,
-    fg = colors.base_200,
-    header_bg = colors.base_700,
+    bg = colors.background_950,
+    fg = colors.foreground_100,
+    header_bg = colors.background_800,
     section_fg = colors.green,
     accent_fg = colors.accent_200,
-    subtle_fg = colors.base_400,
+    subtle_fg = colors.foreground_300,
   }
 
   return {
     -- Base UI Elements
-    NeogitActiveItem = { bg = colors.base_800, bold = true },
+    NeogitActiveItem = { bg = colors.background_900, bold = true },
     NeogitCursorLine = { link = "CursorLine" },
     NeogitCursorLineNr = { link = "CursorLineNr" },
     NeogitNormal = { link = "Normal" },
     NeogitFold = { clear = true },
 
     -- Float/Header Components
-    NeogitFloatHeader = { bold = true, bg = colors.base_950 },
-    NeogitFloatHeaderHighlight = { bold = true, fg = colors.base_300, bg = colors.base_800 },
+    NeogitFloatHeader = { bold = true, bg = colors.background_950 },
+    NeogitFloatHeaderHighlight = { bold = true, fg = colors.foreground_200, bg = colors.background_900 },
 
     -- Section Headers
     NeogitSectionHeader = { bold = true, fg = neogit.section_fg },
@@ -788,8 +788,8 @@ M["NeogitOrg/neogit"] = function(colors, config)
     NeogitChangeDeleted = { fg = utils.opaque(colors.red, 0.7), bold = true, italic = true },
     NeogitChangeRenamed = { fg = utils.opaque(colors.green, 0.7), bold = true, italic = true },
     NeogitChangeUpdated = { fg = utils.opaque(neogit.subtle_fg, 0.7), bold = true, italic = true },
-    NeogitChangeCopied = { fg = utils.opaque(colors.base_300, 0.7), bold = true, italic = true },
-    NeogitChangeUnmerged = { fg = utils.opaque(colors.base_200, 0.7), bold = true, italic = true },
+    NeogitChangeCopied = { fg = utils.opaque(colors.foreground_200, 0.7), bold = true, italic = true },
+    NeogitChangeUnmerged = { fg = utils.opaque(colors.foreground_100, 0.7), bold = true, italic = true },
     NeogitChangeNewFile = { fg = utils.opaque(colors.green, 0.7), bold = true, italic = true },
     NeogitChangeUntrackedstaged = { clear = true },
     NeogitChangeUntrackedunstaged = { clear = true },
@@ -808,33 +808,36 @@ M["NeogitOrg/neogit"] = function(colors, config)
     NeogitDiffDeletions = { fg = colors.red },
 
     -- Diff Context
-    NeogitDiffContext = { bg = colors.base_900 },
-    NeogitDiffContextHighlight = { bg = colors.base_900 },
-    NeogitDiffContextCursor = { bg = colors.base_800 },
+    NeogitDiffContext = { bg = colors.background_950 },
+    NeogitDiffContextHighlight = { bg = colors.background_950 },
+    NeogitDiffContextCursor = { bg = colors.background_900 },
 
     -- Diff Headers
-    NeogitDiffHeader = helpers.with_borders({ fg = neogit.fg, bg = colors.base_900, sp = colors.base_700 }, config),
+    NeogitDiffHeader = helpers.with_borders({ fg = neogit.fg, bg = colors.background_950, sp = colors.background_800 }, config),
     NeogitDiffHeaderHighlight = helpers.with_borders(
-      { bg = colors.base_800, fg = colors.base_200, sp = colors.base_700, bold = true },
+      { bg = colors.background_900, fg = colors.foreground_100, sp = colors.background_800, bold = true },
       config
     ),
-    NeogitDiffHeaderCursor = helpers.with_borders({ bg = colors.base_800, sp = colors.base_700, bold = true }, config),
+    NeogitDiffHeaderCursor = helpers.with_borders({ bg = colors.background_900, sp = colors.background_800, bold = true }, config),
 
     -- Hunk Headers
-    NeogitHunkHeader = helpers.with_borders({ bg = colors.base_800, fg = colors.base_300, sp = colors.base_700, bold = true }, config),
+    NeogitHunkHeader = helpers.with_borders(
+      { bg = colors.background_900, fg = colors.foreground_200, sp = colors.background_800, bold = true },
+      config
+    ),
     NeogitHunkHeaderHighlight = helpers.with_borders(
-      { bg = colors.base_800, fg = colors.base_300, sp = colors.base_700, bold = true },
+      { bg = colors.background_900, fg = colors.foreground_200, sp = colors.background_800, bold = true },
       config
     ),
     NeogitHunkHeaderCursor = helpers.with_borders(
-      { bg = colors.base_800, fg = colors.base_200, sp = colors.base_700, bold = true },
+      { bg = colors.background_900, fg = colors.foreground_100, sp = colors.background_800, bold = true },
       config
     ),
 
     -- Merge Headers
-    NeogitHunkMergeHeader = { bold = true, fg = colors.base_200, bg = colors.base_900 },
-    NeogitHunkMergeHeaderHighlight = { bold = true, fg = colors.base_950 },
-    NeogitHunkMergeHeaderCursor = { bold = true, fg = colors.base_950, bg = colors.base_300 },
+    NeogitHunkMergeHeader = { bold = true, fg = colors.foreground_100, bg = colors.background_950 },
+    NeogitHunkMergeHeaderHighlight = { bold = true, fg = colors.background_950 },
+    NeogitHunkMergeHeaderCursor = { bold = true, fg = colors.background_950, bg = colors.foreground_200 },
 
     -- Popup Elements
     NeogitPopupBold = { bold = true },
@@ -851,49 +854,49 @@ M["NeogitOrg/neogit"] = function(colors, config)
     NeogitUnpulledFrom = { bold = true, fg = colors.green },
     NeogitUnmergedInto = { bold = true, fg = colors.green },
     NeogitTagName = { fg = neogit.accent_fg },
-    NeogitTagDistance = { fg = colors.base_300 },
+    NeogitTagDistance = { fg = colors.foreground_200 },
 
     -- File and Commit Elements
-    NeogitFilePath = { italic = true, fg = neogit.base_500 },
-    NeogitCommitViewHeader = { fg = colors.base_500 },
+    NeogitFilePath = { italic = true, fg = neogit.subtle_fg },
+    NeogitCommitViewHeader = { fg = colors.foreground_300 },
     NeogitCommitViewDescription = { fg = neogit.subtle_fg },
     NeogitStatusHEAD = { clear = true },
 
     -- Graph Colors (Regular)
-    NeogitGraphWhite = { fg = colors.base_50 },
+    NeogitGraphWhite = { fg = colors.foreground_50 },
     NeogitGraphRed = { fg = colors.red },
     NeogitGraphGreen = { fg = neogit.accent_fg },
     NeogitGraphYellow = { fg = neogit.accent_fg },
     NeogitGraphBlue = { fg = neogit.accent_fg },
     NeogitGraphPurple = { fg = neogit.accent_fg },
-    NeogitGraphCyan = { fg = colors.base_300 },
-    NeogitGraphOrange = { fg = colors.base_300 },
-    NeogitGraphGray = { fg = colors.base_200 },
-    NeogitGraphAuthor = { fg = colors.base_300 },
+    NeogitGraphCyan = { fg = colors.foreground_200 },
+    NeogitGraphOrange = { fg = colors.foreground_200 },
+    NeogitGraphGray = { fg = colors.foreground_100 },
+    NeogitGraphAuthor = { fg = colors.foreground_200 },
 
     -- Graph Colors (Bold)
-    NeogitGraphBoldWhite = { bold = true, fg = colors.base_50 },
+    NeogitGraphBoldWhite = { bold = true, fg = colors.foreground_50 },
     NeogitGraphBoldRed = { bold = true, fg = colors.red },
     NeogitGraphBoldGreen = { bold = true, fg = neogit.accent_fg },
     NeogitGraphBoldYellow = { bold = true, fg = neogit.accent_fg },
     NeogitGraphBoldBlue = { bold = true, fg = neogit.accent_fg },
     NeogitGraphBoldPurple = { bold = true, fg = neogit.accent_fg },
-    NeogitGraphBoldCyan = { bold = true, fg = colors.base_300 },
-    NeogitGraphBoldOrange = { bold = true, fg = colors.base_300 },
-    NeogitGraphBoldGray = { bold = true, fg = colors.base_200 },
+    NeogitGraphBoldCyan = { bold = true, fg = colors.foreground_200 },
+    NeogitGraphBoldOrange = { bold = true, fg = colors.foreground_200 },
+    NeogitGraphBoldGray = { bold = true, fg = colors.foreground_100 },
   }
 end
 
 M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    heading_fg = colors.base_200,
-    code_bg = colors.base_800,
+    heading_fg = colors.foreground_100,
+    code_bg = colors.background_900,
     inline_code_fg = colors.accent_500,
-    inline_code_bg = colors.base_950,
-    table_fg = colors.base_200,
-    quote_fg = colors.base_400,
-    link_fg = colors.base_300,
+    inline_code_bg = colors.background_950,
+    table_fg = colors.foreground_100,
+    quote_fg = colors.foreground_300,
+    link_fg = colors.foreground_200,
   }
 
   -- Merge with user overrides if provided
@@ -905,10 +908,10 @@ M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, plugin_config)
     -- Headers
     RenderMarkdownH1 = { fg = config.heading_fg, bold = true },
     RenderMarkdownH2 = { fg = config.heading_fg, bold = true },
-    RenderMarkdownH3 = { fg = colors.base_300, bold = true },
+    RenderMarkdownH3 = { fg = colors.foreground_200, bold = true },
     RenderMarkdownH4 = { fg = config.heading_fg, bold = true },
-    RenderMarkdownH5 = { fg = colors.base_100, bold = true },
-    RenderMarkdownH6 = { fg = colors.base_500, bold = true },
+    RenderMarkdownH5 = { fg = colors.foreground_50, bold = true },
+    RenderMarkdownH6 = { fg = colors.foreground_300, bold = true },
 
     -- Header Backgrounds
     RenderMarkdownH1Bg = { fg = colors.accent_300, bold = true },
@@ -922,17 +925,17 @@ M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, plugin_config)
     RenderMarkdownCode = { bg = config.code_bg },
     RenderMarkdownCodeInline = { fg = config.inline_code_fg, bg = config.inline_code_bg },
     RenderMarkdownCodeInfo = { link = "@label" },
-    RenderMarkdownCodeBorder = { bg = colors.base_700 },
-    RenderMarkdownCodeFallback = { fg = colors.base_500, bg = colors.base_900 },
+    RenderMarkdownCodeBorder = { bg = colors.background_800 },
+    RenderMarkdownCodeFallback = { fg = colors.foreground_300, bg = colors.background_950 },
 
     -- Table Elements
     RenderMarkdownTableHead = { fg = config.table_fg, bold = true },
-    RenderMarkdownTableRow = { fg = colors.base_300, bg = colors.base_900 },
-    RenderMarkdownTableFill = { fg = colors.base_600 },
+    RenderMarkdownTableRow = { fg = colors.foreground_200, bg = colors.background_950 },
+    RenderMarkdownTableFill = { fg = colors.foreground_400 },
 
     -- Status/Alert Elements
     RenderMarkdownSuccess = { fg = colors.green },
-    RenderMarkdownInfo = { fg = colors.base_100 },
+    RenderMarkdownInfo = { fg = colors.foreground_50 },
     RenderMarkdownHint = { fg = colors.green },
     RenderMarkdownWarn = { fg = colors.yellow },
     RenderMarkdownError = { fg = colors.red },
@@ -952,35 +955,35 @@ M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, plugin_config)
 
     -- Task List Elements
     RenderMarkdownChecked = { fg = colors.accent_500 },
-    RenderMarkdownUnchecked = { fg = colors.base_500 },
+    RenderMarkdownUnchecked = { fg = colors.foreground_300 },
     RenderMarkdownTodo = { fg = colors.accent_500 },
 
     -- Special Elements
     RenderMarkdownMath = { fg = colors.accent_500 },
-    RenderMarkdownInlineHighlight = { fg = colors.accent_500, bg = colors.base_950 },
-    RenderMarkdownBullet = { fg = colors.base_500 },
+    RenderMarkdownInlineHighlight = { fg = colors.accent_500, bg = colors.background_950 },
+    RenderMarkdownBullet = { fg = colors.foreground_300 },
 
     -- Structural Elements
-    RenderMarkdownIndent = { fg = colors.base_700 },
-    RenderMarkdownSign = { fg = colors.base_500 },
-    RenderMarkdownDash = { fg = colors.base_500 },
+    RenderMarkdownIndent = { fg = colors.foreground_400 },
+    RenderMarkdownSign = { fg = colors.foreground_300 },
+    RenderMarkdownDash = { fg = colors.foreground_300 },
 
     -- Miscellaneous
-    RenderMarkdownHtmlComment = { fg = colors.base_500, italic = true },
+    RenderMarkdownHtmlComment = { fg = colors.foreground_300, italic = true },
   }
 end
 
 M["sindrets/diffview.nvim"] = function(colors, plugin_config)
   return {
     -- Primary UI elements
-    DiffviewPrimary = { fg = colors.base_200 },
+    DiffviewPrimary = { fg = colors.foreground_100 },
     DiffviewSecondary = { fg = colors.accent_300 },
-    DiffviewDim1 = { fg = colors.base_600 },
+    DiffviewDim1 = { fg = colors.foreground_400 },
 
     -- File panel highlights
-    DiffviewFilePanelTitle = { bg = colors.base_800, fg = colors.accent_400, bold = true },
-    DiffviewFilePanelCounter = { bg = colors.base_800, fg = colors.base_400, bold = true },
-    DiffviewFilePanelFileName = { fg = colors.base_300 },
+    DiffviewFilePanelTitle = { bg = colors.background_900, fg = colors.accent_400, bold = true },
+    DiffviewFilePanelCounter = { bg = colors.background_900, fg = colors.foreground_300, bold = true },
+    DiffviewFilePanelFileName = { fg = colors.foreground_200 },
     DiffviewFilePanelPath = { link = "Comment" },
     DiffviewFilePanelSelected = { link = "Type" },
     DiffviewFilePanelRootPath = { link = "DiffviewFilePanelTitle" },
@@ -1005,17 +1008,17 @@ M["sindrets/diffview.nvim"] = function(colors, plugin_config)
     DiffviewDiffAdd = { fg = "none", bg = utils.opaque(colors.green, 0.15) },
     DiffviewDiffChange = { fg = "none", bg = "none" },
     DiffviewDiffText = { fg = "none", bg = utils.opaque(colors.yellow, 0.20) },
-    DiffviewDiffDelete = { fg = colors.base_900, bg = utils.opaque(colors.red, 0.20) },
+    DiffviewDiffDelete = { fg = colors.background_950, bg = utils.opaque(colors.red, 0.20) },
     DiffviewDiffAddAsDelete = { fg = colors.red, bg = utils.opaque(colors.red, 0.20) },
     DiffviewDiffDeleteDim = { link = "Comment" },
 
     -- Window and UI elements
-    DiffviewNormal = { bg = colors.base_800 },
+    DiffviewNormal = { bg = colors.background_900 },
     DiffviewCursorLine = { link = "CursorLine" },
     DiffviewSignColumn = { link = "Normal" },
     DiffviewStatusLine = { link = "StatusLine" },
     DiffviewStatusLineNC = { link = "StatusLineNC" },
-    DiffviewWinSeparator = { bg = colors.base_800, fg = colors.base_700 },
+    DiffviewWinSeparator = { bg = colors.background_900, fg = colors.background_800 },
     DiffviewEndOfBuffer = { link = "EndOfBuffer" },
     DiffviewNonText = { link = "NonText" },
 
@@ -1033,10 +1036,10 @@ end
 M["Bekaboo/dropbar.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    fg = colors.base_200,
-    bg = colors.base_800,
-    hover_bg = utils.opaque(colors.base_500, 0.30),
-    separator_fg = colors.base_500,
+    fg = colors.foreground_100,
+    bg = colors.background_900,
+    hover_bg = utils.opaque(colors.background_600, 0.30),
+    separator_fg = colors.foreground_300,
     icon_fg = colors.accent_500,
   }
 
@@ -1053,26 +1056,26 @@ M["Bekaboo/dropbar.nvim"] = function(colors, plugin_config)
     DropBarLinkTarget = { fg = config.fg },
 
     -- Menu elements
-    DropBarMenuCurrentContext = { bg = colors.base_700, fg = config.fg },
+    DropBarMenuCurrentContext = { bg = colors.background_800, fg = config.fg },
     DropBarMenuNormalFloat = { bg = config.bg, fg = config.fg },
-    DropBarMenuFloatBorder = { bg = config.bg, fg = colors.base_700 },
-    DropBarMenuHoverEntry = { bg = colors.base_700, fg = config.fg },
+    DropBarMenuFloatBorder = { bg = config.bg, fg = colors.background_800 },
+    DropBarMenuHoverEntry = { bg = colors.background_800, fg = config.fg },
     DropBarMenuHoverSymbol = { bold = true },
     DropBarMenuHoverIcon = { reverse = true },
 
     -- Icons
-    DropBarIconKindDefault = { fg = colors.base_200 },
-    DropBarIconKindFile = { fg = colors.base_200 },
-    DropBarIconKindFolder = { fg = colors.base_200 },
-    DropBarIconKindList = { fg = colors.base_200 },
-    DropBarIconKindArray = { fg = colors.base_200 },
-    DropBarIconKindFunction = { fg = colors.base_200 },
-    DropBarIconKindMethod = { fg = colors.base_200 },
-    DropBarIconKindClass = { fg = colors.base_200 },
-    DropBarIconKindModule = { fg = colors.base_200 },
-    DropBarIconKindNamespace = { fg = colors.base_200 },
-    DropBarIconKindConstant = { fg = colors.base_200 },
-    DropBarIconKindVariable = { fg = colors.base_200 },
+    DropBarIconKindDefault = { fg = colors.foreground_100 },
+    DropBarIconKindFile = { fg = colors.foreground_100 },
+    DropBarIconKindFolder = { fg = colors.foreground_100 },
+    DropBarIconKindList = { fg = colors.foreground_100 },
+    DropBarIconKindArray = { fg = colors.foreground_100 },
+    DropBarIconKindFunction = { fg = colors.foreground_100 },
+    DropBarIconKindMethod = { fg = colors.foreground_100 },
+    DropBarIconKindClass = { fg = colors.foreground_100 },
+    DropBarIconKindModule = { fg = colors.foreground_100 },
+    DropBarIconKindNamespace = { fg = colors.foreground_100 },
+    DropBarIconKindConstant = { fg = colors.foreground_100 },
+    DropBarIconKindVariable = { fg = colors.foreground_100 },
 
     -- UI separators
     DropBarIconUIIndicator = { fg = config.icon_fg },
@@ -1086,42 +1089,51 @@ M["DNLHC/glance.nvim"] = function(colors, config)
   return {
     -- Main window elements
     GlanceNone = { clear = true },
-    GlanceWinBarTitle = helpers.with_borders({ fg = colors.base_200, bg = colors.base_800, sp = colors.base_700 }, config),
-    GlanceWinBarFilepath = helpers.with_borders({ fg = colors.base_400, bg = colors.base_800, sp = colors.base_700 }, config),
-    GlanceWinBarFilename = helpers.with_borders({ fg = colors.base_200, bg = colors.base_800, sp = colors.base_700 }, config),
+    GlanceWinBarTitle = helpers.with_borders(
+      { fg = colors.foreground_100, bg = colors.background_900, sp = colors.background_800 },
+      config
+    ),
+    GlanceWinBarFilepath = helpers.with_borders(
+      { fg = colors.foreground_300, bg = colors.background_900, sp = colors.background_800 },
+      config
+    ),
+    GlanceWinBarFilename = helpers.with_borders(
+      { fg = colors.foreground_100, bg = colors.background_900, sp = colors.background_800 },
+      config
+    ),
 
     -- List panel
-    GlanceListNormal = { fg = colors.base_200, bg = colors.base_800 },
-    GlanceListCursorLine = { bg = utils.opaque(colors.base_500, 0.10) },
-    GlanceListFilepath = { fg = colors.base_500 },
+    GlanceListNormal = { fg = colors.foreground_100, bg = colors.background_900 },
+    GlanceListCursorLine = { bg = utils.opaque(colors.background_600, 0.10) },
+    GlanceListFilepath = { fg = colors.foreground_300 },
     GlanceListFilename = { link = "Directory" },
     GlanceListCount = { link = "Number" },
     GlanceListMatch = { link = "Search" },
-    GlanceListEndOfBuffer = { fg = colors.base_800, bg = colors.base_800 },
-    GlanceListBorderBottom = { fg = colors.base_600, bg = colors.base_800 },
+    GlanceListEndOfBuffer = { fg = colors.background_900, bg = colors.background_900 },
+    GlanceListBorderBottom = { fg = colors.background_700, bg = colors.background_900 },
 
     -- Preview panel
-    GlancePreviewNormal = { bg = colors.base_800 },
-    GlancePreviewCursorLine = { bg = utils.opaque(colors.base_500, 0.10) },
-    GlancePreviewMatch = { bg = colors.base_700 },
-    GlancePreviewSignColumn = { fg = colors.base_800 },
-    GlancePreviewLineNr = { fg = colors.base_500 },
-    GlancePreviewEndOfBuffer = { fg = colors.base_800, bg = colors.base_800 },
-    GlancePreviewBorderBottom = { fg = colors.base_600, bg = colors.base_800 },
+    GlancePreviewNormal = { bg = colors.background_900 },
+    GlancePreviewCursorLine = { bg = utils.opaque(colors.background_600, 0.10) },
+    GlancePreviewMatch = { bg = colors.background_800 },
+    GlancePreviewSignColumn = { fg = colors.background_900 },
+    GlancePreviewLineNr = { fg = colors.foreground_300 },
+    GlancePreviewEndOfBuffer = { fg = colors.background_900, bg = colors.background_900 },
+    GlancePreviewBorderBottom = { fg = colors.background_700, bg = colors.background_900 },
 
     -- Borders and separators
-    GlanceBorderTop = { fg = colors.base_600, bg = colors.base_800 },
-    GlanceIndent = { fg = utils.opaque(colors.base_500, 0.20) },
-    GlanceFoldIcon = { fg = colors.base_500 },
+    GlanceBorderTop = { fg = colors.background_700, bg = colors.background_900 },
+    GlanceIndent = { fg = utils.opaque(colors.foreground_400, 0.20) },
+    GlanceFoldIcon = { fg = colors.foreground_300 },
   }
 end
 
 M["MagicDuck/grug-far.nvim"] = function(colors, plugin_config)
   return {
     -- Main window and background
-    GrugFarNormal = { fg = colors.base_200 },
-    GrugFarWinSeparator = { fg = colors.base_700 },
-    GrugFarEndOfBuffer = { fg = colors.base_800 },
+    GrugFarNormal = { fg = colors.foreground_100 },
+    GrugFarWinSeparator = { fg = colors.background_800 },
+    GrugFarEndOfBuffer = { fg = colors.background_900 },
 
     -- Change indicators with enhanced visibility
     GrugFarResultsChangeIndicator = { fg = colors.yellow, bold = true },
@@ -1129,67 +1141,67 @@ M["MagicDuck/grug-far.nvim"] = function(colors, plugin_config)
     GrugFarResultsRemoveIndicator = { fg = colors.red, bold = true },
 
     -- Line numbers with proper base colors
-    GrugFarResultsLineNr = { fg = colors.base_500 },
-    GrugFarResultsNumbersSeparator = { fg = colors.base_600 },
-    GrugFarResultsColumnNr = { fg = colors.base_500 },
-    GrugFarResultsCursorLineNo = { fg = colors.base_500, bold = true },
+    GrugFarResultsLineNr = { fg = colors.foreground_300 },
+    GrugFarResultsNumbersSeparator = { fg = colors.foreground_400 },
+    GrugFarResultsColumnNr = { fg = colors.foreground_300 },
+    GrugFarResultsCursorLineNo = { fg = colors.foreground_300, bold = true },
 
     -- File paths with enhanced styling
-    GrugFarResultsPath = { fg = colors.base_500 },
+    GrugFarResultsPath = { fg = colors.foreground_300 },
     GrugFarResultsPathIcon = { fg = colors.accent_500 },
 
     -- Match highlighting with base colors
-    GrugFarResultsMatch = { bg = utils.opaque(colors.base_500, 0.25), bold = true },
+    GrugFarResultsMatch = { bg = utils.opaque(colors.background_600, 0.25), bold = true },
     GrugFarResultsMatchRemoved = { bg = utils.opaque(colors.red, 0.30), bold = true },
     GrugFarResultsMatchAdded = { bg = utils.opaque(colors.green, 0.30), bold = true },
 
     -- Context lines
-    GrugFarResultsLine = { fg = colors.base_500 },
-    GrugFarResultsLineContext = { fg = colors.base_400 },
+    GrugFarResultsLine = { fg = colors.foreground_300 },
+    GrugFarResultsLineContext = { fg = colors.foreground_300 },
 
     -- Headers with enhanced visibility
-    GrugFarResultsHeader = { fg = colors.base_300 },
-    GrugFarResultsCmdHeader = { fg = colors.base_400, bold = true, underline = true },
+    GrugFarResultsHeader = { fg = colors.foreground_200 },
+    GrugFarResultsCmdHeader = { fg = colors.foreground_300, bold = true, underline = true },
 
     -- UI messages and stats with base colors
-    GrugFarResultsActionMessage = { fg = colors.base_300, bold = true },
-    GrugFarResultsStats = { fg = colors.base_400, italic = true },
+    GrugFarResultsActionMessage = { fg = colors.foreground_200, bold = true },
+    GrugFarResultsStats = { fg = colors.foreground_300, italic = true },
     GrugFarResultsStatsSuccess = { fg = colors.green, bold = true },
     GrugFarResultsStatsError = { fg = colors.red, bold = true },
 
     -- Input elements with proper theming
-    GrugFarInputPlaceholder = { blend = 100, fg = colors.base_500 },
-    GrugFarInputLabel = { fg = colors.base_400, bold = true },
-    GrugFarInputText = { fg = colors.base_200 },
-    GrugFarInputBorder = { fg = colors.base_600 },
+    GrugFarInputPlaceholder = { blend = 100, fg = colors.foreground_300 },
+    GrugFarInputLabel = { fg = colors.foreground_300, bold = true },
+    GrugFarInputText = { fg = colors.foreground_100 },
+    GrugFarInputBorder = { fg = colors.background_700 },
 
     -- Help window elements with consistent theming
-    GrugFarHelpWinNormal = { fg = colors.base_200 },
-    GrugFarHelpWinBorder = { fg = colors.base_500 },
-    GrugFarHelpWinActionDescription = { fg = colors.base_300 },
-    GrugFarHelpWinActionKey = { fg = colors.base_400, bold = true },
-    GrugFarHelpWinActionText = { fg = colors.base_200 },
-    GrugFarHelpWinActionPrefix = { fg = colors.base_300, bold = true },
-    GrugFarHelpWinHeader = { fg = colors.base_300, bold = true, underline = true },
-    GrugFarHelpHeaderKey = { fg = colors.base_400, bold = true },
-    GrugFarHelpHeader = { fg = colors.base_300, bold = true },
+    GrugFarHelpWinNormal = { fg = colors.foreground_100 },
+    GrugFarHelpWinBorder = { fg = colors.foreground_300 },
+    GrugFarHelpWinActionDescription = { fg = colors.foreground_200 },
+    GrugFarHelpWinActionKey = { fg = colors.foreground_300, bold = true },
+    GrugFarHelpWinActionText = { fg = colors.foreground_100 },
+    GrugFarHelpWinActionPrefix = { fg = colors.foreground_200, bold = true },
+    GrugFarHelpWinHeader = { fg = colors.foreground_200, bold = true, underline = true },
+    GrugFarHelpHeaderKey = { fg = colors.foreground_300, bold = true },
+    GrugFarHelpHeader = { fg = colors.foreground_200, bold = true },
 
     -- Selection and cursor highlights
-    GrugFarCursorLine = { bg = utils.opaque(colors.base_500, 0.30) },
+    GrugFarCursorLine = { bg = utils.opaque(colors.background_600, 0.30) },
     GrugFarSelection = { bg = utils.opaque(colors.accent_500, 0.20) },
 
     -- Search progress and status
     GrugFarProgressBar = { bg = colors.accent_500 },
-    GrugFarProgressBg = { bg = colors.base_700 },
+    GrugFarProgressBg = { bg = colors.background_800 },
 
     -- Miscellaneous elements with base colors
-    GrugFarResultsLongLineStr = { fg = colors.base_500, italic = true },
-    GrugFarResultsNumberLabel = { fg = colors.base_500, bold = true },
+    GrugFarResultsLongLineStr = { fg = colors.foreground_300, italic = true },
+    GrugFarResultsNumberLabel = { fg = colors.foreground_300, bold = true },
     GrugFarVisualBufrange = { bg = utils.opaque(colors.accent_500, 0.25) },
-    GrugFarResultsDiffSeparatorIndicator = { fg = colors.base_600 },
+    GrugFarResultsDiffSeparatorIndicator = { fg = colors.foreground_400 },
 
     -- Folding
-    GrugFarFold = { fg = colors.base_500 },
+    GrugFarFold = { fg = colors.foreground_300 },
     GrugFarFoldMarker = { fg = colors.accent_500, bold = true },
 
     -- Error and warning states
@@ -1202,44 +1214,44 @@ end
 M["OXY2DEV/markview.nvim"] = function(colors, plugin_config)
   return {
     -- Palette colors (0-6 use base colors, 7 uses green accent)
-    MarkviewPalette0 = { fg = colors.base_500, bg = colors.base_800 },
-    MarkviewPalette0Fg = { fg = colors.base_500 },
-    MarkviewPalette0Bg = { bg = colors.base_800 },
-    MarkviewPalette0Sign = { fg = colors.base_500 },
+    MarkviewPalette0 = { fg = colors.foreground_300, bg = colors.background_900 },
+    MarkviewPalette0Fg = { fg = colors.foreground_300 },
+    MarkviewPalette0Bg = { bg = colors.background_900 },
+    MarkviewPalette0Sign = { fg = colors.foreground_300 },
 
-    MarkviewPalette1 = { fg = colors.base_200, bg = colors.base_800 },
-    MarkviewPalette1Fg = { fg = colors.base_200 },
-    MarkviewPalette1Bg = { bg = colors.base_800 },
-    MarkviewPalette1Sign = { fg = colors.base_200 },
+    MarkviewPalette1 = { fg = colors.foreground_100, bg = colors.background_900 },
+    MarkviewPalette1Fg = { fg = colors.foreground_100 },
+    MarkviewPalette1Bg = { bg = colors.background_900 },
+    MarkviewPalette1Sign = { fg = colors.foreground_100 },
 
-    MarkviewPalette2 = { fg = colors.base_200, bg = colors.base_800 },
-    MarkviewPalette2Fg = { fg = colors.base_200 },
-    MarkviewPalette2Bg = { bg = colors.base_800 },
-    MarkviewPalette2Sign = { fg = colors.base_200 },
+    MarkviewPalette2 = { fg = colors.foreground_100, bg = colors.background_900 },
+    MarkviewPalette2Fg = { fg = colors.foreground_100 },
+    MarkviewPalette2Bg = { bg = colors.background_900 },
+    MarkviewPalette2Sign = { fg = colors.foreground_100 },
 
-    MarkviewPalette3 = { fg = colors.base_200, bg = colors.base_800 },
-    MarkviewPalette3Fg = { fg = colors.base_200 },
-    MarkviewPalette3Bg = { bg = colors.base_800 },
-    MarkviewPalette3Sign = { fg = colors.base_200 },
+    MarkviewPalette3 = { fg = colors.foreground_100, bg = colors.background_900 },
+    MarkviewPalette3Fg = { fg = colors.foreground_100 },
+    MarkviewPalette3Bg = { bg = colors.background_900 },
+    MarkviewPalette3Sign = { fg = colors.foreground_100 },
 
-    MarkviewPalette4 = { fg = colors.base_200, bg = colors.base_800 },
-    MarkviewPalette4Fg = { fg = colors.base_200 },
-    MarkviewPalette4Bg = { bg = colors.base_800 },
-    MarkviewPalette4Sign = { fg = colors.base_200 },
+    MarkviewPalette4 = { fg = colors.foreground_100, bg = colors.background_900 },
+    MarkviewPalette4Fg = { fg = colors.foreground_100 },
+    MarkviewPalette4Bg = { bg = colors.background_900 },
+    MarkviewPalette4Sign = { fg = colors.foreground_100 },
 
-    MarkviewPalette5 = { fg = colors.base_200, bg = colors.base_800 },
-    MarkviewPalette5Fg = { fg = colors.base_200 },
-    MarkviewPalette5Bg = { bg = colors.base_800 },
-    MarkviewPalette5Sign = { fg = colors.base_200 },
+    MarkviewPalette5 = { fg = colors.foreground_100, bg = colors.background_900 },
+    MarkviewPalette5Fg = { fg = colors.foreground_100 },
+    MarkviewPalette5Bg = { bg = colors.background_900 },
+    MarkviewPalette5Sign = { fg = colors.foreground_100 },
 
-    MarkviewPalette6 = { fg = colors.base_200, bg = colors.base_800 },
-    MarkviewPalette6Fg = { fg = colors.base_200 },
-    MarkviewPalette6Bg = { bg = colors.base_800 },
-    MarkviewPalette6Sign = { fg = colors.base_200 },
+    MarkviewPalette6 = { fg = colors.foreground_100, bg = colors.background_900 },
+    MarkviewPalette6Fg = { fg = colors.foreground_100 },
+    MarkviewPalette6Bg = { bg = colors.background_900 },
+    MarkviewPalette6Sign = { fg = colors.foreground_100 },
 
-    MarkviewPalette7 = { fg = colors.green, bg = colors.base_800 },
+    MarkviewPalette7 = { fg = colors.green, bg = colors.background_900 },
     MarkviewPalette7Fg = { fg = colors.green },
-    MarkviewPalette7Bg = { bg = colors.base_800 },
+    MarkviewPalette7Bg = { bg = colors.background_900 },
     MarkviewPalette7Sign = { fg = colors.green },
 
     -- Block quotes using palette colors
@@ -1255,13 +1267,13 @@ M["OXY2DEV/markview.nvim"] = function(colors, plugin_config)
     MarkviewCheckboxChecked = { link = "MarkviewPalette4Fg" },
     MarkviewCheckboxPending = { link = "MarkviewPalette2Fg" },
     MarkviewCheckboxProgress = { link = "MarkviewPalette6Fg" },
-    MarkviewCheckboxStriked = { fg = colors.base_500, strikethrough = true },
+    MarkviewCheckboxStriked = { fg = colors.foreground_300, strikethrough = true },
     MarkviewCheckboxUnchecked = { link = "MarkviewPalette1Fg" },
 
     -- Code blocks using base colors
-    MarkviewCode = { bg = colors.base_800 },
-    MarkviewCodeFg = { fg = colors.base_900 },
-    MarkviewCodeInfo = { bg = colors.base_800, fg = colors.base_500 },
+    MarkviewCode = { bg = colors.background_900 },
+    MarkviewCodeFg = { fg = colors.background_950 },
+    MarkviewCodeInfo = { bg = colors.background_900, fg = colors.foreground_300 },
 
     -- Links
     MarkviewEmail = { link = "@markup.link.url.markdown_inline" },
@@ -1269,16 +1281,16 @@ M["OXY2DEV/markview.nvim"] = function(colors, plugin_config)
     MarkviewImage = { link = "@markup.link.label.markdown_inline" },
 
     -- Gradient colors (progressive gray scale)
-    MarkviewGradient0 = { fg = colors.base_900 },
-    MarkviewGradient1 = { fg = colors.base_800 },
-    MarkviewGradient2 = { fg = colors.base_700 },
-    MarkviewGradient3 = { fg = colors.base_600 },
-    MarkviewGradient4 = { fg = colors.base_500 },
-    MarkviewGradient5 = { fg = colors.base_400 },
-    MarkviewGradient6 = { fg = colors.base_300 },
-    MarkviewGradient7 = { fg = colors.base_200 },
-    MarkviewGradient8 = { fg = colors.base_100 },
-    MarkviewGradient9 = { fg = colors.base_100 },
+    MarkviewGradient0 = { fg = colors.foreground_400 },
+    MarkviewGradient1 = { fg = colors.foreground_400 },
+    MarkviewGradient2 = { fg = colors.foreground_300 },
+    MarkviewGradient3 = { fg = colors.foreground_300 },
+    MarkviewGradient4 = { fg = colors.foreground_200 },
+    MarkviewGradient5 = { fg = colors.foreground_200 },
+    MarkviewGradient6 = { fg = colors.foreground_100 },
+    MarkviewGradient7 = { fg = colors.foreground_100 },
+    MarkviewGradient8 = { fg = colors.foreground_50 },
+    MarkviewGradient9 = { fg = colors.foreground_50 },
 
     -- Headings using palette colors (1-6)
     MarkviewHeading1 = { link = "MarkviewPalette1" },
@@ -1295,16 +1307,16 @@ M["OXY2DEV/markview.nvim"] = function(colors, plugin_config)
     MarkviewHeading6Sign = { link = "MarkviewPalette6Sign" },
 
     -- Icons using palette colors with code background
-    MarkviewIcon0 = { fg = colors.base_500, bg = colors.base_700 },
-    MarkviewIcon1 = { fg = colors.base_200, bg = colors.base_700 },
-    MarkviewIcon2 = { fg = colors.base_200, bg = colors.base_700 },
-    MarkviewIcon3 = { fg = colors.base_200, bg = colors.base_700 },
-    MarkviewIcon4 = { fg = colors.base_200, bg = colors.base_700 },
-    MarkviewIcon5 = { fg = colors.base_200, bg = colors.base_700 },
-    MarkviewIcon6 = { fg = colors.base_200, bg = colors.base_700 },
+    MarkviewIcon0 = { fg = colors.foreground_300, bg = colors.background_800 },
+    MarkviewIcon1 = { fg = colors.foreground_100, bg = colors.background_800 },
+    MarkviewIcon2 = { fg = colors.foreground_100, bg = colors.background_800 },
+    MarkviewIcon3 = { fg = colors.foreground_100, bg = colors.background_800 },
+    MarkviewIcon4 = { fg = colors.foreground_100, bg = colors.background_800 },
+    MarkviewIcon5 = { fg = colors.foreground_100, bg = colors.background_800 },
+    MarkviewIcon6 = { fg = colors.foreground_100, bg = colors.background_800 },
 
     -- Inline code (similar to render-markdown)
-    MarkviewInlineCode = { bg = colors.base_950, fg = colors.accent_500 },
+    MarkviewInlineCode = { bg = colors.background_950, fg = colors.accent_500 },
 
     -- List items using palette colors
     MarkviewListItemMinus = { link = "MarkviewPalette2Fg" },
@@ -1328,9 +1340,9 @@ M["folke/which-key.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
     key_fg = colors.accent_500,
-    group_fg = colors.base_400,
-    bg = colors.base_800,
-    border_fg = colors.base_800,
+    group_fg = colors.foreground_300,
+    bg = colors.background_900,
+    border_fg = colors.background_900,
   }
 
   -- Merge with user overrides if provided
@@ -1340,7 +1352,7 @@ M["folke/which-key.nvim"] = function(colors, plugin_config)
 
   return {
     WhichKey = { fg = config.key_fg },
-    WhichKeyIcon = { fg = colors.base_500 },
+    WhichKeyIcon = { fg = colors.foreground_300 },
     WhichKeyBorder = { bg = config.bg, fg = config.border_fg },
     WhichKeyGroup = { fg = config.group_fg },
     WhichKeySeparator = { link = "Comment" },
@@ -1363,7 +1375,7 @@ end
 M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    handle_bg = utils.opaque(colors.base_500, 0.30),
+    handle_bg = utils.opaque(colors.background_600, 0.30),
     git_add_fg = colors.green,
     git_change_fg = colors.yellow,
     git_delete_fg = colors.red,
@@ -1383,8 +1395,8 @@ M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
     ScrollbarHandle = { bg = config.handle_bg },
 
     -- Miscellaneous scrollbar indicators
-    ScrollbarMisc = { fg = colors.base_500 },
-    ScrollbarMiscHandle = { fg = colors.base_500, bg = utils.opaque(colors.base_500, 0.30) },
+    ScrollbarMisc = { fg = colors.foreground_300 },
+    ScrollbarMiscHandle = { fg = colors.foreground_300, bg = utils.opaque(colors.background_600, 0.30) },
 
     -- Git indicators
     ScrollbarGitAdd = { fg = config.git_add_fg },
@@ -1405,66 +1417,66 @@ M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
     ScrollbarHintHandle = { fg = config.hint_fg, bg = config.handle_bg },
 
     -- Search indicators
-    ScrollbarSearch = { fg = colors.base_100 },
-    ScrollbarSearchHandle = { fg = colors.base_100, bg = utils.opaque(colors.base_500, 0.30) },
+    ScrollbarSearch = { fg = colors.foreground_50 },
+    ScrollbarSearchHandle = { fg = colors.foreground_50, bg = utils.opaque(colors.background_600, 0.30) },
 
     -- Cursor position indicator
-    ScrollbarCursor = { fg = colors.base_500 },
-    ScrollbarCursorHandle = { fg = colors.base_500, bg = utils.opaque(colors.base_500, 0.30) },
+    ScrollbarCursor = { fg = colors.foreground_300 },
+    ScrollbarCursorHandle = { fg = colors.foreground_300, bg = utils.opaque(colors.background_600, 0.30) },
   }
 end
 
 M["yetone/avante.nvim"] = function(colors, global_config, plugin_config)
   return {
     -- State indicators with colorful backgrounds
-    AvanteStateSpinnerSearching = { fg = colors.base_900, bg = colors.purple },
-    AvanteStateSpinnerSucceeded = { fg = colors.base_900, bg = colors.green },
-    AvanteStateSpinnerFailed = { fg = colors.base_900, bg = colors.red },
-    AvanteStateSpinnerToolCalling = { fg = colors.base_900, bg = colors.blue },
-    AvanteStateSpinnerGenerating = { fg = colors.base_900, bg = colors.accent_300 },
-    AvanteStateSpinnerCompacting = { fg = colors.base_900, bg = colors.purple },
-    AvanteStateSpinnerThinking = { fg = colors.base_900, bg = colors.purple },
+    AvanteStateSpinnerSearching = { fg = colors.background_950, bg = colors.purple },
+    AvanteStateSpinnerSucceeded = { fg = colors.background_950, bg = colors.green },
+    AvanteStateSpinnerFailed = { fg = colors.background_950, bg = colors.red },
+    AvanteStateSpinnerToolCalling = { fg = colors.background_950, bg = colors.blue },
+    AvanteStateSpinnerGenerating = { fg = colors.background_950, bg = colors.accent_300 },
+    AvanteStateSpinnerCompacting = { fg = colors.background_950, bg = colors.purple },
+    AvanteStateSpinnerThinking = { fg = colors.background_950, bg = colors.purple },
 
     -- Main UI elements
-    AvanteReversedNormal = { bg = colors.base_400 },
-    AvanteCommentFg = { fg = colors.base_500 },
+    AvanteReversedNormal = { bg = colors.foreground_300 },
+    AvanteCommentFg = { fg = colors.foreground_300 },
 
     -- Logo gradient (from dark to light)
-    AvanteLogoLine1 = { fg = colors.base_100 },
-    AvanteLogoLine2 = { fg = colors.base_200 },
-    AvanteLogoLine3 = { fg = colors.base_200 },
-    AvanteLogoLine4 = { fg = colors.base_300 },
-    AvanteLogoLine5 = { fg = colors.base_300 },
-    AvanteLogoLine6 = { fg = colors.base_400 },
-    AvanteLogoLine7 = { fg = colors.base_400 },
-    AvanteLogoLine8 = { fg = colors.base_500 },
-    AvanteLogoLine9 = { fg = colors.base_500 },
-    AvanteLogoLine10 = { fg = colors.base_600 },
-    AvanteLogoLine11 = { fg = colors.base_600 },
-    AvanteLogoLine12 = { fg = colors.base_700 },
-    AvanteLogoLine13 = { fg = colors.base_700 },
-    AvanteLogoLine14 = { fg = colors.base_800 },
+    AvanteLogoLine1 = { fg = colors.foreground_50 },
+    AvanteLogoLine2 = { fg = colors.foreground_100 },
+    AvanteLogoLine3 = { fg = colors.foreground_100 },
+    AvanteLogoLine4 = { fg = colors.foreground_200 },
+    AvanteLogoLine5 = { fg = colors.foreground_200 },
+    AvanteLogoLine6 = { fg = colors.foreground_300 },
+    AvanteLogoLine7 = { fg = colors.foreground_300 },
+    AvanteLogoLine8 = { fg = colors.foreground_400 },
+    AvanteLogoLine9 = { fg = colors.foreground_400 },
+    AvanteLogoLine10 = { fg = colors.foreground_400 },
+    AvanteLogoLine11 = { fg = colors.foreground_400 },
+    AvanteLogoLine12 = { fg = colors.foreground_400 },
+    AvanteLogoLine13 = { fg = colors.foreground_400 },
+    AvanteLogoLine14 = { fg = colors.foreground_400 },
 
     -- Buttons with proper styling
-    AvanteButtonDefault = { fg = colors.base_900, bg = colors.base_300 },
-    AvanteButtonDefaultHover = { fg = colors.base_900, bg = colors.green },
-    AvanteButtonPrimary = { fg = colors.base_900, bg = colors.base_300 },
-    AvanteButtonPrimaryHover = { fg = colors.base_900, bg = colors.blue },
-    AvanteButtonDanger = { fg = colors.base_900, bg = colors.base_300 },
-    AvanteButtonDangerHover = { fg = colors.base_900, bg = colors.red },
+    AvanteButtonDefault = { fg = colors.background_950, bg = colors.foreground_200 },
+    AvanteButtonDefaultHover = { fg = colors.background_950, bg = colors.green },
+    AvanteButtonPrimary = { fg = colors.background_950, bg = colors.foreground_200 },
+    AvanteButtonPrimaryHover = { fg = colors.background_950, bg = colors.blue },
+    AvanteButtonDanger = { fg = colors.background_950, bg = colors.foreground_200 },
+    AvanteButtonDangerHover = { fg = colors.background_950, bg = colors.red },
 
     -- Titles and headers
-    AvanteTitle = { fg = colors.base_900, bg = colors.green },
-    AvanteSubtitle = { fg = colors.base_900, bg = colors.blue },
-    AvanteReversedTitle = { fg = colors.green, bg = colors.base_900 },
-    AvanteReversedSubtitle = { fg = colors.blue, bg = colors.base_900 },
-    AvanteThirdTitle = { fg = colors.base_300, bg = colors.base_700 },
-    AvanteReversedThirdTitle = { fg = colors.base_700, bg = colors.base_900 },
+    AvanteTitle = { fg = colors.background_950, bg = colors.green },
+    AvanteSubtitle = { fg = colors.background_950, bg = colors.blue },
+    AvanteReversedTitle = { fg = colors.green, bg = colors.background_950 },
+    AvanteReversedSubtitle = { fg = colors.blue, bg = colors.background_950 },
+    AvanteThirdTitle = { fg = colors.foreground_200, bg = colors.background_800 },
+    AvanteReversedThirdTitle = { fg = colors.background_800, bg = colors.background_950 },
 
     -- Sidebar and floating elements
     AvanteSidebarNormal = { link = "NormalFloat" },
-    AvanteSidebarWinSeparator = { fg = colors.base_900, bg = colors.base_900 },
-    AvanteSidebarWinHorizontalSeparator = { fg = colors.base_700, bg = colors.base_900 },
+    AvanteSidebarWinSeparator = { fg = colors.background_950, bg = colors.background_950 },
+    AvanteSidebarWinHorizontalSeparator = { fg = colors.background_800, bg = colors.background_950 },
 
     -- Popup and input elements
     AvantePopupHint = { link = "NormalFloat" },
@@ -1483,7 +1495,7 @@ M["yetone/avante.nvim"] = function(colors, global_config, plugin_config)
     AvanteAnnotation = { link = "Comment" },
 
     -- Confirmation dialogs
-    AvanteConfirmTitle = { fg = colors.base_900, bg = colors.red },
+    AvanteConfirmTitle = { fg = colors.background_950, bg = colors.red },
 
     -- Diff and change indicators
     AvanteToBeDeleted = { strikethrough = true, bg = utils.opaque(colors.red, 0.20) },

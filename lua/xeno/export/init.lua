@@ -128,7 +128,7 @@ local function get_filtered_color_palette(highlights, variant_palette)
               and type(attr_value) == "string"
               and not attr_value:match("^#[0-9a-fA-F]+$")
               and not attr_value:match("^@")
-            then -- Not a color reference like @base.500
+            then -- Not a color reference like @background.500
               used_semantic_colors[attr_value] = true
             end
           end
@@ -156,9 +156,7 @@ local function get_filtered_color_palette(highlights, variant_palette)
   for color_name, color_value in pairs(palette_to_filter) do
     if type(color_value) == "string" and color_value:match("^#[0-9a-fA-F]+$") then
       if used_color_values[color_value:upper()] then
-        -- Extract the color family name (e.g., "red_stone" from "red_stone_300")
         local family = color_name:match("^([^_]+_?[^_]*)_?%d*$") or color_name
-        -- Handle cases like "red_stone_300" -> "red_stone", or "base_500" -> "base"
         family = color_name:match("^(.-)_%d+$") or color_name
         used_color_families[family] = true
       end
@@ -407,13 +405,14 @@ local function get_neovim_current_highlights()
 end
 
 -- Generate variant-specific color palette using xeno's palette system
-local function generate_variant_palette(base_color, accent_color, variant, user_config, filtered_custom_colors)
+local function generate_variant_palette(foreground_color, background_color, accent_color, variant, user_config, filtered_custom_colors)
   local palette = require("xeno.core.palette")
   local opaque_registry = require("xeno.core.opaque_registry")
 
   -- Create a complete config matching the user's actual configuration
   local temp_config = {
-    base = base_color,
+    foreground = foreground_color,
+    background = background_color,
     accent = accent_color,
     variation = user_config.variation or 0,
     contrast = user_config.contrast or 0,
@@ -484,7 +483,8 @@ local function organize_colors_by_variant(color_palette, highlights, current_var
   else
     -- Fallback defaults that match xeno's defaults
     user_config = {
-      base = "#030303",
+      foreground = nil,
+      background = "#030303",
       accent = "#7AA2F7",
       variation = 0,
       contrast = 0,
@@ -492,10 +492,9 @@ local function organize_colors_by_variant(color_palette, highlights, current_var
   end
 
   local organized = {
-    base_colors = {},
+    foreground_colors = {},
+    background_colors = {},
     accent_colors = {},
-    syntax_base_colors = {},
-    syntax_accent_colors = {},
     semantic_colors = {},
     custom_colors = {},
     opaque_colors = {}, -- Add opaque colors category
@@ -503,20 +502,17 @@ local function organize_colors_by_variant(color_palette, highlights, current_var
 
   -- Separate current colors by type for reference
   for color_name, color_value in pairs(color_palette) do
-    if color_name:match("^base_%d+$") then
-      organized.base_colors[color_name] = color_value
+    if color_name:match("^foreground_%d+$") then
+      organized.foreground_colors[color_name] = color_value
+    elseif color_name:match("^background_%d+$") then
+      organized.background_colors[color_name] = color_value
     elseif color_name:match("^accent_%d+$") then
       organized.accent_colors[color_name] = color_value
-    elseif color_name:match("^syntax_base_%d+$") then
-      organized.syntax_base_colors[color_name] = color_value
-    elseif color_name:match("^syntax_accent_%d+$") then
-      organized.syntax_accent_colors[color_name] = color_value
     elseif
       color_name:match("^.+_%d%d%d$")
-      and not color_name:match("^base_%d+$")
+      and not color_name:match("^foreground_%d+$")
+      and not color_name:match("^background_%d+$")
       and not color_name:match("^accent_%d+$")
-      and not color_name:match("^syntax_base_%d+$")
-      and not color_name:match("^syntax_accent_%d+$")
     then
       -- Opaque colors (end with 3-digit opacity like _050, _025, etc.)
       organized.opaque_colors[color_name] = color_value
@@ -546,16 +542,32 @@ local function organize_colors_by_variant(color_palette, highlights, current_var
     if current_variant == "dark" then
       dark_palette = current_variant_palette
       -- Generate light palette for completeness if needed
-      light_palette = generate_variant_palette(user_config.base, user_config.accent, "light", user_config, filtered_custom_colors)
+      light_palette = generate_variant_palette(
+        user_config.foreground,
+        user_config.background,
+        user_config.accent,
+        "light",
+        user_config,
+        filtered_custom_colors
+      )
     else
       light_palette = current_variant_palette
       -- Generate dark palette for completeness if needed
-      dark_palette = generate_variant_palette(user_config.base, user_config.accent, "dark", user_config, filtered_custom_colors)
+      dark_palette = generate_variant_palette(
+        user_config.foreground,
+        user_config.background,
+        user_config.accent,
+        "dark",
+        user_config,
+        filtered_custom_colors
+      )
     end
   else
     -- Fallback: Generate both palettes
-    dark_palette = generate_variant_palette(user_config.base, user_config.accent, "dark", user_config, filtered_custom_colors)
-    light_palette = generate_variant_palette(user_config.base, user_config.accent, "light", user_config, filtered_custom_colors)
+    dark_palette =
+      generate_variant_palette(user_config.foreground, user_config.background, user_config.accent, "dark", user_config, filtered_custom_colors)
+    light_palette =
+      generate_variant_palette(user_config.foreground, user_config.background, user_config.accent, "light", user_config, filtered_custom_colors)
   end
 
   -- Store variant-specific colors
@@ -578,19 +590,15 @@ end
 local function validate_variant_colors(organized_colors)
   -- Check if we have essential colors (including syntax variants)
   local required_colors = {
-    "base_100",
-    "base_300",
-    "base_500",
-    "base_800",
-    "base_900",
+    "foreground_50",
+    "foreground_200",
+    "foreground_400",
+    "background_500",
+    "background_800",
+    "background_950",
+    "accent_50",
     "accent_300",
-    "accent_500",
-    "syntax_base_300",
-    "syntax_base_500",
-    "syntax_base_700",
-    "syntax_accent_300",
-    "syntax_accent_500",
-    "syntax_accent_700",
+    "accent_600",
   }
 
   for _, variant in ipairs({ "dark", "light" }) do
@@ -610,15 +618,17 @@ local function generate_metadata()
   local timestamp = os.date("%Y-%m-%d %H:%M:%S")
   local variant = vim.o.background or "dark"
 
-  -- Get xeno configuration for base and accent colors
+  -- Get xeno configuration for palette seed colors
   local xeno = package.loaded["xeno"]
-  local base_color = "unknown"
+  local foreground_color = "unknown"
+  local background_color = "unknown"
   local accent_color = "unknown"
   local variation = 0
   local contrast = 0
 
   if xeno and xeno._global_config then
-    base_color = xeno._global_config.base or base_color
+    foreground_color = xeno._global_config.foreground or foreground_color
+    background_color = xeno._global_config.background or background_color
     accent_color = xeno._global_config.accent or accent_color
     variation = xeno._global_config.variation or variation
     contrast = xeno._global_config.contrast or contrast
@@ -627,7 +637,8 @@ local function generate_metadata()
   return {
     timestamp = timestamp,
     variant = variant,
-    base_color = base_color,
+    foreground_color = foreground_color,
+    background_color = background_color,
     accent_color = accent_color,
     variation = variation,
     contrast = contrast,
@@ -666,7 +677,8 @@ function M.export_theme(config)
 
   -- Generate the palette for the CURRENT variant only (we're exporting the active variant)
   local temp_config = {
-    base = user_config.base or "#030303",
+    foreground = user_config.foreground,
+    background = user_config.background or "#030303",
     accent = user_config.accent or "#7AA2F7",
     variation = user_config.variation or 0,
     contrast = user_config.contrast or 0,

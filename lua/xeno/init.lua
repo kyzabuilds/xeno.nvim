@@ -83,10 +83,6 @@ function xeno.setup(user_config)
   end
   config._custom_colors = merged_custom_colors
 
-  if config.background and not config.base then
-    config.base = config.background
-  end
-
   local ok, colors = pcall(palette.generate_palette, config)
   if not ok then
     vim.notify(fmt("xeno.nvim: Error generating color palette: %s. Using fallback colors.", tostring(colors)), vim.log.levels.ERROR)
@@ -106,8 +102,8 @@ function xeno.setup(user_config)
       vim.log.levels.ERROR
     )
     highlights = {
-      Normal = { bg = xeno.colors.bg, fg = xeno.colors.fg },
-      Comment = { fg = xeno.colors.base_600, italic = true },
+      Normal = { bg = xeno.colors.background_950, fg = xeno.colors.foreground_50 },
+      Comment = { fg = xeno.colors.foreground_400, italic = true },
       Error = { fg = xeno.colors.red },
     }
   end
@@ -185,10 +181,32 @@ function xeno.export(config)
   return export_module.export_theme(config)
 end
 
+-- Public palette accessor for external integrations/helpers.
+function xeno.get_colors()
+  return xeno.colors
+end
+
 -- Expose namespace utilities
 xeno.namespace_utils = namespace
 
 -- Expose utils.opaque for user themes
 xeno.opaque = utils.opaque
+
+-- Public color access: allow xeno.foreground_400 as shorthand for xeno.colors.foreground_400
+setmetatable(xeno, {
+  __index = function(tbl, key)
+    local value = rawget(tbl, key)
+    if value ~= nil then
+      return value
+    end
+
+    local colors = rawget(tbl, "colors")
+    if colors and type(colors) == "table" then
+      return colors[key]
+    end
+
+    return nil
+  end,
+})
 
 return xeno

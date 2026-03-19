@@ -1,6 +1,10 @@
 local defaults = {}
 
 defaults.config = {
+  foreground = nil,
+  background = nil,
+  accent = nil,
+
   variation = 0.0,
   contrast = 0.0,
 

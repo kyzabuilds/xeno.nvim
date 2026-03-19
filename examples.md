@@ -43,9 +43,9 @@ xeno.setup({
         match_fg = '@accent'
       },
       ['hrsh7th/nvim-cmp'] = {
-        selected_bg = '@base.600',
+        selected_bg = '@background.600',
         match_fg = '@my_purple.500',
-        kind_fg = '@base.500'
+        kind_fg = '@background.500'
       }
     },
   }
@@ -57,8 +57,9 @@ xeno.setup({
 You can reference colors in multiple ways:
 - **Custom colors**: `'@my_purple'`, `'@accent_red'`
 - **Palette colors**: 
-  - `'@base.50'` - `'@base.950'`
-  - `'@accent.50'` - `'@accent.950'`
+  - `'@foreground.50'` - `'@foreground.400'`
+  - `'@background.500'` - `'@background.950'`
+  - `'@accent.50'` - `'@accent.600'`
 - **Direct hex values**: `'#8b5cf6'`
 - **Standard colors**: `'white'`, `'black'`, `'red'`, etc.
 
@@ -68,38 +69,40 @@ You can reference colors in multiple ways:
 
 **Fallback behavior**: When no shade level is specified (e.g., `@my_color`), it automatically falls back to the 500 level (`@my_color.500`).
 
+**Foreground behavior**: `foreground` is optional. If you omit it, Xeno derives `@foreground.*` from the `background` seed and keeps explicit `foreground` as an override when you need it.
+
 ## Theme Showcases
 
 Themes are categorized by complexity:
-- **Minimal Themes**: Simple color schemes with basic base and accent colors, minimal highlight customizations, and no custom colors or plugin integrations.
+- **Minimal Themes**: Simple color schemes with basic foreground, background, and accent colors, minimal highlight customizations, and no custom colors or plugin integrations.
 - **Standard Themes**: Moderate complexity with custom colors, basic plugin integrations, and a balanced set of highlight customizations.
 - **Extensive Themes**: Highly detailed themes with extensive custom colors, plugin integrations, and comprehensive highlight configurations.
 
 ### Minimal Themes
 
-Minimal themes focus on simplicity, using only base and accent colors with basic editor and syntax highlights.
+Minimal themes focus on simplicity, using only foreground, background, and accent colors with basic editor and syntax highlights.
 
 <details>
   <summary><strong>Dusk</strong></summary>
 
   | Color Name | Hex Code | Preview |
   |------------|----------|---------|
-  | Base       | #2E3440  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #2E3440; border: 1px solid #000; vertical-align: middle;"></span> |
+  | Background | #2E3440  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #2E3440; border: 1px solid #000; vertical-align: middle;"></span> |
   | Accent     | #88C0D0  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #88C0D0; border: 1px solid #000; vertical-align: middle;"></span> |
 
   ```lua
 local xeno = require('xeno')
 
 xeno.theme('dusk', {
-  base = '#2E3440', -- Dark nordic background
+  background = '#2E3440', -- Dark nordic background
   accent = '#88C0D0', -- Soft cyan accent
   highlights = {
     editor = {
-      Normal = { bg = '@base.900', fg = '@base.300' },
-      Comment = { fg = '@base.600', italic = true },
+      Normal = { bg = '@background.900', fg = '@foreground.300' },
+      Comment = { fg = '@background.600', italic = true },
     },
     syntax = {
-      Identifier = { fg = '@base.400' },
+      Identifier = { fg = '@foreground.400' },
       String = { fg = '@accent.400' },
       Number = { fg = '@accent.400' },
       Type = { fg = '@accent.500' },
@@ -115,22 +118,23 @@ xeno.theme('dusk', {
 
   | Color Name | Hex Code | Preview |
   |------------|----------|---------|
-  | Base       | #F5E8D3  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #F5E8D3; border: 1px solid #000; vertical-align: middle;"></span> |
+  | Background | #F5E8D3  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #F5E8D3; border: 1px solid #000; vertical-align: middle;"></span> |
   | Accent     | #D08770  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #D08770; border: 1px solid #000; vertical-align: middle;"></span> |
 
   ```lua
 local xeno = require('xeno')
 
 xeno.theme('dawn', {
-  base = '#F5E8D3', -- Light creamy background
+  foreground = '#1E1E1E', -- Primary text seed
+  background = '#F5E8D3', -- Light creamy background
   accent = '#D08770', -- Warm coral accent
   highlights = {
     editor = {
-      Normal = { bg = '@base.50', fg = '@base.900' },
-      Comment = { fg = '@base.600', italic = true },
+      Normal = { bg = '@background.950', fg = '@foreground.50' },
+      Comment = { fg = '@foreground.300', italic = true },
     },
     syntax = {
-      Identifier = { fg = '@base.800' },
+      Identifier = { fg = '@foreground.100' },
       String = { fg = '@accent.400' },
       Number = { fg = '@accent.400' },
       Type = { fg = '@accent.500' },
@@ -153,7 +157,7 @@ Standard themes include custom colors, basic plugin integrations, and a moderate
   | Pine       | #3D5528  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #3D5528; border: 1px solid #000; vertical-align: middle;"></span> |
   | Moss       | #6A9955  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #6A9955; border: 1px solid #000; vertical-align: middle;"></span> |
   | Fern       | #A8C977  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #A8C977; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Base       | #2F2F2F  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #2F2F2F; border: 1px solid #000; vertical-align: middle;"></span> |
+  | Background | #2F2F2F  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #2F2F2F; border: 1px solid #000; vertical-align: middle;"></span> |
   | Accent     | #6A9955  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #6A9955; border: 1px solid #000; vertical-align: middle;"></span> |
 
   ```lua
@@ -166,15 +170,16 @@ xeno.color('fern', '#A8C977')
 
 xeno.theme('forest', {
   contrast = 0.2,
-  base = '#2F2F2F', -- Dark gray background
+  foreground = '#F8F8F2', -- Primary text seed
+  background = '#2F2F2F', -- Dark gray background
   accent = '#6A9955', -- Mossy green accent
   highlights = {
     editor = {
-      Normal = { bg = '@base.900', fg = '@base.300' },
+      Normal = { bg = '@background.900', fg = '@foreground.300' },
       Comment = { fg = '@pine.600', italic = true },
     },
     syntax = {
-      Identifier = { fg = '@base.400' },
+      Identifier = { fg = '@foreground.400' },
       String = { fg = '@fern.400' },
       Quote = { fg = '@fern.400' },
       Character = { fg = '@fern.400' },
@@ -187,10 +192,10 @@ xeno.theme('forest', {
       Boolean = { fg = '@fern.400' },
       Type = { fg = '@moss.500' },
       Function = { fg = '@moss.600' },
-      Constant = { fg = '@base.400' },
-      Special = { fg = '@base.500' },
-      Delimiter = { fg = '@base.600' },
-      Operator = { fg = '@base.500' },
+      Constant = { fg = '@foreground.400' },
+      Special = { fg = '@background.500' },
+      Delimiter = { fg = '@background.600' },
+      Operator = { fg = '@background.500' },
       Error = { fg = '@pine.300' },
     },
     plugins = {
@@ -199,9 +204,9 @@ xeno.theme('forest', {
         match_fg = '@fern.400',
       },
       ['hrsh7th/nvim-cmp'] = {
-        selected_bg = '@base.600',
+        selected_bg = '@background.600',
         match_fg = '@moss.500',
-        kind_fg = '@base.500',
+        kind_fg = '@background.500',
       },
     },
   },
@@ -217,7 +222,7 @@ xeno.theme('forest', {
   | DeepSea    | #1B263B  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #1B263B; border: 1px solid #000; vertical-align: middle;"></span> |
   | Aqua       | #4EC9B0  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #4EC9B0; border: 1px solid #000; vertical-align: middle;"></span> |
   | Wave       | #66D9EF  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #66D9EF; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Base       | #2C3E50  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #2C3E50; border: 1px solid #000; vertical-align: middle;"></span> |
+  | Background | #2C3E50  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #2C3E50; border: 1px solid #000; vertical-align: middle;"></span> |
   | Accent     | #4EC9B0  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #4EC9B0; border: 1px solid #000; vertical-align: middle;"></span> |
 
   ```lua
@@ -230,15 +235,16 @@ xeno.color('wave', '#66D9EF')
 
 xeno.theme('ocean', {
   contrast = 0.15,
-  base = '#2C3E50', -- Dark blue-gray background
+  foreground = '#F8F8F2', -- Primary text seed
+  background = '#2C3E50', -- Dark blue-gray background
   accent = '#4EC9B0', -- Aqua accent
   highlights = {
     editor = {
-      Normal = { bg = '@base.900', fg = '@base.300' },
+      Normal = { bg = '@background.900', fg = '@foreground.300' },
       Comment = { fg = '@deepsea.600', italic = true },
     },
     syntax = {
-      Identifier = { fg = '@base.400' },
+      Identifier = { fg = '@foreground.400' },
       String = { fg = '@wave.400' },
       Quote = { fg = '@wave.400' },
       Character = { fg = '@wave.400' },
@@ -251,10 +257,10 @@ xeno.theme('ocean', {
       Boolean = { fg = '@wave.400' },
       Type = { fg = '@aqua.500' },
       Function = { fg = '@aqua.600' },
-      Constant = { fg = '@base.400' },
-      Special = { fg = '@base.500' },
-      Delimiter = { fg = '@base.600' },
-      Operator = { fg = '@base.500' },
+      Constant = { fg = '@foreground.400' },
+      Special = { fg = '@background.500' },
+      Delimiter = { fg = '@background.600' },
+      Operator = { fg = '@background.500' },
       Error = { fg = '@deepsea.300' },
     },
     plugins = {
@@ -263,9 +269,9 @@ xeno.theme('ocean', {
         match_fg = '@wave.400',
       },
       ['hrsh7th/nvim-cmp'] = {
-        selected_bg = '@base.600',
+        selected_bg = '@background.600',
         match_fg = '@aqua.500',
-        kind_fg = '@base.500',
+        kind_fg = '@background.500',
       },
     },
   },
@@ -307,7 +313,8 @@ xeno.color('malibu', '#00A3D2')
 xeno.theme('summer-night', {
   contrast = 0.1,
   variation = -0.3,
-  base = '#353A44', -- Dark background
+  foreground = '#F8F8F2', -- Primary text seed
+  background = '#353A44', -- Dark background
   accent = '#00A6BC', -- Bluebird accent
   red = '#FA5F8B',
   green = '#00AB9A',
@@ -317,11 +324,11 @@ xeno.theme('summer-night', {
   orange = '#E17954',
   highlights = {
     editor = {
-      Normal = { bg = '@base.900', fg = '@base.400' },
-      Comment = { fg = '@base.600', italic = true },
+      Normal = { bg = '@background.900', fg = '@foreground.400' },
+      Comment = { fg = '@background.600', italic = true },
     },
     syntax = {
-      Identifier = { fg = '@base.400' },
+      Identifier = { fg = '@foreground.400' },
       Title = { fg = '@bamboo' },
       String = { fg = '@bamboo.400' },
       Quote = { fg = '@camellia' },
@@ -348,11 +355,11 @@ xeno.theme('summer-night', {
       Function = { fg = '@malibu.500' },
       Method = { fg = '@ember.400' },
       Constant = { fg = '@ember.400' },
-      Special = { fg = '@base.400' },
-      SpecialChar = { fg = '@base.500' },
-      Delimiter = { fg = '@base.400' },
-      Operator = { fg = '@base.500' },
-      SpecialKey = { fg = '@base.400' },
+      Special = { fg = '@foreground.400' },
+      SpecialChar = { fg = '@background.500' },
+      Delimiter = { fg = '@foreground.400' },
+      Operator = { fg = '@background.500' },
+      SpecialKey = { fg = '@foreground.400' },
       Error = { fg = '@coral' },
       SpecialComment = { fg = '@arcadia.600' },
       ['@text.literal'] = { link = 'Comment' },
@@ -397,7 +404,7 @@ xeno.theme('summer-night', {
       ['@lsp.type.method'] = { link = 'Method' },
       ['@lsp.typemod.function'] = { link = 'Function' },
       ['@exception'] = { link = 'Exception' },
-      ['@variable'] = { fg = '@base.300' },
+      ['@variable'] = { fg = '@foreground.300' },
       ['@variable.member'] = { fg = '@topaz.500' },
       ['@variable.parameter'] = { fg = '@ember.400' },
       ['@type'] = { link = 'Type' },
@@ -420,9 +427,9 @@ xeno.theme('summer-night', {
         match_fg = '@camellia.400',
       },
       ['hrsh7th/nvim-cmp'] = {
-        selected_bg = '@base.600',
+        selected_bg = '@background.600',
         match_fg = '@malibu.500',
-        kind_fg = '@base.500',
+        kind_fg = '@background.500',
       },
     },
   },
@@ -439,7 +446,7 @@ xeno.theme('summer-night', {
   | MartinaOlive   | #909040  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #909040; border: 1px solid #000; vertical-align: middle;"></span> |
   | BrightNori     | #206020  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #206020; border: 1px solid #000; vertical-align: middle;"></span> |
   | PictonBlue     | #569CD6  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #569CD6; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Base           | #101010  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #101010; border: 1px solid #000; vertical-align: middle;"></span> |
+  | Background     | #101010  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #101010; border: 1px solid #000; vertical-align: middle;"></span> |
   | Accent         | #3D537A  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #3D537A; border: 1px solid #000; vertical-align: middle;"></span> |
 
   ```lua
@@ -454,7 +461,8 @@ xeno.color('picton_blue', '#569CD6')
 xeno.theme('byte', {
   contrast = 0.25,
   variation = -0.4,
-  base = '#101010', -- Dark background
+  foreground = '#F8F8F2', -- Primary text seed
+  background = '#101010', -- Dark background
   accent = '#3D537A', -- Blue accent
   red = '#E58E89',
   green = '#00FF00',
@@ -464,12 +472,12 @@ xeno.theme('byte', {
   orange = '#FFA94D',
   highlights = {
     editor = {
-      Normal = { bg = '@base.900', fg = '@base' },
+      Normal = { bg = '@background.900', fg = '@foreground.100' },
       Comment = { fg = '@bright_nori.600', italic = true },
     },
     syntax = {
-      Identifier = { fg = '@base.400' },
-      Title = { fg = '@base.400' },
+      Identifier = { fg = '@foreground.400' },
+      Title = { fg = '@foreground.400' },
       String = { fg = '@red_stone.300' },
       Quote = { fg = '@red_stone.300' },
       Character = { fg = '@red_stone.300' },
@@ -494,12 +502,12 @@ xeno.theme('byte', {
       Type = { fg = '@picton_blue.300' },
       Function = { fg = '@picton_blue.500' },
       Method = { fg = '@picton_blue.500' },
-      Constant = { fg = '@base.400' },
-      Special = { fg = '@base.500' },
-      SpecialChar = { fg = '@base.500' },
-      Delimiter = { fg = '@base.600' },
-      Operator = { fg = '@base.500' },
-      SpecialKey = { fg = '@base.500' },
+      Constant = { fg = '@foreground.400' },
+      Special = { fg = '@background.500' },
+      SpecialChar = { fg = '@background.500' },
+      Delimiter = { fg = '@background.600' },
+      Operator = { fg = '@background.500' },
+      SpecialKey = { fg = '@background.500' },
       Error = { fg = '#E58E89' },
       SpecialComment = { fg = '@bright_nori.600' },
       ['@text.literal'] = { link = 'Comment' },
@@ -540,7 +548,7 @@ xeno.theme('byte', {
       ['@lsp.type.method'] = { link = 'Method' },
       ['@lsp.typemod.function'] = { link = 'Function' },
       ['@exception'] = { link = 'Exception' },
-      ['@variable'] = { fg = '@base.500' },
+      ['@variable'] = { fg = '@background.500' },
       ['@type'] = { link = 'Type' },
       ['@type.definition'] = { link = 'Typedef' },
       ['@type.builtin'] = { link = 'Special' },
@@ -560,13 +568,12 @@ xeno.theme('byte', {
         match_fg = '@red_stone.400',
       },
       ['hrsh7th/nvim-cmp'] = {
-        selected_bg = '@base.600',
+        selected_bg = '@background.600',
         match_fg = '@picton_blue.500',
-        kind_fg = '@base.500',
+        kind_fg = '@background.500',
       },
     },
   },
 })
   ```
 </details>
-

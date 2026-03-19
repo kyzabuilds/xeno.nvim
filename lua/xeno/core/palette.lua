@@ -4,8 +4,7 @@ local fmt = string.format
 
 -- OKLCH Lightness Scales
 -- OKLCH lightness is perceptually linear, providing uniform color scale generation
--- NOTE: Both dark and light variants use the same scale direction:
--- Level 50 = lightest, Level 900 = darkest (consistent with Tailwind's naming)
+-- Foreground/background families consume different slices of this shared scale.
 local OKLCH_LIGHTNESS_SCALES = {
   dark = {
     [50] = 0.97,
@@ -21,18 +20,24 @@ local OKLCH_LIGHTNESS_SCALES = {
     [950] = 0.14,
   },
   light = {
-    [50] = 0.93,     -- Light (was 0.03, inverted)
-    [100] = 0.88,    -- Light (was 0.10, inverted)
-    [200] = 0.82,    -- Light (was 0.20, inverted)
-    [300] = 0.67,    -- Light-medium (was 0.35, inverted)
-    [400] = 0.60,    -- Medium (was 0.42, inverted)
+    [50] = 0.14,     -- Very dark (for accents/highlights)
+    [100] = 0.18,    -- Dark
+    [200] = 0.24,    -- Dark
+    [300] = 0.26,    -- Dark (for text)
+    [400] = 0.34,    -- Medium-dark
     [500] = 0.50,    -- Neutral (same)
-    [600] = 0.42,    -- Medium-dark (was 0.60, inverted)
-    [700] = 0.35,    -- Dark (was 0.67, inverted)
-    [800] = 0.20,    -- Dark (was 0.80, inverted)
-    [900] = 0.10,    -- Very dark (was 0.88, inverted)
-    [950] = 0.03,    -- Darkest (was 0.93, inverted)
+    [600] = 0.62,    -- Medium-light
+    [700] = 0.70,    -- Light
+    [800] = 0.82,    -- Light
+    [900] = 0.93,    -- Very light (for backgrounds)
+    [950] = 0.97,    -- Lightest
   },
+}
+
+local FAMILY_LEVELS = {
+  foreground = { 50, 100, 200, 300, 400 },
+  background = { 500, 600, 700, 800, 900, 950 },
+  accent = { 50, 100, 200, 300, 400, 500, 600 },
 }
 
 local SEMANTIC_COLORS = {
@@ -56,7 +61,7 @@ local SEMANTIC_COLORS = {
   },
 }
 
-local DEFAULT_BASE = "#030303"
+local DEFAULT_BACKGROUND = "#030303"
 local DEFAULT_ACCENT = "#7AA2F7"
 
 -- Helper functions
@@ -65,15 +70,16 @@ local function clamp(value, min, max)
 end
 
 local function get_theme_variant()
-  return utils.get_variant() == 1 and "dark" or "light"
+  return utils.get_variant() == 2 and "light" or "dark"
 end
 
 
 
 -- OKLCH color scale generator
 -- OKLCH lightness is perceptually linear, providing uniform color scales
-local function generate_color_scale_oklch(color, options)
+local function generate_color_scale_oklch(color, options, levels)
   options = options or {}
+  levels = levels or FAMILY_LEVELS.accent
   local theme = get_theme_variant()
   local lightness_scale = OKLCH_LIGHTNESS_SCALES[theme]
   local scale = {}
@@ -85,7 +91,8 @@ local function generate_color_scale_oklch(color, options)
     return {}
   end
 
-  for level, base_lightness in pairs(lightness_scale) do
+  for _, level in ipairs(levels) do
+    local base_lightness = lightness_scale[level]
     -- Apply contrast adjustment if specified
     local adjusted_L = base_lightness
     if options.contrast and options.contrast ~= 0 then
@@ -111,8 +118,19 @@ local function improve_semantic_color(color, theme)
 end
 
 -- Rename the OKLCH generator to be the main generator
-local function generate_color_scale(color, options)
-  return generate_color_scale_oklch(color, options)
+local function generate_color_scale(color, options, levels)
+  return generate_color_scale_oklch(color, options, levels)
+end
+
+local function resolve_foreground_seed(config, background_color)
+  if config.foreground ~= nil then
+    local L = utils.hex2oklch(config.foreground)
+    if L then
+      return config.foreground
+    end
+  end
+
+  return background_color
 end
 
 -- Scale generators for different purposes
@@ -126,15 +144,14 @@ function M.generate_palette(config)
   local theme = get_theme_variant()
 
   -- Parse and validate colors
-  local base_color = config.base or config.background or DEFAULT_BASE
+  local background_color = config.background or DEFAULT_BACKGROUND
   local accent_color = config.accent or DEFAULT_ACCENT
-  local variation = config.variation or 0
   local contrast = config.contrast or 0
 
-  -- Validate base color (check it converts to OKLCH properly)
-  local L, C, H = utils.hex2oklch(base_color)
+  -- Validate background color
+  local L, C, H = utils.hex2oklch(background_color)
   if not L then
-    base_color = DEFAULT_BASE
+    background_color = DEFAULT_BACKGROUND
   end
 
   -- Validate accent color
@@ -143,18 +160,20 @@ function M.generate_palette(config)
     accent_color = DEFAULT_ACCENT
   end
 
+  -- Foreground defaults to the background seed so its shades stay coupled to
+  -- the active surface hue/chroma. An explicit foreground keeps override behavior.
+  local foreground_color = resolve_foreground_seed(config, background_color)
+
   -- Generate scales with shared options
   local scale_options = {
-    standard = { contrast = contrast, with_variation = false },
-    syntax = { contrast = contrast, with_variation = true, variation = variation },
+    standard = { contrast = contrast },
   }
 
   -- Generate all color scales
   local scales = {
-    { scale = generate_color_scale(base_color, scale_options.standard), prefix = "base" },
-    { scale = generate_color_scale(accent_color, scale_options.standard), prefix = "accent" },
-    { scale = generate_color_scale(base_color, scale_options.syntax), prefix = "syntax_base" },
-    { scale = generate_color_scale(accent_color, scale_options.syntax), prefix = "syntax_accent" },
+    { scale = generate_color_scale(foreground_color, scale_options.standard, FAMILY_LEVELS.foreground), prefix = "foreground" },
+    { scale = generate_color_scale(background_color, scale_options.standard, FAMILY_LEVELS.background), prefix = "background" },
+    { scale = generate_color_scale(accent_color, scale_options.standard, FAMILY_LEVELS.accent), prefix = "accent" },
   }
 
   -- Build final color palette
@@ -180,7 +199,7 @@ function M.generate_palette(config)
     end
 
     for name, hex_value in pairs(custom_colors_to_include) do
-      local custom_scale = generate_color_scale(hex_value, scale_options.standard)
+      local custom_scale = generate_color_scale(hex_value, scale_options.standard, FAMILY_LEVELS.accent)
       add_scale_to_colors(colors, custom_scale, name)
     end
   end

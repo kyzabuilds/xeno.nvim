@@ -98,11 +98,15 @@ function M.theme(name, config, global_config)
   local config_parts = {}
 
   -- Add basic configuration
-  table.insert(config_parts, fmt('  base = "%s"', user_config.base or user_config.background or "#030303"))
+  table.insert(config_parts, fmt('  background = "%s"', user_config.background or "#030303"))
   table.insert(config_parts, fmt('  accent = "%s"', user_config.accent or "#7AA2F7"))
   table.insert(config_parts, fmt("  variation = %.1f", user_config.variation or 0.0))
   table.insert(config_parts, fmt("  contrast = %.1f", user_config.contrast or 0))
   table.insert(config_parts, fmt("  transparent = %s", user_config.transparent and "true" or "false"))
+
+  if user_config.foreground then
+    table.insert(config_parts, fmt('  foreground = "%s"', user_config.foreground))
+  end
 
   -- Add custom colors if present
   if user_config.red then

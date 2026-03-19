@@ -50,7 +50,6 @@ end
 --- @param namespace_name string The namespace name
 function M.clear_namespace(namespace_name)
   if namespaces[namespace_name] then
-    local ns_id = namespaces[namespace_name]
     -- Clear all highlights in this namespace by setting them to empty
     -- Note: There's no direct way to clear a namespace, so we rely on Neovim's cleanup
     namespaces[namespace_name] = nil

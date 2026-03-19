@@ -63,8 +63,8 @@ local function update_config(colors)
   local theme_block = table.concat({
     "",
     "# xeno.nvim theme colors",
-    "background = " .. colors.base_900:gsub("^#", ""),
-    "foreground = " .. colors.base_300:gsub("^#", ""),
+    "background = " .. colors.background_950:gsub("^#", ""),
+    "foreground = " .. colors.foreground_50:gsub("^#", ""),
     "cursor-color = " .. colors.accent_500:gsub("^#", ""),
     "# End xeno.nvim theme colors",
     "",
@@ -89,8 +89,8 @@ function M.setup_ghostty_colors(colors, config)
     update_config(colors)
   end
 
-  send_osc(string.format("\027]11;%s\027\\", hex_to_osc_color(colors.base_900)))
-  send_osc(string.format("\027]10;%s\027\\", hex_to_osc_color(colors.base_300)))
+  send_osc(string.format("\027]11;%s\027\\", hex_to_osc_color(colors.background_950)))
+  send_osc(string.format("\027]10;%s\027\\", hex_to_osc_color(colors.foreground_50)))
 end
 
 function M.setup_ghostty_palette(colors)
@@ -101,22 +101,22 @@ function M.setup_ghostty_palette(colors)
   M.setup_ghostty_colors(colors)
 
   local palette = {
-    [0] = colors.base_900,
+    [0] = colors.background_900,
     [1] = colors.red,
     [2] = colors.green,
     [3] = colors.yellow,
     [4] = colors.blue,
     [5] = colors.purple,
     [6] = colors.cyan,
-    [7] = colors.base_300,
-    [8] = colors.base_500,
+    [7] = colors.foreground_200,
+    [8] = colors.background_500,
     [9] = colors.red,
     [10] = colors.green,
     [11] = colors.yellow,
     [12] = colors.blue,
     [13] = colors.purple,
     [14] = colors.cyan,
-    [15] = colors.base_100,
+    [15] = colors.foreground_50,
   }
 
   for index, color in pairs(palette) do

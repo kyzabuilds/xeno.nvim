@@ -2,6 +2,14 @@ local M = {}
 
 local fmt = string.format
 
+local function metadata_color_label(color, fallback)
+  if type(color) == "string" and color:match("^#[0-9a-fA-F]+$") then
+    return color
+  end
+
+  return fallback
+end
+
 -- Join path components, handling different OS path separators
 function M.join_path(...)
   local parts = { ... }
@@ -62,14 +70,16 @@ function M.generate_filename(format, metadata)
   local timestamp = os.date("%Y%m%d_%H%M%S")
 
   -- Extract color info for filename
-  local base_suffix = metadata.base_color:gsub("#", ""):sub(1, 6)
-  local accent_suffix = metadata.accent_color:gsub("#", ""):sub(1, 6)
+  local background_suffix = metadata_color_label(metadata.background_color, "unknown"):gsub("#", ""):sub(1, 6)
+  local foreground_suffix = metadata_color_label(metadata.foreground_color, "auto"):gsub("#", ""):sub(1, 6)
+  local accent_suffix = metadata_color_label(metadata.accent_color, "unknown"):gsub("#", ""):sub(1, 6)
 
   -- Create descriptive filename
   local name_parts = {
     "xeno",
     metadata.variant or "dark",
-    base_suffix,
+    foreground_suffix,
+    background_suffix,
     accent_suffix,
   }
 
@@ -81,10 +91,10 @@ function M.generate_filename(format, metadata)
     table.insert(name_parts, fmt("con%.1f", metadata.contrast))
   end
 
-  local base_name = table.concat(name_parts, "_")
+  local filename_base = table.concat(name_parts, "_")
   local extension = format == "vim" and ".vim" or ".lua"
 
-  return base_name .. extension
+  return filename_base .. extension
 end
 
 -- Sanitize a string for use in code (variable names, etc.)
@@ -235,11 +245,20 @@ end
 -- Create a comment header with metadata
 function M.create_header_comment(metadata, comment_char)
   comment_char = comment_char or "--"
+  local foreground_label = metadata_color_label(metadata.foreground_color, "auto (derived from background)")
+  local background_label = metadata_color_label(metadata.background_color, "unknown")
+  local accent_label = metadata_color_label(metadata.accent_color, "unknown")
   local lines = {
     fmt("%s ========================================", comment_char),
     fmt("%s xeno.nvim exported theme", comment_char),
     fmt("%s Generated: %s", comment_char, metadata.timestamp),
-    fmt("%s Base: %s | Accent: %s", comment_char, metadata.base_color, metadata.accent_color),
+    fmt(
+      "%s Foreground: %s | Background: %s | Accent: %s",
+      comment_char,
+      foreground_label,
+      background_label,
+      accent_label
+    ),
   }
 
   if metadata.variation and metadata.variation ~= 0 then
@@ -324,38 +343,42 @@ function M.generate_variant_color_definitions(organized_colors, variant, format_
     -- Use variant-specific colors
     for name, color in pairs(variant_colors) do
       local category = "semantic"
-      if name:match("^base_%d+$") then
-        category = "base"
+      if name:match("^foreground_%d+$") then
+        category = "foreground"
+      elseif name:match("^background_%d+$") then
+        category = "background"
       elseif name:match("^accent_%d+$") then
         category = "accent"
-      elseif name:match("^syntax_base_%d+$") then
-        category = "syntax_base"
-      elseif name:match("^syntax_accent_%d+$") then
-        category = "syntax_accent"
-      elseif name:match("^.+_%d%d%d$") and not name:match("^base_%d+$") and not name:match("^accent_%d+$") and not name:match("^syntax_base_%d+$") and not name:match("^syntax_accent_%d+$") then
+      elseif
+        name:match("^.+_%d%d%d$")
+        and not name:match("^foreground_%d+$")
+        and not name:match("^background_%d+$")
+        and not name:match("^accent_%d+$")
+      then
         -- Opaque colors (end with 3-digit opacity like _050, _025, etc.)
         category = "opaque"
-      elseif name:match("^.+_%d+$") and not name:match("^base_%d+$") and not name:match("^accent_%d+$") and not name:match("^syntax_base_%d+$") and not name:match("^syntax_accent_%d+$") then
+      elseif
+        name:match("^.+_%d+$")
+        and not name:match("^foreground_%d+$")
+        and not name:match("^background_%d+$")
+        and not name:match("^accent_%d+$")
+      then
         category = "custom"
       end
       table.insert(all_colors, { name = name, color = color, category = category })
     end
   else
     -- Fallback to organized colors
-    for name, color in pairs(organized_colors.base_colors or {}) do
-      table.insert(all_colors, { name = name, color = color, category = "base" })
+    for name, color in pairs(organized_colors.foreground_colors or {}) do
+      table.insert(all_colors, { name = name, color = color, category = "foreground" })
+    end
+
+    for name, color in pairs(organized_colors.background_colors or {}) do
+      table.insert(all_colors, { name = name, color = color, category = "background" })
     end
 
     for name, color in pairs(organized_colors.accent_colors or {}) do
       table.insert(all_colors, { name = name, color = color, category = "accent" })
-    end
-
-    for name, color in pairs(organized_colors.syntax_base_colors or {}) do
-      table.insert(all_colors, { name = name, color = color, category = "syntax_base" })
-    end
-
-    for name, color in pairs(organized_colors.syntax_accent_colors or {}) do
-      table.insert(all_colors, { name = name, color = color, category = "syntax_accent" })
     end
 
     for name, color in pairs(organized_colors.custom_colors or {}) do
@@ -377,8 +400,7 @@ function M.generate_variant_color_definitions(organized_colors, variant, format_
     if a.category == b.category then
       return a.name < b.name
     end
-    -- Order: base, accent, syntax_base, syntax_accent, custom, semantic, opaque
-    local category_order = { base = 1, accent = 2, syntax_base = 3, syntax_accent = 4, custom = 5, semantic = 6, opaque = 7 }
+    local category_order = { foreground = 1, background = 2, accent = 3, custom = 4, semantic = 5, opaque = 6 }
     return category_order[a.category] < category_order[b.category]
   end)
 

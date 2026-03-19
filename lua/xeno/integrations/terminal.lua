@@ -8,41 +8,41 @@ function M.setup_terminal_colors(colors, config)
 
   -- Setup standard terminal colors
   if is_dark_theme then
-    vim.g.terminal_color_0 = colors.base_900
+    vim.g.terminal_color_0 = colors.background_900
     vim.g.terminal_color_1 = colors.red
     vim.g.terminal_color_2 = colors.green
     vim.g.terminal_color_3 = colors.yellow
     vim.g.terminal_color_4 = colors.blue
     vim.g.terminal_color_5 = colors.purple
     vim.g.terminal_color_6 = colors.cyan
-    vim.g.terminal_color_7 = colors.base_300
+    vim.g.terminal_color_7 = colors.foreground_200
 
-    vim.g.terminal_color_8 = colors.base_500
+    vim.g.terminal_color_8 = colors.background_500
     vim.g.terminal_color_9 = colors.orange
     vim.g.terminal_color_10 = colors.accent_300
     vim.g.terminal_color_11 = colors.accent_200
     vim.g.terminal_color_12 = colors.accent_400
     vim.g.terminal_color_13 = colors.accent_300
     vim.g.terminal_color_14 = colors.accent_200
-    vim.g.terminal_color_15 = colors.base_100
+    vim.g.terminal_color_15 = colors.foreground_50
   else
-    vim.g.terminal_color_0 = colors.base_300
+    vim.g.terminal_color_0 = colors.foreground_200
     vim.g.terminal_color_1 = colors.red
     vim.g.terminal_color_2 = colors.green
     vim.g.terminal_color_3 = colors.yellow
     vim.g.terminal_color_4 = colors.blue
     vim.g.terminal_color_5 = colors.purple
     vim.g.terminal_color_6 = colors.cyan
-    vim.g.terminal_color_7 = colors.base_900
+    vim.g.terminal_color_7 = colors.background_900
 
-    vim.g.terminal_color_8 = colors.base_500
+    vim.g.terminal_color_8 = colors.background_500
     vim.g.terminal_color_9 = colors.orange
     vim.g.terminal_color_10 = colors.accent_300
     vim.g.terminal_color_11 = colors.accent_200
     vim.g.terminal_color_12 = colors.accent_400
     vim.g.terminal_color_13 = colors.accent_300
     vim.g.terminal_color_14 = colors.accent_200
-    vim.g.terminal_color_15 = colors.base_100
+    vim.g.terminal_color_15 = colors.foreground_50
   end
 
   -- Setup Ghostty terminal colors

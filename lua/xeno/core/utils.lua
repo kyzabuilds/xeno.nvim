@@ -145,8 +145,8 @@ utils.opaque = function(fg_color, opacity, bg_color, colors)
 
   if not bg_color then
     -- Try to derive from colors table first (preferred method)
-    if colors and colors.base_900 then
-      r_bg, g_bg, b_bg = utils.hex2rgb(colors.base_900)
+    if colors and colors.background_950 then
+      r_bg, g_bg, b_bg = utils.hex2rgb(colors.background_950)
     end
 
     -- Fallback: try to get Normal background color from applied highlights
