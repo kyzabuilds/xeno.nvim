@@ -40,6 +40,16 @@ local FAMILY_LEVELS = {
   accent = { 50, 100, 200, 300, 400, 500, 600 },
 }
 
+local TEXT_BACKGROUND_LEVELS = { 800, 900, 950 }
+local FOREGROUND_CONTRAST_MIN = {
+  [50] = 9.0,
+  [100] = 8.8,
+  [200] = 8.0,
+  [300] = 6.0,
+  [400] = 4.5,
+}
+local FOREGROUND_HIERARCHY_STEP = 0.015
+
 local SEMANTIC_COLORS = {
   dark = {
     red = "#E86671",
@@ -73,6 +83,109 @@ local function get_theme_variant()
   return utils.get_variant() == 2 and "light" or "dark"
 end
 
+local function adjust_lightness_for_contrast(base_lightness, contrast, theme)
+  local adjusted_L = base_lightness
+
+  if contrast and contrast ~= 0 then
+    local mid_point = theme == "dark" and 0.45 or 0.55
+    local distance = base_lightness - mid_point
+    local multiplier = 1 + (contrast * 0.5)
+    adjusted_L = clamp(mid_point + (distance * multiplier), 0.02, 0.98)
+  end
+
+  return adjusted_L
+end
+
+local function collect_text_backgrounds(background_scale)
+  local backgrounds = {}
+
+  for _, level in ipairs(TEXT_BACKGROUND_LEVELS) do
+    if background_scale[level] then
+      table.insert(backgrounds, background_scale[level])
+    end
+  end
+
+  return backgrounds
+end
+
+local function has_required_contrast(candidate, background_colors, minimum_ratio)
+  for _, background_color in ipairs(background_colors) do
+    local ratio = utils.contrast_ratio(candidate, background_color)
+    if not ratio or ratio < minimum_ratio then
+      return false
+    end
+  end
+
+  return true
+end
+
+local function resolve_foreground_lightness(theme, base_lightness, chroma, hue, background_colors, minimum_ratio, previous_lightness)
+  local lower_bound
+  local upper_bound
+
+  if theme == "dark" then
+    lower_bound = base_lightness
+    upper_bound = previous_lightness and math.min(0.98, previous_lightness - FOREGROUND_HIERARCHY_STEP) or 0.98
+
+    if lower_bound > upper_bound then
+      lower_bound = upper_bound
+    end
+
+    local lower_candidate = utils.oklch2hex(lower_bound, chroma, hue)
+    if has_required_contrast(lower_candidate, background_colors, minimum_ratio) then
+      return lower_bound
+    end
+
+    local upper_candidate = utils.oklch2hex(upper_bound, chroma, hue)
+    if not has_required_contrast(upper_candidate, background_colors, minimum_ratio) then
+      return upper_bound
+    end
+
+    for _ = 1, 18 do
+      local midpoint = (lower_bound + upper_bound) / 2
+      local midpoint_candidate = utils.oklch2hex(midpoint, chroma, hue)
+
+      if has_required_contrast(midpoint_candidate, background_colors, minimum_ratio) then
+        upper_bound = midpoint
+      else
+        lower_bound = midpoint
+      end
+    end
+
+    return upper_bound
+  end
+
+  lower_bound = previous_lightness and math.max(0.02, previous_lightness + FOREGROUND_HIERARCHY_STEP) or 0.02
+  upper_bound = base_lightness
+
+  if upper_bound < lower_bound then
+    upper_bound = lower_bound
+  end
+
+  local upper_candidate = utils.oklch2hex(upper_bound, chroma, hue)
+  if has_required_contrast(upper_candidate, background_colors, minimum_ratio) then
+    return upper_bound
+  end
+
+  local lower_candidate = utils.oklch2hex(lower_bound, chroma, hue)
+  if not has_required_contrast(lower_candidate, background_colors, minimum_ratio) then
+    return lower_bound
+  end
+
+  for _ = 1, 18 do
+    local midpoint = (lower_bound + upper_bound) / 2
+    local midpoint_candidate = utils.oklch2hex(midpoint, chroma, hue)
+
+    if has_required_contrast(midpoint_candidate, background_colors, minimum_ratio) then
+      lower_bound = midpoint
+    else
+      upper_bound = midpoint
+    end
+  end
+
+  return lower_bound
+end
+
 
 
 -- OKLCH color scale generator
@@ -93,14 +206,7 @@ local function generate_color_scale_oklch(color, options, levels)
 
   for _, level in ipairs(levels) do
     local base_lightness = lightness_scale[level]
-    -- Apply contrast adjustment if specified
-    local adjusted_L = base_lightness
-    if options.contrast and options.contrast ~= 0 then
-      local mid_point = theme == "dark" and 0.45 or 0.55
-      local distance = base_lightness - mid_point
-      local multiplier = 1 + (options.contrast * 0.5)
-      adjusted_L = clamp(mid_point + (distance * multiplier), 0.02, 0.98)
-    end
+    local adjusted_L = adjust_lightness_for_contrast(base_lightness, options.contrast, theme)
 
     -- Use input color's chroma and hue, only adjust lightness
     -- OKLCH naturally handles all hues uniformly, no need for special cases
@@ -120,6 +226,41 @@ end
 -- Rename the OKLCH generator to be the main generator
 local function generate_color_scale(color, options, levels)
   return generate_color_scale_oklch(color, options, levels)
+end
+
+local function generate_foreground_scale(color, background_scale, options)
+  options = options or {}
+
+  local theme = get_theme_variant()
+  local lightness_scale = OKLCH_LIGHTNESS_SCALES[theme]
+  local scale = {}
+  local background_colors = collect_text_backgrounds(background_scale)
+  local L_input, C_input, H = utils.hex2oklch(color)
+
+  if not L_input then
+    return {}
+  end
+
+  local foreground_contrast = -(options.contrast or 0) * 0.35
+  local previous_lightness = nil
+
+  for _, level in ipairs(FAMILY_LEVELS.foreground) do
+    local base_lightness = adjust_lightness_for_contrast(lightness_scale[level], foreground_contrast, theme)
+    local resolved_lightness = resolve_foreground_lightness(
+      theme,
+      base_lightness,
+      C_input,
+      H,
+      background_colors,
+      FOREGROUND_CONTRAST_MIN[level],
+      previous_lightness
+    )
+
+    scale[level] = utils.oklch2hex(resolved_lightness, C_input, H)
+    previous_lightness = resolved_lightness
+  end
+
+  return scale
 end
 
 local function resolve_foreground_seed(config, background_color)
@@ -170,10 +311,14 @@ function M.generate_palette(config)
   }
 
   -- Generate all color scales
+  local background_scale = generate_color_scale(background_color, scale_options.standard, FAMILY_LEVELS.background)
+  local foreground_scale = generate_foreground_scale(foreground_color, background_scale, scale_options.standard)
+  local accent_scale = generate_color_scale(accent_color, scale_options.standard, FAMILY_LEVELS.accent)
+
   local scales = {
-    { scale = generate_color_scale(foreground_color, scale_options.standard, FAMILY_LEVELS.foreground), prefix = "foreground" },
-    { scale = generate_color_scale(background_color, scale_options.standard, FAMILY_LEVELS.background), prefix = "background" },
-    { scale = generate_color_scale(accent_color, scale_options.standard, FAMILY_LEVELS.accent), prefix = "accent" },
+    { scale = foreground_scale, prefix = "foreground" },
+    { scale = background_scale, prefix = "background" },
+    { scale = accent_scale, prefix = "accent" },
   }
 
   -- Build final color palette

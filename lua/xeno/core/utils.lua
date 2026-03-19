@@ -254,6 +254,36 @@ utils.rgb2linear_rgb = function(r, g, b)
   return apply_inverse_gamma(norm_r), apply_inverse_gamma(norm_g), apply_inverse_gamma(norm_b)
 end
 
+--- Calculate WCAG relative luminance for a hex color.
+--- @param hex string Hex color string.
+--- @return number? luminance Relative luminance in [0, 1], or nil on invalid input.
+utils.relative_luminance = function(hex)
+  local r, g, b = utils.hex2rgb(hex)
+  if not r then
+    return nil
+  end
+
+  r, g, b = utils.rgb2linear_rgb(r, g, b)
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+end
+
+--- Calculate WCAG contrast ratio between two hex colors.
+--- @param first string Hex color string.
+--- @param second string Hex color string.
+--- @return number? ratio Contrast ratio, or nil when either color is invalid.
+utils.contrast_ratio = function(first, second)
+  local first_luminance = utils.relative_luminance(first)
+  local second_luminance = utils.relative_luminance(second)
+
+  if first_luminance == nil or second_luminance == nil then
+    return nil
+  end
+
+  local lighter = math.max(first_luminance, second_luminance)
+  local darker = math.min(first_luminance, second_luminance)
+  return (lighter + 0.05) / (darker + 0.05)
+end
+
 --- Convert linear RGB to OKLab color space.
 --- Uses matrix transformations with cube roots.
 --- @param r number Linear red [0, 1].
