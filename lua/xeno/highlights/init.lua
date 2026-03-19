@@ -33,6 +33,7 @@ function M.generate_plugin_highlights(colors, config)
 
     table.insert(plugin_results, plugin_fn(colors, config, plugin_config))
   end
+
   return merge_highlights(unpack(plugin_results))
 end
 

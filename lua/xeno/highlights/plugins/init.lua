@@ -280,7 +280,10 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
     config = utils.extend("force", config, plugin_config)
   end
 
-  local neotree = { bg = config.bg, fg = config.fg }
+  local neotree = {
+    bg = config.bg,
+    fg = config.fg,
+  }
 
   return {
     -- Root and Basic Elements
@@ -594,10 +597,10 @@ M["lewis6991/gitsigns.nvim"] = function(colors, plugin_config)
 end
 
 M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
-  local is_light = utils.get_variant() == 2
+  local light = utils.get_variant() == 2
 
-  local function palette()
-    if is_light then
+  local function variant()
+    if light then
       return {
         fill_bg = colors.background_800,
         fill_fg = colors.foreground_300,
@@ -620,13 +623,13 @@ M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
     end
   end
 
-  local default_palette = palette()
+  local palette = variant()
 
   -- Default configuration using the palette
   local config = {
-    selected_bg = default_palette.selected_bg,
-    visible_bg = default_palette.visible_bg,
-    separator = default_palette.separator,
+    selected_bg = palette.selected_bg,
+    visible_bg = palette.visible_bg,
+    separator = palette.separator,
   }
 
   -- Merge with user overrides if provided
@@ -635,12 +638,12 @@ M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
   end
 
   local bufferline = {
-    fill_bg = default_palette.fill_bg,
-    fill_fg = default_palette.fill_fg,
+    fill_bg = palette.fill_bg,
+    fill_fg = palette.fill_fg,
     visible_bg = config.visible_bg,
-    visible_fg = default_palette.visible_fg,
+    visible_fg = palette.visible_fg,
     selected_bg = config.selected_bg,
-    selected_fg = default_palette.selected_fg,
+    selected_fg = palette.selected_fg,
     separator = config.separator,
   }
 

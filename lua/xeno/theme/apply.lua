@@ -30,19 +30,15 @@ function M.apply_highlights(highlights, config)
     cmd("syntax reset")
   end
 
-  -- Apply transparency if configured
   apply_transparency(highlights, config.transparent)
 
-  -- Apply each highlight group
   for group, attrs in pairs(highlights) do
     if attrs.clear then
       api.nvim_cmd({ cmd = "highlight", args = { "clear", group } }, {})
       attrs.clear = nil
     elseif attrs.link then
-      -- Handle linked groups
       api.nvim_cmd({ cmd = "highlight", args = { "link", group, attrs.link } }, {})
     else
-      -- Normal highlight definition
       api.nvim_set_hl(0, group, attrs)
     end
   end

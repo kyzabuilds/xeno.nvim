@@ -8,7 +8,7 @@
 <p align='center'>
   <strong>Minimalist three-seed colorscheme generator with automatic light/dark mode support</strong><br/>
   Create complete themes from background and accent seeds, with foreground derived automatically unless overridden • Extensive theming API • Export capabilities<br/>
-  Explore <a href="examples.md">theme examples</a> and <a href="plugins.md">supported plugins</a>
+  Explore <a href="examples.md">examples</a> and <a href="plugins.md">plugins</a>
 </p>
 
 ## Key Features

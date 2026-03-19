@@ -5,7 +5,7 @@ local helpers = require("xeno.core.helpers")
 function M.generate_editor_highlights(colors, config)
   return {
     Normal = { bg = colors.background_950, fg = colors.foreground_50 },
-    NormalNC = { fg = colors.foreground_100, bg = colors.background_950 },
+    NormalNC = { bg = colors.background_950, fg = colors.foreground_100 },
     Visual = { bg = utils.opaque(colors.background_600, 0.20) },
 
     NormalFloat = { fg = colors.foreground_100, bg = colors.background_900 },
