@@ -47,16 +47,26 @@ local function hi(group, opts)
   end
   
   local cmd = 'highlight ' .. group
+  local has_attrs = false
   
-  if opts.fg then cmd = cmd .. ' guifg=' .. opts.fg end
-  if opts.bg then cmd = cmd .. ' guibg=' .. opts.bg end
-  if opts.sp then cmd = cmd .. ' guisp=' .. opts.sp end
+  if opts.fg then
+    cmd = cmd .. ' guifg=' .. opts.fg
+    has_attrs = true
+  end
+  if opts.bg then
+    cmd = cmd .. ' guibg=' .. opts.bg
+    has_attrs = true
+  end
+  if opts.sp then
+    cmd = cmd .. ' guisp=' .. opts.sp
+    has_attrs = true
+  end
   
   local gui_attrs = {}
   local has_explicit_false = false
   
   -- Check if any attribute is explicitly set to false
-  local style_attrs = {'bold', 'italic', 'underline', 'undercurl', 'strikethrough', 'reverse', 'standout'}
+  local style_attrs = {'bold', 'italic', 'underline', 'undercurl', 'strikethrough', 'reverse', 'standout', 'nocombine'}
   for _, attr in ipairs(style_attrs) do
     if opts[attr] == false then
       has_explicit_false = true
@@ -77,9 +87,15 @@ local function hi(group, opts)
   if opts.strikethrough == true then table.insert(gui_attrs, 'strikethrough') end
   if opts.reverse == true then table.insert(gui_attrs, 'reverse') end
   if opts.standout == true then table.insert(gui_attrs, 'standout') end
+  if opts.nocombine == true then table.insert(gui_attrs, 'nocombine') end
   
   if #gui_attrs > 0 then
     cmd = cmd .. ' gui=' .. table.concat(gui_attrs, ',')
+    has_attrs = true
+  end
+
+  if not has_attrs then
+    return
   end
   
   -- Use pcall to safely execute highlight commands
@@ -95,6 +111,7 @@ end
 -- Apply highlights function
 local function apply_highlights()
 {{EDITOR_HIGHLIGHTS}}
+{{FILETYPE_HIGHLIGHTS}}
 end
 
 -- Auto-reload colors when background changes
@@ -117,7 +134,7 @@ M.placeholders = {
   "{{LIGHT_COLOR_DEFINITIONS}}",
   "{{DARK_COLOR_DEFINITIONS}}",
   "{{EDITOR_HIGHLIGHTS}}",
+  "{{FILETYPE_HIGHLIGHTS}}",
 }
 
 return M
-

@@ -92,7 +92,7 @@ function M.generate_filename(format, metadata)
   end
 
   local filename_base = table.concat(name_parts, "_")
-  local extension = format == "vim" and ".vim" or ".lua"
+  local extension = ".lua"
 
   return filename_base .. extension
 end
@@ -217,7 +217,7 @@ function M.normalize_highlight_attrs(attrs)
   end
 
   -- Copy style attributes
-  local style_attrs = { "bold", "italic", "underline", "undercurl", "strikethrough", "reverse", "standout" }
+  local style_attrs = { "bold", "italic", "underline", "undercurl", "strikethrough", "reverse", "standout", "nocombine" }
   for _, attr in ipairs(style_attrs) do
     if attrs[attr] ~= nil then
       normalized[attr] = attrs[attr]
@@ -301,38 +301,13 @@ function M.minify_lua(content)
   return table.concat(lines, "\n")
 end
 
--- Minify Vim script by removing unnecessary whitespace
-function M.minify_vim(content)
-  if not content then
-    return ""
-  end
-
-  -- Simple minification: remove extra whitespace and empty lines
-  local lines = {}
-  for line in content:gmatch("[^\n]+") do
-    local trimmed = line:match("^%s*(.-)%s*$")
-    if trimmed ~= "" and not trimmed:match('^"') then -- Skip empty lines and comments
-      lines[#lines + 1] = trimmed
-    end
-  end
-
-  return table.concat(lines, "\n")
-end
-
 -- Generate variant-specific color definitions for the given variant
-function M.generate_variant_color_definitions(organized_colors, variant, format_type)
+function M.generate_variant_color_definitions(organized_colors, variant)
   local lines = {}
-  format_type = format_type or "lua"
 
-  -- Helper function based on format type
   local function format_color_line(name, color, is_last)
-    if format_type == "vim" then
-      local separator = is_last and "" or ","
-      return string.format("      \\ '%s': '%s'%s", name, M.format_hex_color(color), separator)
-    else -- lua
-      local separator = is_last and "" or ","
-      return string.format('      %s = "%s"%s', name, M.format_hex_color(color), separator)
-    end
+    local separator = is_last and "" or ","
+    return string.format('      %s = "%s"%s', name, M.format_hex_color(color), separator)
   end
 
   -- Collect all colors from the appropriate variant
