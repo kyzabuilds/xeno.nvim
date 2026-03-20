@@ -20,6 +20,7 @@ end
 -- Generate highlights from all plugins
 function M.generate_plugin_highlights(colors, config)
   local plugin_results = {}
+  local filetype_definitions = {}
   local plugin_configs = config.highlights and config.highlights.plugins or {}
   local resolver = require("xeno.core.resolver")
 
@@ -31,19 +32,34 @@ function M.generate_plugin_highlights(colors, config)
       plugin_config = resolver.resolve_highlights(plugin_config, colors, nil)
     end
 
-    table.insert(plugin_results, plugin_fn(colors, config, plugin_config))
+    local result = plugin_fn(colors, config, plugin_config)
+
+    -- Separate highlights from filetype definitions (functions)
+    local highlights = {}
+    if result then
+      for k, v in pairs(result) do
+        if type(v) == "function" then
+          filetype_definitions[k] = v
+        else
+          highlights[k] = v
+        end
+      end
+    end
+
+    table.insert(plugin_results, highlights)
   end
 
-  return merge_highlights(unpack(plugin_results))
+  return merge_highlights(unpack(plugin_results)), filetype_definitions
 end
 
 -- Generate all highlights in one call
 function M.generate_base_highlights(colors, config)
-  return merge_highlights(
-    syntax.generate_syntax_highlights(colors),
-    editor.generate_editor_highlights(colors, config),
-    M.generate_plugin_highlights(colors, config)
-  )
+  local plugin_highlights, filetype_definitions = M.generate_plugin_highlights(colors, config)
+
+  local base_highlights =
+    merge_highlights(syntax.generate_syntax_highlights(colors), editor.generate_editor_highlights(colors, config), plugin_highlights)
+
+  return base_highlights, filetype_definitions
 end
 
 -- Export plugin highlights for backward compatibility

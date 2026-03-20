@@ -17,6 +17,10 @@ local custom_colors = {}
 
 local xeno = {}
 
+-- Expose plugin registry and filetype configuration
+xeno.hl = require("xeno.highlights.plugins")
+xeno.ft = {}
+
 -- Store global plugin configuration for new_theme function
 xeno._global_config = {}
 
@@ -95,7 +99,7 @@ function xeno.setup(user_config)
   terminal.setup_terminal_colors(xeno.colors, config)
 
   -- Generate base highlights
-  local ok_highlights, highlights = pcall(highlight_generator.generate_base_highlights, xeno.colors, config)
+  local ok_highlights, highlights, filetype_definitions = pcall(highlight_generator.generate_base_highlights, xeno.colors, config)
   if not ok_highlights then
     vim.notify(
       fmt("xeno.nvim: Error generating highlights: %s. Using minimal fallback highlights.", tostring(highlights)),
@@ -106,6 +110,13 @@ function xeno.setup(user_config)
       Comment = { fg = xeno.colors.foreground_400, italic = true },
       Error = { fg = xeno.colors.red },
     }
+  else
+    -- Merge any filetype definitions returned from highlights generation
+    if filetype_definitions then
+      for ft, def in pairs(filetype_definitions) do
+        xeno.ft[ft] = def
+      end
+    end
   end
 
   -- Process user highlight overrides if present
@@ -123,6 +134,9 @@ function xeno.setup(user_config)
   -- Apply highlights and setup autocmds
   theme.apply_highlights(highlights, config)
   theme.setup_autocmds(user_config)
+
+  -- Setup filetype-specific window highlights
+  require("xeno.theme.ft").setup(xeno.ft, xeno.colors, config)
 end
 
 -- Generate new colorscheme files

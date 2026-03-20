@@ -29,9 +29,9 @@ function M.generate_editor_highlights(colors, config)
     WarningMsg = { fg = colors.yellow },
     MoreMsg = { fg = colors.green },
 
-    Search = { bg = utils.opaque(colors.background_600, 0.15) },
+    Search = { bg = utils.opaque(colors.background_600, 0.15), fg = colors.foreground_100 },
     IncSearch = { link = "Cursor" },
-    CurSearch = { bg = utils.opaque(colors.background_600, 0.40) },
+    CurSearch = { bg = utils.opaque(colors.background_600, 0.40), fg = colors.foreground_100 },
 
     MatchParen = { fg = colors.accent_100, bold = true },
     NonText = { fg = colors.foreground_400 },

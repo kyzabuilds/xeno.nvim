@@ -29,8 +29,8 @@ end
 M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    bg = colors.background_900,
-    fg = colors.foreground_100,
+    bg = colors.background_950,
+    fg = colors.foreground_300,
     border = colors.background_800,
     prompt_fg = colors.accent_200,
     pointer_fg = colors.accent_200,
@@ -42,6 +42,15 @@ M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
   end
 
   return {
+    ["fzf"] = function()
+      return {
+        StatusLine = { bg = config.bg, fg = config.fg },
+        fzf1 = { bg = config.bg, fg = config.fg },
+        fzf2 = { bg = config.bg, fg = config.fg },
+        fzf3 = { bg = config.bg, fg = config.fg },
+      }
+    end,
+
     -- Main Interface Elements
     FzfLuaNormal = { bg = config.bg, fg = config.fg },
     FzfLuaBorder = { bg = config.bg, fg = config.border },
@@ -63,6 +72,9 @@ M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
     FzfLuaScrollBorderFull = { bg = colors.background_800, fg = colors.foreground_100 },
     FzfLuaScrollFloatEmpty = { bg = colors.background_800, fg = colors.foreground_100 },
     FzfLuaScrollFloatFull = { bg = colors.background_800, fg = colors.foreground_100 },
+
+    -- Fzf-specific Decorative Elements
+    -- FzfIcon = { bg = colors.background_800, fg = colors.accent_500 },
 
     -- Help Elements
     FzfLuaHelpNormal = { bg = colors.background_800, fg = colors.foreground_100 },
@@ -286,6 +298,13 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
   }
 
   return {
+    -- Filetypes
+    ["neo-tree"] = function()
+      return {
+        Visual = { bg = colors.background_800 },
+      }
+    end,
+
     -- Root and Basic Elements
     NeoTreeRootName = { fg = config.root_fg, bold = true, italic = true, underline = true },
     NeoTreeNormal = { bg = neotree.bg, fg = neotree.fg },
@@ -732,7 +751,7 @@ end
 M["folke/trouble.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    bg = colors.background_900,
+    bg = colors.background_950,
     fg = colors.foreground_100,
   }
 
@@ -742,6 +761,11 @@ M["folke/trouble.nvim"] = function(colors, plugin_config)
   end
 
   return {
+    ["trouble"] = function()
+      return {
+        StatusLine = { bg = config.bg, fg = config.fg },
+      }
+    end,
     TroubleNormal = { bg = config.bg, fg = config.fg },
     TroubleFile = { bg = config.bg, fg = config.fg },
     TroubleSignOther = { bg = config.bg, fg = config.fg },
