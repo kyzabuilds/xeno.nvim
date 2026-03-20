@@ -105,6 +105,8 @@ function M.register_opaque_call(fg_color, opacity, bg_color, result_hex, colors,
     hex = result_hex,
     variant = variant,
   }
+
+  return final_name
 end
 
 -- Get all registered opaque colors for a specific variant

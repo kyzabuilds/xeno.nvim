@@ -13,9 +13,21 @@ function M.merge_highlight_group(base, override)
     return base
   end
 
-  -- For highlight groups, we want to completely override specific attributes
-  -- but preserve others that aren't specified in the override
-  return utils.extend("force", base, override)
+  -- A user-provided link replaces the whole group because highlight links
+  -- cannot be combined with concrete attrs.
+  if override.link ~= nil then
+    return { link = override.link }
+  end
+
+  local merged = utils.extend("force", base, override)
+
+  -- If the base group was a link and the override provides concrete attrs,
+  -- drop the inherited link so the attrs can take effect.
+  if base.link ~= nil then
+    merged.link = nil
+  end
+
+  return merged
 end
 
 --- Merge all highlights with user overrides, supporting highlight references

@@ -199,7 +199,10 @@ utils.opaque = function(fg_color, opacity, bg_color, colors)
         end
       end
     end
-    opaque_registry.register_opaque_call(fg_color, opacity, bg_color, result, colors, nil, fg_color_name)
+    local registered_name = opaque_registry.register_opaque_call(fg_color, opacity, bg_color, result, colors, nil, fg_color_name)
+    if registered_name then
+      return "@" .. registered_name
+    end
   end
 
   return result
