@@ -96,6 +96,17 @@ local function adjust_lightness_for_contrast(base_lightness, contrast, theme)
   return adjusted_L
 end
 
+local function adjust_chroma(base_chroma, chroma_option)
+  if not chroma_option or chroma_option == 0 then
+    return base_chroma
+  end
+
+  -- Scale chroma by (1 + chroma_option)
+  -- If chroma_option is -1.0, chroma becomes 0 (grayscale)
+  -- If chroma_option is 1.0, chroma is doubled
+  return clamp(base_chroma * (1 + chroma_option), 0, 0.4)
+end
+
 local function collect_text_backgrounds(background_scale)
   local backgrounds = {}
 
@@ -207,20 +218,25 @@ local function generate_color_scale_oklch(color, options, levels)
   for _, level in ipairs(levels) do
     local base_lightness = lightness_scale[level]
     local adjusted_L = adjust_lightness_for_contrast(base_lightness, options.contrast, theme)
+    local adjusted_C = adjust_chroma(C_input, options.chroma)
 
     -- Use input color's chroma and hue, only adjust lightness
     -- OKLCH naturally handles all hues uniformly, no need for special cases
-    scale[level] = utils.oklch2hex(adjusted_L, C_input, H)
+    scale[level] = utils.oklch2hex(adjusted_L, adjusted_C, H)
   end
 
   return scale
 end
 
 -- Apply semantic color (OKLCH handles all hues naturally)
-local function improve_semantic_color(color, theme)
-  -- OKLCH handles all hues naturally, no workarounds needed
-  -- Just return the color as-is
-  return color
+local function improve_semantic_color(color, theme, chroma_option)
+  local L, C, H = utils.hex2oklch(color)
+  if not L then
+    return color
+  end
+
+  local adjusted_C = adjust_chroma(C, chroma_option)
+  return utils.oklch2hex(L, adjusted_C, H)
 end
 
 -- Rename the OKLCH generator to be the main generator
@@ -254,18 +270,19 @@ local function generate_foreground_scale(color, background_scale, options)
     local adjusted_L = clamp(mid_point + (distance * multiplier), 0.005, 0.98)
     
     local base_lightness = adjust_lightness_for_contrast(adjusted_L, foreground_contrast, theme)
+    local adjusted_C = adjust_chroma(C_input, options.chroma)
     
     local resolved_lightness = resolve_foreground_lightness(
       theme,
       base_lightness,
-      C_input,
+      adjusted_C,
       H,
       background_colors,
       FOREGROUND_CONTRAST_MIN[level],
       previous_lightness
     )
 
-    scale[level] = utils.oklch2hex(resolved_lightness, C_input, H)
+    scale[level] = utils.oklch2hex(resolved_lightness, adjusted_C, H)
     previous_lightness = resolved_lightness
   end
 
@@ -316,7 +333,11 @@ function M.generate_palette(config)
 
   -- Generate scales with shared options
   local scale_options = {
-    standard = { contrast = contrast, variation = config.variation },
+    standard = {
+      contrast = contrast,
+      variation = config.variation,
+      chroma = config.chroma or 0,
+    },
   }
 
   -- Generate all color scales
@@ -362,7 +383,7 @@ function M.generate_palette(config)
   local semantic = SEMANTIC_COLORS[theme]
   for name, default_color in pairs(semantic) do
     local color = config[name] or default_color
-    colors[name] = improve_semantic_color(color, theme)
+    colors[name] = improve_semantic_color(color, theme, scale_options.standard.chroma)
   end
 
   return colors

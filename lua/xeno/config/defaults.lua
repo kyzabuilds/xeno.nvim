@@ -6,6 +6,7 @@ defaults.config = {
   accent = nil,
 
   variation = 0.0,
+  chroma = 0.0,
   contrast = 0.0,
 
   transparent = false,
