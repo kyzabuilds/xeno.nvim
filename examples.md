@@ -10,8 +10,6 @@ This document showcases example themes for the Xeno styling plugin, demonstratin
   - [Color References](#color-references)
   - [Shading System](#shading-system)
 - [Theme Showcases](#theme-showcases)
-  - [Minimal Themes](#minimal-themes)
-  - [Standard Themes](#standard-themes)
   - [Extensive Themes](#extensive-themes)
 
 ## Custom Highlights
@@ -82,220 +80,25 @@ Themes are categorized by complexity:
 
 Minimal themes focus on simplicity, using only foreground, background, and accent colors with basic editor and syntax highlights.
 
-<details>
-  <summary><strong>Dusk</strong></summary>
-
-  | Color Name | Hex Code | Preview |
-  |------------|----------|---------|
-  | Background | #2E3440  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #2E3440; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Accent     | #88C0D0  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #88C0D0; border: 1px solid #000; vertical-align: middle;"></span> |
-
-  ```lua
-local xeno = require('xeno')
-
-xeno.theme('dusk', {
-  background = '#2E3440', -- Dark nordic background
-  accent = '#88C0D0', -- Soft cyan accent
-  highlights = {
-    editor = {
-      Normal = { bg = '@background.900', fg = '@foreground.300' },
-      Comment = { fg = '@background.600', italic = true },
-    },
-    syntax = {
-      Identifier = { fg = '@foreground.400' },
-      String = { fg = '@accent.400' },
-      Number = { fg = '@accent.400' },
-      Type = { fg = '@accent.500' },
-      Function = { fg = '@accent.500' },
-    },
-  },
-})
-  ```
-</details>
-
-<details>
-  <summary><strong>Dawn</strong></summary>
-
-  | Color Name | Hex Code | Preview |
-  |------------|----------|---------|
-  | Background | #F5E8D3  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #F5E8D3; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Accent     | #D08770  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #D08770; border: 1px solid #000; vertical-align: middle;"></span> |
-
-  ```lua
-local xeno = require('xeno')
-
-xeno.theme('dawn', {
-  foreground = '#1E1E1E', -- Primary text seed
-  background = '#F5E8D3', -- Light creamy background
-  accent = '#D08770', -- Warm coral accent
-  highlights = {
-    editor = {
-      Normal = { bg = '@background.950', fg = '@foreground.50' },
-      Comment = { fg = '@foreground.300', italic = true },
-    },
-    syntax = {
-      Identifier = { fg = '@foreground.100' },
-      String = { fg = '@accent.400' },
-      Number = { fg = '@accent.400' },
-      Type = { fg = '@accent.500' },
-      Function = { fg = '@accent.500' },
-    },
-  },
-})
-  ```
-</details>
-
-### Standard Themes
-
-Standard themes include custom colors, basic plugin integrations, and a moderate set of highlight customizations for a balanced appearance.
-
-<details>
-  <summary><strong>Forest</strong></summary>
-
-  | Color Name | Hex Code | Preview |
-  |------------|----------|---------|
-  | Pine       | #3D5528  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #3D5528; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Moss       | #6A9955  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #6A9955; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Fern       | #A8C977  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #A8C977; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Background | #2F2F2F  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #2F2F2F; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Accent     | #6A9955  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #6A9955; border: 1px solid #000; vertical-align: middle;"></span> |
-
-  ```lua
-local xeno = require('xeno')
-
--- Define custom colors
-xeno.color('pine', '#3D5528')
-xeno.color('moss', '#6A9955')
-xeno.color('fern', '#A8C977')
-
-xeno.theme('forest', {
-  contrast = 0.2,
-  foreground = '#F8F8F2', -- Primary text seed
-  background = '#2F2F2F', -- Dark gray background
-  accent = '#6A9955', -- Mossy green accent
-  highlights = {
-    editor = {
-      Normal = { bg = '@background.900', fg = '@foreground.300' },
-      Comment = { fg = '@pine.600', italic = true },
-    },
-    syntax = {
-      Identifier = { fg = '@foreground.400' },
-      String = { fg = '@fern.400' },
-      Quote = { fg = '@fern.400' },
-      Character = { fg = '@fern.400' },
-      Conditional = { fg = '@moss.500' },
-      Tag = { fg = '@moss.500' },
-      Repeat = { fg = '@moss.500' },
-      Statement = { fg = '@moss.500' },
-      Number = { fg = '@fern.400' },
-      Float = { fg = '@fern.400' },
-      Boolean = { fg = '@fern.400' },
-      Type = { fg = '@moss.500' },
-      Function = { fg = '@moss.600' },
-      Constant = { fg = '@foreground.400' },
-      Special = { fg = '@background.500' },
-      Delimiter = { fg = '@background.600' },
-      Operator = { fg = '@background.500' },
-      Error = { fg = '@pine.300' },
-    },
-    plugins = {
-      ['nvim-telescope/telescope.nvim'] = {
-        selection_bg = '@moss.600',
-        match_fg = '@fern.400',
-      },
-      ['hrsh7th/nvim-cmp'] = {
-        selected_bg = '@background.600',
-        match_fg = '@moss.500',
-        kind_fg = '@background.500',
-      },
-    },
-  },
-})
-  ```
-</details>
-
-<details>
-  <summary><strong>Ocean</strong></summary>
-
-  | Color Name | Hex Code | Preview |
-  |------------|----------|---------|
-  | DeepSea    | #1B263B  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #1B263B; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Aqua       | #4EC9B0  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #4EC9B0; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Wave       | #66D9EF  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #66D9EF; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Background | #2C3E50  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #2C3E50; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Accent     | #4EC9B0  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #4EC9B0; border: 1px solid #000; vertical-align: middle;"></span> |
-
-  ```lua
-local xeno = require('xeno')
-
--- Define custom colors
-xeno.color('deepsea', '#1B263B')
-xeno.color('aqua', '#4EC9B0')
-xeno.color('wave', '#66D9EF')
-
-xeno.theme('ocean', {
-  contrast = 0.15,
-  foreground = '#F8F8F2', -- Primary text seed
-  background = '#2C3E50', -- Dark blue-gray background
-  accent = '#4EC9B0', -- Aqua accent
-  highlights = {
-    editor = {
-      Normal = { bg = '@background.900', fg = '@foreground.300' },
-      Comment = { fg = '@deepsea.600', italic = true },
-    },
-    syntax = {
-      Identifier = { fg = '@foreground.400' },
-      String = { fg = '@wave.400' },
-      Quote = { fg = '@wave.400' },
-      Character = { fg = '@wave.400' },
-      Conditional = { fg = '@aqua.500' },
-      Tag = { fg = '@aqua.500' },
-      Repeat = { fg = '@aqua.500' },
-      Statement = { fg = '@aqua.500' },
-      Number = { fg = '@wave.400' },
-      Float = { fg = '@wave.400' },
-      Boolean = { fg = '@wave.400' },
-      Type = { fg = '@aqua.500' },
-      Function = { fg = '@aqua.600' },
-      Constant = { fg = '@foreground.400' },
-      Special = { fg = '@background.500' },
-      Delimiter = { fg = '@background.600' },
-      Operator = { fg = '@background.500' },
-      Error = { fg = '@deepsea.300' },
-    },
-    plugins = {
-      ['nvim-telescope/telescope.nvim'] = {
-        selection_bg = '@aqua.600',
-        match_fg = '@wave.400',
-      },
-      ['hrsh7th/nvim-cmp'] = {
-        selected_bg = '@background.600',
-        match_fg = '@aqua.500',
-        kind_fg = '@background.500',
-      },
-    },
-  },
-})
-  ```
-</details>
-
 ### Extensive Themes
 
 Extensive themes feature comprehensive color palettes, detailed highlight configurations, and advanced plugin integrations for a rich appearance.
 
 <details>
   <summary><strong>Summer Night</strong></summary>
+  Source: https://github.com/jackw01/summer-night-vscode-theme
+
 
   | Color Name | Hex Code | Preview |
   |------------|----------|---------|
-  | Camellia   | #FA5F8B  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #FA5F8B; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Coral      | #F06C6F  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #F06C6F; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Ember      | #E17954  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #E17954; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Topaz      | #D08447  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #D08447; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Bamboo     | #D3AB58  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #D3AB58; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Arcadia    | #00AB9A  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #00AB9A; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Bluebird   | #00A9B9  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #00A9B9; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Malibu     | #00A3D2  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #00A3D2; border: 1px solid #000; vertical-align: middle;"></span> |
+  | Camellia   | #FA5F8B  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #FA5F8B"></span> |
+  | Coral      | #F06C6F  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #F06C6F"></span> |
+  | Ember      | #E17954  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #E17954"></span> |
+  | Topaz      | #D08447  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #D08447"></span> |
+  | Bamboo     | #D3AB58  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #D3AB58"></span> |
+  | Arcadia    | #00AB9A  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #00AB9A"></span> |
+  | Bluebird   | #00A9B9  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #00A9B9"></span> |
+  | Malibu     | #00A3D2  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #00A3D2"></span> |
 
   ```lua
 local xeno = require('xeno')
@@ -442,12 +245,12 @@ xeno.theme('summer-night', {
 
   | Color Name     | Hex Code | Preview |
   |----------------|----------|---------|
-  | RedStone       | #E07070  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #E07070; border: 1px solid #000; vertical-align: middle;"></span> |
-  | MartinaOlive   | #909040  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #909040; border: 1px solid #000; vertical-align: middle;"></span> |
-  | BrightNori     | #206020  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #206020; border: 1px solid #000; vertical-align: middle;"></span> |
-  | PictonBlue     | #569CD6  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #569CD6; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Background     | #101010  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #101010; border: 1px solid #000; vertical-align: middle;"></span> |
-  | Accent         | #3D537A  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #3D537A; border: 1px solid #000; vertical-align: middle;"></span> |
+  | Background     | #101010  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #101010"></span> |
+  | RedStone       | #E07070  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #E07070"></span> |
+  | MartinaOlive   | #909040  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #909040"></span> |
+  | BrightNori     | #206020  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #206020"></span> |
+  | PictonBlue     | #569CD6  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #569CD6"></span> |
+  | Accent         | #3D537A  | <span style="display: inline-block; width: 20px; height: 20px; background-color: #3D537A"></span> |
 
   ```lua
 local xeno = require('xeno')
