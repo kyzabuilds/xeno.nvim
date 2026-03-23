@@ -230,6 +230,7 @@ end
 
 local function generate_foreground_scale(color, background_scale, options)
   options = options or {}
+  local variation = options.variation or 0
 
   local theme = get_theme_variant()
   local lightness_scale = OKLCH_LIGHTNESS_SCALES[theme]
@@ -245,7 +246,15 @@ local function generate_foreground_scale(color, background_scale, options)
   local previous_lightness = nil
 
   for _, level in ipairs(FAMILY_LEVELS.foreground) do
-    local base_lightness = adjust_lightness_for_contrast(lightness_scale[level], foreground_contrast, theme)
+    local base_L = lightness_scale[level]
+    -- Apply variation
+    local mid_point = theme == "dark" and 0.45 or 0.55
+    local distance = base_L - mid_point
+    local multiplier = 1 - (variation * 1.5)
+    local adjusted_L = clamp(mid_point + (distance * multiplier), 0.005, 0.98)
+    
+    local base_lightness = adjust_lightness_for_contrast(adjusted_L, foreground_contrast, theme)
+    
     local resolved_lightness = resolve_foreground_lightness(
       theme,
       base_lightness,
@@ -307,7 +316,7 @@ function M.generate_palette(config)
 
   -- Generate scales with shared options
   local scale_options = {
-    standard = { contrast = contrast },
+    standard = { contrast = contrast, variation = config.variation },
   }
 
   -- Generate all color scales
