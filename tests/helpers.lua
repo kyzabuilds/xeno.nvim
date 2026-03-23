@@ -131,6 +131,11 @@ function M.hex_lightness(hex)
   return L
 end
 
+function M.hex_chroma(hex)
+  local _, C = require("xeno.core.utils").hex2oklch(hex)
+  return C
+end
+
 local function to_hex(value)
   if type(value) ~= "number" then
     return value

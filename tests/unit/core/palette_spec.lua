@@ -239,4 +239,26 @@ t.describe("core.palette", function()
       )
     end
   end)
+
+  t.it("adjusts palette saturation based on the chroma option", function()
+    local config = {
+      background = "#1f2335",
+      accent = "#7aa2f7",
+    }
+
+    local base = with_variant("dark", config)
+    local desaturated = with_variant("dark", t.test_config({ background = config.background, accent = config.accent, chroma = -0.5 }))
+    local saturated = with_variant("dark", t.test_config({ background = config.background, accent = config.accent, chroma = 0.5 }))
+    local grayscale = with_variant("dark", t.test_config({ background = config.background, accent = config.accent, chroma = -1.0 }))
+
+    -- Check accent colors (usually have high chroma)
+    t.truthy(t.hex_chroma(desaturated.accent_500) < t.hex_chroma(base.accent_500), "chroma -0.5 should decrease accent chroma")
+    t.truthy(t.hex_chroma(saturated.accent_500) > t.hex_chroma(base.accent_500), "chroma 0.5 should increase accent chroma")
+    t.approx(t.hex_chroma(grayscale.accent_500), 0, 5e-3, "chroma -1.0 should result in near-zero chroma")
+
+    -- Check semantic colors
+    t.truthy(t.hex_chroma(desaturated.red) < t.hex_chroma(base.red), "chroma -0.5 should decrease red chroma")
+    t.truthy(t.hex_chroma(saturated.red) > t.hex_chroma(base.red), "chroma 0.5 should increase red chroma")
+    t.approx(t.hex_chroma(grayscale.red), 0, 5e-3, "chroma -1.0 should result in near-zero chroma for red")
+  end)
 end)
