@@ -6,6 +6,7 @@ xeno-config-colors	xeno.txt	/*xeno-config-colors*
 xeno-config-contrast	xeno.txt	/*xeno-config-contrast*
 xeno-config-foreground	xeno.txt	/*xeno-config-foreground*
 xeno-config-highlights	xeno.txt	/*xeno-config-highlights*
+xeno-config-lightness	xeno.txt	/*xeno-config-lightness*
 xeno-config-integrations	xeno.txt	/*xeno-config-integrations*
 xeno-config-transparent	xeno.txt	/*xeno-config-transparent*
 xeno-config-variation	xeno.txt	/*xeno-config-variation*

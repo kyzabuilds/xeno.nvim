@@ -7,33 +7,43 @@ CONTENTS                                                      *xeno-contents*
 
 1. Introduction ...................................... |xeno-introduction|
 2. Installation ...................................... |xeno-installation|
-3. Usage ............................................. |xeno-usage|
+3. Quick Start ........................................ |xeno-quickstart|
 4. Configuration ..................................... |xeno-configuration|
 5. API Reference ..................................... |xeno-api|
-6. Examples .......................................... |xeno-examples|
-7. Integrations ...................................... |xeno-integrations|
-8. Troubleshooting ................................... |xeno-troubleshooting|
+6. Custom Colors ..................................... |xeno-custom-colors|
+7. Highlights ........................................ |xeno-highlights|
+8. Namespace Support .................................. |xeno-namespace|
+9. Export ............................................ |xeno-export|
+10. Terminal Integration .............................. |xeno-terminal|
+11. Troubleshooting ................................... |xeno-troubleshooting|
 
 ==============================================================================
 1. INTRODUCTION                                           *xeno-introduction*
 
-xeno.nvim generates a full colorscheme from a background seed, an accent
-seed, and an optional foreground override:
-- foreground (shades 50-400, derived from background when omitted)
-- background (shades 500-950)
-- accent (shades 50-600)
+xeno.nvim generates a complete colorscheme from three color seeds:
 
-Key features:
-- Background-derived foreground palette with optional explicit override
-- Highlight overrides with @family.shade syntax
-- Plugin highlight integrations
-- Terminal integrations including Ghostty
-- Window namespace support
+- Foreground seed (optional, 50-400 shades) — Derived from background when
+  omitted
+- Background seed (500-950 shades) — Required, defines your main surfaces
+- Accent seed (50-600 shades) — Required, defines your accent colors
+
+Key Features~
+- Automatic light/dark mode — Adapts seamlessly to |vim.o.background| changes
+- Background-derived foreground — Foreground defaults to background's hue/chroma,
+  fully overridable
+- Custom colors — Define unlimited custom color families with |xeno.color()|
+- Extensive theming API — Granular control over every highlight group
+- Plugin support — Built-in configuration for 26+ popular plugins
+- Namespace theming — Create per-window theme variants
+- Export capabilities — Generate standalone colorscheme files
+- Terminal integration — Automatic terminal color setup (Ghostty supported)
+- Advanced color control — Adjust variation, chroma, and contrast
 
 ==============================================================================
 2. INSTALLATION                                           *xeno-installation*
 
-Using lazy.nvim: >lua
+Using lazy.nvim~
+>lua
     {
       'kyza0d/xeno.nvim',
       lazy = false,
@@ -48,7 +58,8 @@ Using lazy.nvim: >lua
     }
 <
 
-Using mini.deps: >lua
+Using mini.deps~
+>lua
     local MiniDeps = require('mini.deps')
     MiniDeps.add('kyza0d/xeno.nvim')
 
@@ -60,74 +71,102 @@ Using mini.deps: >lua
 <
 
 ==============================================================================
-3. USAGE                                                         *xeno-usage*
+3. QUICK START                                             *xeno-quickstart*
 
-Basic Setup~
+Setup Method (Immediate Use)~
                                                               *xeno.setup()*
+
+Use |xeno.setup()| to load a colorscheme immediately:
 >lua
     require('xeno').setup({
-      foreground = '#F8F8F2', -- Primary text seed
-      background = '#1E1E1E', -- Primary surface seed
-      accent = '#8CBE8C',     -- Accent seed
+      background = '#1E1E1E',
+      accent = '#8CBE8C',
     })
     vim.cmd('colorscheme xeno')
 <
 
-Generate Theme Files~
+Theme Method (Generate Files)~
                                                               *xeno.theme()*
+
+Use |xeno.theme()| to generate reusable colorscheme files:
 >lua
-    require('xeno').theme('my-dark-theme', {
+    require('xeno').theme('my-theme', {
       background = '#1E1E1E',
       accent = '#8CBE8C',
     })
-
-    vim.cmd('colorscheme my-dark-theme')
+    vim.cmd('colorscheme my-theme')
 <
 
 ==============================================================================
 4. CONFIGURATION                                         *xeno-configuration*
 
-Configuration Options~
-
-*xeno-config-foreground*
-foreground        String. Optional foreground override (hex format). When
-                  omitted, foreground shades derive from background.
+Core Color Options~
 
 *xeno-config-background*
-background        String. Background seed color (hex format).
+background        String (hex). Required. Background seed color. Defines all
+                  background shades (500-950).
 
 *xeno-config-accent*
-accent            String. Accent seed color (hex format).
+accent            String (hex). Required. Accent seed color. Defines all
+                  accent shades (50-600).
+
+*xeno-config-foreground*
+foreground        String (hex). Optional. Foreground override. When omitted,
+                  derives from background hue/chroma.
+
+Palette Adjustments~
 
 *xeno-config-variation*
-variation         Number. Color variation amount (0.0 to 1.0). Default: 0.0
+variation         Number (0.0-1.0). Default: 0.0. Compresses foreground
+                  shades toward midpoint, reducing contrast between shade
+                  levels. Useful for softer text rendering.
+
+*xeno-config-chroma*
+chroma            Number (-1.0 to 1.0). Default: 0.0. Scales color
+                  saturation. -1.0 = grayscale, 0.0 = normal, 1.0 = double
+                  saturation. Affects all color families.
+
+*xeno-config-lightness*
+lightness         Number (-1.0 to 1.0). Default: 0.0. Shifts palette
+                  brightness toward black/white. -1.0 darkens every family,
+                  0.0 keeps the native scale, 1.0 brightens every family.
 
 *xeno-config-contrast*
-contrast          Number. Contrast adjustment (-1.0 to 1.0). Default: 0.0
+contrast          Number (-1.0 to 1.0). Default: 0.0. Adjusts overall
+                  brightness contrast around a midpoint.
+
+Semantic Color Overrides~
+
+*xeno-config-semantic-colors*
+red, green, yellow, orange, blue, purple, cyan
+                  String (hex). Optional. Define custom semantic colors for
+                  common UI elements.
+
+UI Options~
 
 *xeno-config-transparent*
-transparent       Boolean. Enable transparent background. Default: false
+transparent       Boolean. Default: false. Enable transparent background.
 
-*xeno-config-colors*
-Optional semantic overrides:
-- red, green, yellow, orange, blue, purple, cyan
+*xeno-config-decorations*
+decorations.borders
+                  Boolean. Default: true. Enable border decorations for UI
+                  elements.
 
-*xeno-config-highlights*
-highlights        Table. Highlight overrides:
-- editor          Table. Editor UI highlights
-- syntax          Table. Syntax highlights
-- plugins         Table. Plugin-specific overrides
+Integrations~
 
 *xeno-config-integrations*
-integrations      Table. Integration settings:
-- ghostty.enabled       Boolean. Enable Ghostty integration
-- ghostty.update_config Boolean. Update Ghostty config file
+integrations      Table. Terminal integration settings:
+  ghostty.enabled       Boolean. Default: true. Enable Ghostty integration.
+  ghostty.update_config Boolean. Default: true. Auto-update Ghostty config.
 
-Example Configuration: >lua
+Example Configuration~
+>lua
     require('xeno').setup({
       background = '#1E1E1E',
       accent = '#8CBE8C',
       variation = 0.1,
+      chroma = 0.2,
+      lightness = 0.1,
       contrast = 0.05,
       transparent = false,
 
@@ -142,21 +181,198 @@ Example Configuration: >lua
           Comment = { fg = '@foreground.300', italic = true },
           String = { fg = '@accent.500' },
         },
+        plugins = {
+          ["nvim-telescope/telescope.nvim"] = {
+            TelescopeNormal = { bg = '@background.900' },
+          },
+        },
+      },
+
+      integrations = {
+        ghostty = {
+          enabled = true,
+          update_config = true,
+        },
+      },
+    })
+<
+
+==============================================================================
+5. API REFERENCE                                                 *xeno-api*
+
+xeno.setup(config)                                           *xeno.setup()*
+    Initialize xeno and apply colorscheme immediately.
+
+    Parameters: ~
+        config (table) — Configuration options (background, accent, etc.)
+
+    Returns: ~
+        nil
+
+xeno.config(config)                                         *xeno.config()*
+    Set global configuration merged into subsequent |xeno.theme()| calls.
+    Useful with lazy.nvim opts.
+
+    Parameters: ~
+        config (table) — Configuration to merge globally
+
+    Returns: ~
+        nil
+
+xeno.theme(name, config)                                   *xeno.theme()*
+    Generate a standalone colorscheme file.
+
+    Parameters: ~
+        name (string) — Colorscheme name (e.g., 'my-theme')
+        config (table) — Theme-specific configuration
+
+    Returns: ~
+        nil
+
+xeno.get_colors()                                     *xeno.get_colors()*
+    Returns the current color palette table (same as |xeno.colors|).
+
+    Returns: ~
+        table of generated colors
+
+xeno.colors                                               *xeno.colors*
+    Direct access to generated color table (available after |xeno.setup()|).
+
+    Contains: ~
+        - foreground_50 through foreground_400 — Foreground shades
+        - background_500 through background_950 — Background shades
+        - accent_50 through accent_600 — Accent shades
+        - Semantic colors: red, green, yellow, orange, blue, purple, cyan
+        - Custom colors from |xeno.color()| — e.g., my_purple_50 through
+          my_purple_600
+
+    Examples: ~
+        >lua
+            require('xeno').setup({
+              background = '#1E1E1E',
+              accent = '#8CBE8C'
+            })
+            local colors = require('xeno').colors
+            local fg = colors.foreground_50
+            local bg = colors.background_950
+        <
+
+xeno.hl                                                       *xeno.hl*
+    Exposed plugin highlights registry. Maps plugin names to highlight
+    generator functions.
+
+xeno.ft                                                       *xeno.ft*
+    Filetype-specific highlight configuration table. Populated during setup
+    with function-based highlight generators.
+
+xeno.opaque(fg_color, opacity, bg_color, colors)        *xeno.opaque()*
+    Utility function for creating opaque colors with transparency blending.
+
+    Parameters: ~
+        fg_color (string) — Hex color or color name
+        opacity (number) — Opacity 0.0–1.0
+        bg_color (string, optional) — Background color for blending
+        colors (table, optional) — Color palette to use
+
+    Returns: ~
+        string — Resulting hex color
+
+xeno.namespace_utils                               *xeno.namespace_utils*
+    Exposed namespace utilities for advanced configuration.
+
+==============================================================================
+6. CUSTOM COLORS                                    *xeno-custom-colors*
+
+xeno.color(name, hex_value)                              *xeno.color()*
+    Define a custom color family that generates shades 50–600, usable in
+    highlights.
+
+    Parameters: ~
+        name (string) — Color family name (alphanumeric + underscores)
+        hex_value (string) — Hex color value (e.g., '#8b5cf6')
+
+    Returns: ~
+        xeno module (allows chaining)
+
+    Examples: ~
+        >lua
+            local xeno = require('xeno')
+
+            xeno.color('my_purple', '#8b5cf6')
+            xeno.color('my_pink', '#ec4899')
+
+            xeno.setup({
+              background = '#1E1E1E',
+              accent = '#8CBE8C',
+            })
+        <
+
+        >lua
+            require('xeno')
+              .color('purple', '#8b5cf6')
+              .color('pink', '#ec4899')
+              .setup({ background = '#1E1E1E', accent = '#8CBE8C' })
+        <
+
+==============================================================================
+7. HIGHLIGHTS                                              *xeno-highlights*
+
+Highlight Overrides~
+                                                    *xeno-highlight-overrides*
+
+Customize highlights in three categories (editor, syntax, plugins):
+>lua
+    require('xeno').setup({
+      background = '#1E1E1E',
+      accent = '#8CBE8C',
+      highlights = {
+        editor = {
+          Normal = { bg = '@background.950', fg = '@foreground.50' },
+          LineNr = { fg = '@foreground.300' },
+        },
+        syntax = {
+          Comment = { fg = '@foreground.300', italic = true },
+          String = { fg = '@accent.500' },
+          Function = { fg = '@blue.400' },
+        },
+        plugins = {
+          ["nvim-telescope/telescope.nvim"] = {
+            TelescopeNormal = { bg = '@background.900' },
+          },
+        },
       },
     })
 <
 
 Color Reference Syntax~
-                                                       *xeno-color-references*
+                                                    *xeno-color-references*
 
-Use @foreground.XXX, @background.XXX, and @accent.XXX:
-- foreground: 50, 100, 200, 300, 400
-- background: 500, 600, 700, 800, 900, 950
-- accent: 50, 100, 200, 300, 400, 500, 600
+Use @family.shade in highlight definitions:
+>
+    Palette families:
+      @foreground.50      — Foreground shades: 50, 100, 200, 300, 400
+      @background.950     — Background shades: 500, 600, 700, 800, 900, 950
+      @accent.300         — Accent shades: 50, 100, 200, 300, 400, 500, 600
+
+    Semantic colors (shorthand, no shade needed):
+      @red                — Resolves to red semantic color
+      @blue               — Resolves to blue semantic color
+
+    Custom colors (from xeno.color()):
+      @my_purple.100      — Custom color shades: 50–600
+      @my_pink.500
+
+    Direct hex:
+      #8b5cf6
+
+    Vim standard colors:
+      red, blue, white, etc.
+<
 
 Plugin Configuration~
                                                    *xeno-plugin-highlights*
 
+Configure 26+ supported plugins via highlights.plugins:
 >lua
     highlights = {
       plugins = {
@@ -170,111 +386,192 @@ Plugin Configuration~
           visible_bg = "@background.900",
           separator = "@background.600",
         },
+        ["nvim-tree/nvim-tree.lua"] = {
+          bg = "@background.800",
+          fg = "@foreground.200",
+          folder_fg = "@accent.300",
+        },
       },
     }
 <
 
+Supported Plugins~
+    - nvim-telescope/telescope.nvim
+    - ibhagwan/fzf-lua
+    - hrsh7th/nvim-cmp
+    - Saghen/blink.cmp
+    - SmiteshP/nvim-navic
+    - folke/todo-comments.nvim
+    - lukas-reineke/indent-blankline.nvim
+    - nvimdev/indentmini.nvim
+    - nvim-neo-tree/neo-tree.nvim
+    - nvim-tree/nvim-tree.lua
+    - lewis6991/gitsigns.nvim
+    - akinsho/bufferline.nvim
+    - akinsho/toggleterm.nvim
+    - folke/trouble.nvim
+    - folke/snacks.nvim
+    - NeogitOrg/neogit
+    - MeanderingProgrammer/render-markdown.nvim
+    - sindrets/diffview.nvim
+    - Bekaboo/dropbar.nvim
+    - DNLHC/glance.nvim
+    - MagicDuck/grug-far.nvim
+    - OXY2DEV/markview.nvim
+    - folke/which-key.nvim
+    - petertriho/nvim-scrollbar
+    - yetone/avante.nvim
+    - pwntester/octo.nvim
+
 ==============================================================================
-5. API REFERENCE                                                 *xeno-api*
+8. NAMESPACE SUPPORT                                      *xeno-namespace*
 
-*xeno.setup({config})*
-    Initialize xeno with configuration.
+Create per-window theme variants with namespaces.
 
-*xeno.theme({name}, {config})*
-    Generate a colorscheme file.
+xeno.namespace(name, highlights_override)              *xeno.namespace()*
+    Create a namespace with custom highlight overrides.
 
-*xeno.config({config})*
-    Set global configuration merged into |xeno.theme()| calls.
+    Parameters: ~
+        name (string) — Namespace identifier
+        highlights_override (table, optional) — Highlight overrides for this
+                                                namespace
 
-*xeno.namespace({name}, {highlights})*
-    Create a namespaced variant of the current theme.
+    Returns: ~
+        namespace ID
 
-*xeno.set_window_namespace({win_id}, {namespace_name})*
+    Examples: ~
+        >lua
+            require('xeno').setup({
+              background = '#1E1E1E',
+              accent = '#8CBE8C'
+            })
+
+            require('xeno').namespace('focused', {
+              editor = {
+                Normal = { bg = '@background.850' },
+                Comment = { fg = '@foreground.250' },
+              }
+            })
+        <
+
+xeno.set_window_namespace(win_id, namespace_name)  *xeno.set_window_namespace()*
     Apply a namespace to a specific window.
 
-*xeno.colors*
-    Generated color table (available after |xeno.setup()|).
+    Parameters: ~
+        win_id (number, optional) — Window ID (0 = current window)
+        namespace_name (string) — Namespace identifier
 
-    Contains: ~
-        - foreground_50 through foreground_400
-        - background_500 through background_950
-        - accent_50 through accent_600
-        - red, green, yellow, orange, blue, purple, cyan
+    Returns: ~
+        namespace ID or nil on error
 
-==============================================================================
-6. EXAMPLES                                                   *xeno-examples*
-
-Dark Theme: >lua
-    require('xeno').setup({
-      background = '#1E1E1E',
-      accent = '#8CBE8C',
-    })
-<
-
-Light Theme: >lua
-    require('xeno').setup({
-      foreground = '#1E1E1E',
-      background = '#FFFFFF',
-      accent = '#2E7D32',
-    })
-<
-
-Generate Multiple Themes: >lua
-    local xeno = require('xeno')
-
-    xeno.config({
-      transparent = true,
-      integrations = { ghostty = { enabled = true } },
-    })
-
-    xeno.theme('forest', { foreground = '#F8F8F2', background = '#1E1E1E', accent = '#8CBE8C' })
-    xeno.theme('ocean',  { foreground = '#F8F8F2', background = '#1E1E1E', accent = '#7AA2F7' })
-    xeno.theme('sunset', { foreground = '#F8F8F2', background = '#1E1E1E', accent = '#FF7A93' })
-<
+    Examples: ~
+        >lua
+            require('xeno').set_window_namespace(0, 'focused')
+            require('xeno').set_window_namespace(
+              vim.fn.win_getid(1, 0),
+              'focused'
+            )
+        <
 
 ==============================================================================
-7. INTEGRATIONS                                           *xeno-integrations*
+9. EXPORT                                                  *xeno-export*
 
-Terminal Integration~
-                                                      *xeno-terminal-colors*
+xeno.export(config)                                     *xeno.export()*
+    Export the current theme as a standalone Lua colorscheme file.
 
-xeno configures terminal colors during |xeno.setup()|.
+    Parameters: ~
+        config (table, optional) — Export configuration
+          format (string) — Export format, currently 'lua' only
+          dir (string) — Output directory (supports ~ expansion,
+                        default: ~/.config/nvim/colors/)
+
+    Returns: ~
+        table with export metadata (path, filename, format, size,
+        color/highlight counts)
+
+    Examples: ~
+        >lua
+            require('xeno').setup({
+              background = '#1E1E1E',
+              accent = '#8CBE8C'
+            })
+
+            local result = require('xeno').export()
+            print('Exported to:', result.path)
+
+            local result = require('xeno').export({
+              format = 'lua',
+              dir = '~/.config/nvim/colors/',
+            })
+        <
+
+==============================================================================
+10. TERMINAL INTEGRATION                              *xeno-terminal*
+
+Automatic Terminal Colors~
+                                                    *xeno-terminal-colors*
+
+xeno automatically configures terminal colors during |xeno.setup()|,
+syncing with your colorscheme.
 
 Ghostty Integration~
-                                                     *xeno-ghostty-integration*
+                                                  *xeno-ghostty-integration*
 
+Enable Ghostty terminal configuration auto-update:
 >lua
     require('xeno').setup({
-      foreground = '#F8F8F2',
       background = '#1E1E1E',
       accent = '#8CBE8C',
       integrations = {
         ghostty = {
-          enabled = true,
-          update_config = true,
+          enabled = true,          -- Enable integration
+          update_config = true,    -- Auto-write to Ghostty config
         },
       },
     })
 <
 
 ==============================================================================
-8. TROUBLESHOOTING                                   *xeno-troubleshooting*
+11. TROUBLESHOOTING                                  *xeno-troubleshooting*
 
-Common Issues~
+Colors Not Applying~
 
-Colors not applying:
-- Call `vim.cmd('colorscheme xeno')` after |xeno.setup()|
-- Ensure true color support: `:set termguicolors`
+Solution:
+  - Ensure you call |vim.cmd()| with 'colorscheme xeno' after |xeno.setup()|
+  - Enable true color support: :set termguicolors
+  - Check that terminal supports 24-bit color
 
-Color references not working:
-- Use `@family.shade` syntax (for example: `@background.700`)
-- Valid ranges:
-  - foreground: 50-400
-  - background: 500-950
-  - accent: 50-600
+Color References Not Working~
 
-Theme file not found:
-- Call |xeno.theme()| before loading generated colorscheme
+Common mistakes:
+  - Using invalid shade numbers (e.g., @foreground.500 doesn't exist)
+  - Forgetting the @ prefix (must be @background.700, not background.700)
+  - Using wrong family names (typo in foreground/background/accent)
+
+Valid shade ranges:
+  - foreground: 50, 100, 200, 300, 400
+  - background: 500, 600, 700, 800, 900, 950
+  - accent: 50, 100, 200, 300, 400, 500, 600
+  - Custom colors from |xeno.color()|: 50, 100, 200, 300, 400, 500, 600
+
+Theme File Not Found~
+
+Solution:
+  - Call |xeno.theme()| before loading the generated colorscheme
+  - Check that the colorscheme file was created in ~/.config/nvim/colors/
+  - Verify the colorscheme name matches what you passed to |xeno.theme()|
+
+Ghostty Config Not Updating~
+
+Check:
+  - integrations.ghostty.update_config is set to true
+  - Ghostty config file exists at default location
+  - No permission issues writing to Ghostty config directory
+
+Deprecated Functions~
+
+Note:
+  - xeno.new_theme() is deprecated. Use |xeno.theme()| instead.
 
 ==============================================================================
 vim:tw=78:ts=8:ft=help:norl:
