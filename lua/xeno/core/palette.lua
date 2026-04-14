@@ -41,6 +41,7 @@ local FAMILY_LEVELS = {
 }
 
 local TEXT_BACKGROUND_LEVELS = { 800, 900, 950 }
+local LIGHTNESS_SHIFT_RANGE = 0.12
 local FOREGROUND_CONTRAST_MIN = {
   [50] = 9.0,
   [100] = 8.8,
@@ -49,6 +50,7 @@ local FOREGROUND_CONTRAST_MIN = {
   [400] = 4.5,
 }
 local FOREGROUND_HIERARCHY_STEP = 0.015
+local FOREGROUND_MIN_SEPARATION = 0.001
 
 local SEMANTIC_COLORS = {
   dark = {
@@ -94,6 +96,14 @@ local function adjust_lightness_for_contrast(base_lightness, contrast, theme)
   end
 
   return adjusted_L
+end
+
+local function adjust_lightness(base_lightness, lightness_option)
+  if not lightness_option or lightness_option == 0 then
+    return base_lightness
+  end
+
+  return clamp(base_lightness + (lightness_option * LIGHTNESS_SHIFT_RANGE), 0.02, 0.98)
 end
 
 local function adjust_chroma(base_chroma, chroma_option)
@@ -149,7 +159,14 @@ local function resolve_foreground_lightness(theme, base_lightness, chroma, hue, 
 
     local upper_candidate = utils.oklch2hex(upper_bound, chroma, hue)
     if not has_required_contrast(upper_candidate, background_colors, minimum_ratio) then
-      return upper_bound
+      local fallback_upper = previous_lightness and math.min(0.98, previous_lightness - FOREGROUND_MIN_SEPARATION) or 0.98
+      local fallback_candidate = utils.oklch2hex(fallback_upper, chroma, hue)
+
+      if has_required_contrast(fallback_candidate, background_colors, minimum_ratio) then
+        upper_bound = fallback_upper
+      else
+        return fallback_upper
+      end
     end
 
     for _ = 1, 18 do
@@ -180,7 +197,14 @@ local function resolve_foreground_lightness(theme, base_lightness, chroma, hue, 
 
   local lower_candidate = utils.oklch2hex(lower_bound, chroma, hue)
   if not has_required_contrast(lower_candidate, background_colors, minimum_ratio) then
-    return lower_bound
+    local fallback_lower = previous_lightness and math.max(0.02, previous_lightness + FOREGROUND_MIN_SEPARATION) or 0.02
+    local fallback_candidate = utils.oklch2hex(fallback_lower, chroma, hue)
+
+    if has_required_contrast(fallback_candidate, background_colors, minimum_ratio) then
+      lower_bound = fallback_lower
+    else
+      return fallback_lower
+    end
   end
 
   for _ = 1, 18 do
@@ -217,7 +241,8 @@ local function generate_color_scale_oklch(color, options, levels)
 
   for _, level in ipairs(levels) do
     local base_lightness = lightness_scale[level]
-    local adjusted_L = adjust_lightness_for_contrast(base_lightness, options.contrast, theme)
+    local contrasted_L = adjust_lightness_for_contrast(base_lightness, options.contrast, theme)
+    local adjusted_L = adjust_lightness(contrasted_L, options.lightness)
     local adjusted_C = adjust_chroma(C_input, options.chroma)
 
     -- Use input color's chroma and hue, only adjust lightness
@@ -229,14 +254,15 @@ local function generate_color_scale_oklch(color, options, levels)
 end
 
 -- Apply semantic color (OKLCH handles all hues naturally)
-local function improve_semantic_color(color, theme, chroma_option)
+local function improve_semantic_color(color, theme, chroma_option, lightness_option)
   local L, C, H = utils.hex2oklch(color)
   if not L then
     return color
   end
 
+  local adjusted_L = adjust_lightness(L, lightness_option)
   local adjusted_C = adjust_chroma(C, chroma_option)
-  return utils.oklch2hex(L, adjusted_C, H)
+  return utils.oklch2hex(adjusted_L, adjusted_C, H)
 end
 
 -- Rename the OKLCH generator to be the main generator
@@ -268,10 +294,11 @@ local function generate_foreground_scale(color, background_scale, options)
     local distance = base_L - mid_point
     local multiplier = 1 - (variation * 1.5)
     local adjusted_L = clamp(mid_point + (distance * multiplier), 0.005, 0.98)
-    
-    local base_lightness = adjust_lightness_for_contrast(adjusted_L, foreground_contrast, theme)
+
+    local contrasted_lightness = adjust_lightness_for_contrast(adjusted_L, foreground_contrast, theme)
+    local base_lightness = adjust_lightness(contrasted_lightness, options.lightness)
     local adjusted_C = adjust_chroma(C_input, options.chroma)
-    
+
     local resolved_lightness = resolve_foreground_lightness(
       theme,
       base_lightness,
@@ -337,6 +364,7 @@ function M.generate_palette(config)
       contrast = contrast,
       variation = config.variation,
       chroma = config.chroma or 0,
+      lightness = config.lightness or 0,
     },
   }
 
@@ -383,7 +411,9 @@ function M.generate_palette(config)
   local semantic = SEMANTIC_COLORS[theme]
   for name, default_color in pairs(semantic) do
     local color = config[name] or default_color
-    colors[name] = improve_semantic_color(color, theme, scale_options.standard.chroma)
+    local resolved = improve_semantic_color(color, theme, scale_options.standard.chroma, scale_options.standard.lightness)
+    colors[name] = resolved
+    colors[fmt("%s_500", name)] = resolved
   end
 
   return colors

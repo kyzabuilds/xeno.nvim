@@ -7,6 +7,7 @@ defaults.config = {
 
   variation = 0.0,
   chroma = 0.0,
+  lightness = 0.0,
   contrast = 0.0,
 
   transparent = false,
@@ -28,7 +29,22 @@ defaults.config = {
   highlights = {
     editor = {},
     syntax = {},
-    plugins = {},
+    plugins = {
+      ["ibhagwan/fzf-lua"] = {
+        bg = nil,
+        fg = nil,
+        border = nil,
+        prompt_fg = nil,
+        pointer_fg = nil,
+        statusline_bg = nil,
+        statusline_fg = nil,
+        statusline_nc_bg = nil,
+        statusline_nc_fg = nil,
+        statusline1_fg = nil,
+        statusline2_fg = nil,
+        statusline3_fg = nil,
+      },
+    },
   },
 
   -- Terminal integrations

@@ -21,12 +21,19 @@ local fallback_colors = {
   accent_500 = "#3366cc",
   accent_600 = "#2255bb",
   red = "#e86671",
+  red_500 = "#e86671",
   green = "#a9dc76",
+  green_500 = "#a9dc76",
   yellow = "#e7c547",
+  yellow_500 = "#e7c547",
   orange = "#ffa94d",
+  orange_500 = "#ffa94d",
   blue = "#66b2ff",
+  blue_500 = "#66b2ff",
   purple = "#a37ee5",
+  purple_500 = "#a37ee5",
   cyan = "#78dce8",
+  cyan_500 = "#78dce8",
 }
 
 function M.create_safe_color_table(colors)

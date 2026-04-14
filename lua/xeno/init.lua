@@ -141,6 +141,13 @@ end
 
 -- Generate new colorscheme files
 function xeno.theme(name, config)
+  if config and config.base ~= nil then
+    vim.notify("[xeno.nvim] 'base' is deprecated, please use 'background'", vim.log.levels.WARN)
+    if config.background == nil then
+      config.background = config.base
+    end
+  end
+
   -- Merge global config with theme-specific config
   local merged_config = utils.extend("force", xeno._global_config, config or {})
 

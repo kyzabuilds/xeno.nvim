@@ -53,7 +53,18 @@ t.describe("core.palette", function()
 
     for _, key in ipairs(SEMANTIC_KEYS) do
       t.truthy(colors[key], "missing semantic color " .. key)
+      t.eq(colors[key .. "_500"], colors[key], "missing semantic alias " .. key .. "_500")
     end
+  end)
+
+  t.it("maps semantic overrides onto their 500 aliases", function()
+    local colors = with_variant("dark", {
+      green = "#6ee7b7",
+      red = "#f9a8d4",
+    })
+
+    t.eq(colors.green_500, colors.green)
+    t.eq(colors.red_500, colors.red)
   end)
 
   t.it("is deterministic for a fixed config and variant", function()
@@ -260,5 +271,31 @@ t.describe("core.palette", function()
     t.truthy(t.hex_chroma(desaturated.red) < t.hex_chroma(base.red), "chroma -0.5 should decrease red chroma")
     t.truthy(t.hex_chroma(saturated.red) > t.hex_chroma(base.red), "chroma 0.5 should increase red chroma")
     t.approx(t.hex_chroma(grayscale.red), 0, 5e-3, "chroma -1.0 should result in near-zero chroma for red")
+  end)
+
+  t.it("adjusts palette brightness based on the lightness option while preserving text contrast", function()
+    local config = {
+      background = "#1f2335",
+      accent = "#7aa2f7",
+    }
+
+    local base = with_variant("dark", config)
+    local darker = with_variant("dark", t.test_config({ background = config.background, accent = config.accent, lightness = -0.35 }))
+    local lighter = with_variant("dark", t.test_config({ background = config.background, accent = config.accent, lightness = 0.35 }))
+
+    t.truthy(t.hex_lightness(darker.accent_500) < t.hex_lightness(base.accent_500), "lightness -0.35 should darken accent colors")
+    t.truthy(t.hex_lightness(lighter.accent_500) > t.hex_lightness(base.accent_500), "lightness 0.35 should brighten accent colors")
+
+    t.truthy(t.hex_lightness(darker.red) < t.hex_lightness(base.red), "lightness -0.35 should darken semantic colors")
+    t.truthy(t.hex_lightness(lighter.red) > t.hex_lightness(base.red), "lightness 0.35 should brighten semantic colors")
+
+    for _, colors in ipairs({ darker, lighter }) do
+      for _, fg_level in ipairs(FOREGROUND_LEVELS) do
+        t.truthy(
+          foreground_ratio(colors, fg_level, 800) >= FOREGROUND_CONTRAST_MIN[fg_level],
+          string.format("foreground_%s should remain legible on background_800 after lightness adjustments", fg_level)
+        )
+      end
+    end
   end)
 end)

@@ -4,6 +4,42 @@ local fmt = string.format
 -- Cache for resolved colors to improve performance
 local resolved_cache = {}
 
+local function implicit_color_cache_key(reference, colors)
+  return reference .. "::" .. tostring(colors)
+end
+
+local function get_palette_color(colors, key)
+  if type(colors) ~= "table" then
+    return nil
+  end
+
+  return rawget(colors, key)
+end
+
+local function find_closest_palette_level(colors, family)
+  if type(colors) ~= "table" then
+    return nil
+  end
+
+  local closest_level = nil
+  local closest_distance = nil
+
+  for key in pairs(colors) do
+    local level = key:match("^" .. vim.pesc(family) .. "_(%d+)$")
+    if level then
+      local numeric_level = tonumber(level)
+      local distance = math.abs(numeric_level - 500)
+
+      if closest_distance == nil or distance < closest_distance or (distance == closest_distance and numeric_level < closest_level) then
+        closest_level = numeric_level
+        closest_distance = distance
+      end
+    end
+  end
+
+  return closest_level
+end
+
 --- Clear the resolved colors cache
 function M.clear_cache()
   resolved_cache = {}
@@ -52,10 +88,11 @@ function M.resolve_highlight_reference(reference, attribute, highlights)
   end
 end
 
---- Extract color key from reference (e.g., "@background.500" -> "background_500", "@my_color" -> "my_color_500")
+--- Extract color key from reference (e.g., "@background.500" -> "background_500", "@my_color" -> the closest available implicit level)
 --- @param reference string The color reference
+--- @param colors table|nil Optional color palette used to resolve implicit family aliases
 --- @return string|nil The color key or nil if invalid
-function M.extract_color_key(reference)
+function M.extract_color_key(reference, colors)
   if not M.is_color_reference(reference) then
     return nil
   end
@@ -67,8 +104,17 @@ function M.extract_color_key(reference)
   if key:match("%.") then
     key = key:gsub("%.", "_")
   else
-    -- No level specified, fallback to 500
-    key = key .. "_500"
+    local preferred_key = key .. "_500"
+    if get_palette_color(colors, preferred_key) then
+      return preferred_key
+    end
+
+    local closest_level = find_closest_palette_level(colors, key)
+    if closest_level then
+      return fmt("%s_%s", key, closest_level)
+    end
+
+    key = preferred_key
   end
 
   return key
@@ -78,28 +124,37 @@ end
 --- @param value any The value to resolve (may be a reference or regular value)
 --- @param colors table The color palette
 --- @param highlights table|nil Optional highlights table for highlight references
+--- @param attribute string|nil The highlight attribute being resolved
 --- @return any The resolved value
-function M.resolve_value(value, colors, highlights)
+function M.resolve_value(value, colors, highlights, attribute)
   if M.is_color_reference(value) then
-    -- Check cache first
-    if resolved_cache[value] then
-      return resolved_cache[value]
+    -- Link targets can validly be highlight groups like "@variable"; don't
+    -- reinterpret them as palette aliases.
+    if attribute == "link" then
+      return value
     end
 
-    local color_key = M.extract_color_key(value)
+    local color_key = M.extract_color_key(value, colors)
     if not color_key then
       vim.notify(fmt("xeno.nvim: Invalid color reference '%s'", value), vim.log.levels.WARN)
       return value
     end
 
-    local resolved_color = colors[color_key]
+    local cache_key = M.is_color_reference(value) and not value:match("%.") and implicit_color_cache_key(value, colors) or value
+
+    -- Check cache first
+    if resolved_cache[cache_key] then
+      return resolved_cache[cache_key]
+    end
+
+    local resolved_color = get_palette_color(colors, color_key)
     if not resolved_color then
       vim.notify(fmt("xeno.nvim: Unknown color reference '%s'", value), vim.log.levels.WARN)
       return value
     end
 
     -- Cache the resolved color
-    resolved_cache[value] = resolved_color
+    resolved_cache[cache_key] = resolved_color
     return resolved_color
   elseif M.is_highlight_reference(value) and highlights then
     -- Handle { from = "GroupName" } references - this should not be resolved here
@@ -123,7 +178,7 @@ function M.resolve_value(value, colors, highlights)
         return resolved_cache[value]
       end
 
-      local resolved_color = colors[value]
+      local resolved_color = get_palette_color(colors, value)
       if resolved_color then
         -- Cache the resolved color
         resolved_cache[value] = resolved_color
@@ -166,7 +221,7 @@ function M.resolve_highlights(tbl, colors, highlights)
       resolved[key] = M.resolve_highlight_reference(value, key, highlights)
     else
       -- Resolve color references
-      resolved[key] = M.resolve_value(value, colors, highlights)
+      resolved[key] = M.resolve_value(value, colors, highlights, key)
     end
   end
 
