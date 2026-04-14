@@ -287,6 +287,14 @@ local function to_pascal_case(str)
   return str:gsub("%s+", "")
 end
 
+local ft_group_priority = {
+  StatusLine = 1,
+  StatusLineNC = 2,
+  fzf1 = 3,
+  fzf2 = 4,
+  fzf3 = 5,
+}
+
 -- Format file-type specific highlights with winhighlight autocmd
 local function format_filetype_highlights(filetype_highlights, organized_colors)
   if not filetype_highlights or not next(filetype_highlights) then
@@ -348,7 +356,13 @@ local function format_filetype_highlights(filetype_highlights, organized_colors)
     for group in pairs(ft_hls) do
       table.insert(groups, group)
     end
-    table.sort(groups)
+    table.sort(groups, function(a, b)
+      local pa, pb = ft_group_priority[a] or 100, ft_group_priority[b] or 100
+      if pa ~= pb then
+        return pa < pb
+      end
+      return a < b
+    end)
 
     for _, group in ipairs(groups) do
       local attrs = ft_hls[group]

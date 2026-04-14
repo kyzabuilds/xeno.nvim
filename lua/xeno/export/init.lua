@@ -383,6 +383,8 @@ local function generate_variant_palette(foreground_color, background_color, acce
     background = background_color,
     accent = accent_color,
     variation = user_config.variation or 0,
+    chroma = user_config.chroma or 0,
+    lightness = user_config.lightness or 0,
     contrast = user_config.contrast or 0,
     -- Include any custom colors from the current config
     _custom_colors = user_config._custom_colors,
@@ -459,6 +461,8 @@ local function organize_colors_by_variant(color_palette, highlights, current_var
       background = "#030303",
       accent = "#7AA2F7",
       variation = 0,
+      chroma = 0,
+      lightness = 0,
       contrast = 0,
     }
   end
@@ -596,6 +600,8 @@ local function generate_metadata()
   local background_color = "unknown"
   local accent_color = "unknown"
   local variation = 0
+  local chroma = 0
+  local lightness = 0
   local contrast = 0
 
   if xeno and xeno._global_config then
@@ -603,6 +609,8 @@ local function generate_metadata()
     background_color = xeno._global_config.background or background_color
     accent_color = xeno._global_config.accent or accent_color
     variation = xeno._global_config.variation or variation
+    chroma = xeno._global_config.chroma or chroma
+    lightness = xeno._global_config.lightness or lightness
     contrast = xeno._global_config.contrast or contrast
   end
 
@@ -613,6 +621,8 @@ local function generate_metadata()
     background_color = background_color,
     accent_color = accent_color,
     variation = variation,
+    chroma = chroma,
+    lightness = lightness,
     contrast = contrast,
     exported_by = "xeno.nvim export",
     supports_variants = true, -- New flag for dynamic exports

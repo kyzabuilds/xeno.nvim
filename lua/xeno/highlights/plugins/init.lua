@@ -34,6 +34,13 @@ M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
     border = colors.background_800,
     prompt_fg = colors.accent_200,
     pointer_fg = colors.accent_200,
+    statusline_bg = colors.background_950,
+    statusline_fg = colors.foreground_100,
+    statusline_nc_bg = colors.background_900,
+    statusline_nc_fg = colors.foreground_300,
+    statusline1_fg = colors.accent_500,
+    statusline2_fg = colors.foreground_100,
+    statusline3_fg = colors.foreground_300,
   }
 
   -- Merge with user overrides if provided
@@ -44,27 +51,60 @@ M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
   return {
     ["fzf"] = function()
       return {
-        StatusLine = { bg = config.bg, fg = config.fg },
-        fzf1 = { bg = config.bg, fg = config.fg },
-        fzf2 = { bg = config.bg, fg = config.fg },
-        fzf3 = { bg = config.bg, fg = config.fg },
+        -- Active / inactive statusline entries for fzf filetype windows.
+        StatusLine = { bg = config.statusline_bg, fg = config.statusline_fg },
+        StatusLineNC = { bg = config.statusline_nc_bg, fg = config.statusline_nc_fg },
+        -- Legacy fzf-lua split statusline segments.
+        fzf1 = { bg = config.statusline_bg, fg = config.statusline1_fg },
+        fzf2 = { bg = config.statusline_bg, fg = config.statusline2_fg },
+        fzf3 = { bg = config.statusline_bg, fg = config.statusline3_fg },
       }
     end,
 
-    -- Main Interface Elements
     FzfLuaNormal = { bg = config.bg, fg = config.fg },
     FzfLuaBorder = { bg = config.bg, fg = config.border },
     FzfLuaTitle = { bg = config.bg, fg = config.fg },
+    FzfLuaTitleFlags = { bg = config.bg, fg = config.fg },
     FzfLuaHeaderText = { bg = config.bg, fg = config.fg },
+    FzfLuaHeaderBind = { bg = config.bg, fg = config.pointer_fg },
+    FzfLuaPreviewNormal = { bg = config.bg, fg = config.fg },
+    FzfLuaPreviewBorder = { bg = config.bg, fg = config.border },
+    FzfLuaPreviewTitle = { bg = config.bg, fg = config.fg },
+    FzfLuaCursorLine = { bg = colors.background_600, fg = config.fg },
+    FzfLuaCursorLineNr = { bg = colors.background_600, fg = colors.foreground_100 },
+    FzfLuaPathLineNr = { bg = config.bg, fg = colors.foreground_200 },
+    FzfLuaPathColNr = { bg = config.bg, fg = colors.foreground_200 },
+    FzfLuaBufName = { bg = config.bg, fg = config.fg },
+    FzfLuaBufId = { bg = config.bg, fg = config.fg },
+    FzfLuaBufNr = { bg = config.bg, fg = config.fg },
+    FzfLuaBufLineNr = { bg = config.bg, fg = config.fg },
+    FzfLuaBufFlagCur = { bg = colors.background_900, fg = colors.foreground_100 },
+    FzfLuaBufFlagAlt = { bg = colors.background_900, fg = colors.foreground_100 },
 
     -- Fzf-specific Elements
+    FzfLuaFzfNormal = { bg = config.bg, fg = config.fg },
+    FzfLuaFzfCursorLine = { bg = colors.background_600, fg = config.fg },
+    FzfLuaFzfMatch = { bg = config.bg, fg = config.pointer_fg },
+    FzfLuaFzfBorder = { bg = config.bg, fg = config.border },
+    FzfLuaFzfScrollbar = { bg = config.bg, fg = config.border },
     FzfLuaFzfGutter = { bg = config.bg, fg = config.fg },
     FzfLuaFzfSeparator = { bg = config.bg, fg = config.border },
+    FzfLuaFzfHeader = { bg = config.bg, fg = config.fg },
+    FzfLuaFzfInfo = { bg = config.bg, fg = config.fg },
     FzfLuaFzfPrompt = { bg = config.bg, fg = config.prompt_fg },
     FzfLuaFzfPointer = { bg = config.bg, fg = config.pointer_fg },
+    FzfLuaFzfMarker = { bg = config.bg, fg = config.pointer_fg },
+    FzfLuaFzfSpinner = { bg = config.bg, fg = config.pointer_fg },
+    FzfLuaFzfQuery = { bg = config.bg, fg = config.fg },
+
+    -- New consolidated split statusline groups from fzf-lua hls.
+    FzfLuaStatusLine1 = { bg = config.statusline_bg, fg = config.statusline1_fg },
+    FzfLuaStatusLine2 = { bg = config.statusline_bg, fg = config.statusline2_fg },
+    FzfLuaStatusLine3 = { bg = config.statusline_bg, fg = config.statusline3_fg },
 
     -- Search and Buffer Elements
     FzfLuaSearch = { bg = colors.background_900, fg = colors.foreground_100 },
+    -- Keep typo alias for backward compatibility with previously exported themes.
     FzfLuaBufFlagCurl = { bg = colors.background_900, fg = colors.foreground_100 },
 
     -- Scroll Elements
@@ -73,10 +113,9 @@ M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
     FzfLuaScrollFloatEmpty = { bg = colors.background_800, fg = colors.foreground_100 },
     FzfLuaScrollFloatFull = { bg = colors.background_800, fg = colors.foreground_100 },
 
-    -- Fzf-specific Decorative Elements
-    -- FzfIcon = { bg = colors.background_800, fg = colors.accent_500 },
+    FzfLuaLivePrompt = { bg = colors.background_800, fg = colors.accent_500 },
+    FzfLuaLiveSym = { bg = colors.background_800, fg = colors.accent_500 },
 
-    -- Help Elements
     FzfLuaHelpNormal = { bg = colors.background_800, fg = colors.foreground_100 },
     FzfLuaHelpBorder = { bg = colors.background_800, fg = colors.foreground_100 },
   }
@@ -149,7 +188,7 @@ M["Saghen/blink.cmp"] = function(colors, plugin_config)
     BlinkCmpLabelMatch = { fg = config.match_fg, bold = true },
     BlinkCmpLabelDeprecated = { fg = config.label_fg, strikethrough = true },
     BlinkCmpLabelDetail = { fg = config.kind_fg, italic = true },
-    BlinkCmpLabelDescription = { fg = config.label_fg, italic = true },
+    BlinkCmpLabelDescription = { fg = colors.foreground_400, italic = true },
     BlinkCmpSource = { fg = config.source_fg, italic = true },
     BlinkCmpKind = { fg = config.kind_fg },
 
@@ -748,6 +787,17 @@ M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
   return helpers.default(highlights)
 end
 
+M["akinsho/toggleterm.nvim"] = function(colors, plugin_config)
+  return {
+    ["toggleterm"] = function()
+      return {
+        StatusLine = { bg = colors.background_950, fg = colors.foreground_100 },
+        StatusLineNC = { bg = colors.background_950, fg = colors.foreground_100 },
+      }
+    end,
+  }
+end
+
 M["folke/trouble.nvim"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
@@ -770,6 +820,113 @@ M["folke/trouble.nvim"] = function(colors, plugin_config)
     TroubleFile = { bg = config.bg, fg = config.fg },
     TroubleSignOther = { bg = config.bg, fg = config.fg },
     TroubleInformation = { bg = config.bg, fg = config.fg },
+  }
+end
+
+M["folke/snacks.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    -- Base UI colors
+    bg = colors.background_950,
+    fg = colors.foreground_100,
+    border = colors.background_800,
+
+    -- Notifier colors
+    notifier_info_fg = colors.blue,
+    notifier_warn_fg = colors.yellow,
+    notifier_error_fg = colors.red,
+    notifier_debug_fg = colors.purple,
+    notifier_trace_fg = colors.foreground_400,
+
+    -- Dashboard colors
+    dashboard_bg = colors.background_950,
+    dashboard_header_fg = colors.accent_500,
+    dashboard_desc_fg = colors.foreground_300,
+    dashboard_key_fg = colors.accent_200,
+
+    -- Indent colors
+    indent_fg = utils.opaque(colors.foreground_400, 0.30),
+    indent_scope_fg = utils.opaque(colors.foreground_400, 0.70),
+
+    -- Picker colors
+    picker_bg = colors.background_950,
+    picker_match_fg = colors.accent_200,
+    picker_selected_bg = utils.opaque(colors.background_600, 0.30),
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
+  return {
+    -- Core UI Elements
+    SnacksNormal = { bg = config.bg, fg = config.fg },
+    SnacksWinBar = { bg = colors.background_900, fg = colors.foreground_100 },
+    SnacksBackdrop = { bg = utils.opaque(colors.background_950, 0.85) },
+    SnacksNormalNC = { bg = colors.background_900, fg = colors.foreground_300 },
+    SnacksWinBarNC = { bg = colors.background_900, fg = colors.foreground_300 },
+
+    -- Notifier: Info
+    SnacksNotifierInfo = { bg = config.bg, fg = config.notifier_info_fg },
+    SnacksNotifierIconInfo = { fg = config.notifier_info_fg },
+    SnacksNotifierTitleInfo = { fg = config.notifier_info_fg, bold = true },
+    SnacksNotifierFooterInfo = { fg = colors.foreground_400 },
+    SnacksNotifierBorderInfo = { fg = utils.opaque(config.notifier_info_fg, 0.50) },
+
+    -- Notifier: Warning
+    SnacksNotifierWarn = { bg = config.bg, fg = config.notifier_warn_fg },
+    SnacksNotifierIconWarn = { fg = config.notifier_warn_fg },
+    SnacksNotifierTitleWarn = { fg = config.notifier_warn_fg, bold = true },
+    SnacksNotifierFooterWarn = { fg = colors.foreground_400 },
+    SnacksNotifierBorderWarn = { fg = utils.opaque(config.notifier_warn_fg, 0.50) },
+
+    -- Notifier: Debug
+    SnacksNotifierDebug = { bg = config.bg, fg = config.notifier_debug_fg },
+    SnacksNotifierIconDebug = { fg = config.notifier_debug_fg },
+    SnacksNotifierTitleDebug = { fg = config.notifier_debug_fg, bold = true },
+    SnacksNotifierFooterDebug = { fg = colors.foreground_400 },
+    SnacksNotifierBorderDebug = { fg = utils.opaque(config.notifier_debug_fg, 0.50) },
+
+    -- Notifier: Error
+    SnacksNotifierError = { bg = config.bg, fg = config.notifier_error_fg },
+    SnacksNotifierIconError = { fg = config.notifier_error_fg },
+    SnacksNotifierTitleError = { fg = config.notifier_error_fg, bold = true },
+    SnacksNotifierFooterError = { fg = colors.foreground_400 },
+    SnacksNotifierBorderError = { fg = utils.opaque(config.notifier_error_fg, 0.50) },
+
+    -- Notifier: Trace
+    SnacksNotifierTrace = { bg = config.bg, fg = config.notifier_trace_fg },
+    SnacksNotifierIconTrace = { fg = config.notifier_trace_fg },
+    SnacksNotifierTitleTrace = { fg = config.notifier_trace_fg, bold = true },
+    SnacksNotifierFooterTrace = { fg = colors.foreground_400 },
+    SnacksNotifierBorderTrace = { fg = utils.opaque(config.notifier_trace_fg, 0.50) },
+
+    -- Dashboard
+    SnacksDashboardNormal = { bg = config.dashboard_bg, fg = colors.foreground_100 },
+    SnacksDashboardDesc = { fg = config.dashboard_desc_fg },
+    SnacksDashboardFile = { fg = colors.blue },
+    SnacksDashboardDir = { fg = colors.cyan },
+    SnacksDashboardFooter = { fg = colors.foreground_400 },
+    SnacksDashboardHeader = { fg = config.dashboard_header_fg, bold = true },
+    SnacksDashboardIcon = { fg = colors.accent_500 },
+    SnacksDashboardKey = { fg = config.dashboard_key_fg },
+    SnacksDashboardTerminal = { fg = colors.green },
+    SnacksDashboardSpecial = { fg = colors.purple },
+    SnacksDashboardTitle = { fg = config.dashboard_header_fg, bold = true },
+
+    -- Indent
+    SnacksIndent = { fg = config.indent_fg, nocombine = true },
+    SnacksIndentScope = { fg = config.indent_scope_fg, nocombine = true },
+
+    -- Picker
+    SnacksPickerSelected = { bg = config.picker_selected_bg, bold = true },
+    SnacksPickerMatch = { fg = config.picker_match_fg },
+    SnacksPicker = { bg = config.picker_bg, fg = colors.foreground_100 },
+    SnacksPickerBorder = { bg = config.picker_bg, fg = config.border },
+    SnacksPickerInputBorder = { fg = config.border },
+    SnacksPickerInput = { bg = colors.background_900, fg = colors.foreground_100 },
+    SnacksPickerPrompt = { fg = colors.accent_500 },
   }
 end
 
@@ -1542,6 +1699,118 @@ M["yetone/avante.nvim"] = function(colors, global_config, plugin_config)
     AvanteConflictCurrentLabel = { bg = utils.opaque(colors.red, 0.25) },
     AvanteConflictIncoming = { bold = true, bg = utils.opaque(colors.blue, 0.15) },
     AvanteConflictIncomingLabel = { bg = utils.opaque(colors.blue, 0.25) },
+  }
+end
+
+M["pwntester/octo.nvim"] = function(colors, plugin_config)
+  -- Default configuration
+  local config = {
+    grey_fg = colors.foreground_300,
+    blue_fg = colors.blue,
+    green_fg = colors.green,
+    red_fg = colors.red,
+    purple_fg = colors.purple,
+    yellow_fg = colors.yellow,
+    dirty_fg = colors.yellow,
+    float_bg = colors.background_900,
+    date_fg = colors.foreground_300,
+    symbol_fg = colors.foreground_300,
+    viewer_fg = colors.accent_500,
+    bubble_bg = colors.background_800,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
+  return {
+    -- Base color highlights
+    OctoGrey = { fg = config.grey_fg },
+    OctoBlue = { fg = config.blue_fg },
+    OctoGreen = { fg = config.green_fg },
+    OctoRed = { fg = config.red_fg },
+    OctoPurple = { fg = config.purple_fg },
+    OctoYellow = { fg = config.yellow_fg },
+
+    -- UI Elements
+    OctoDirty = { fg = config.dirty_fg, bold = true },
+    OctoIssueTitle = { fg = colors.foreground_100, bold = true },
+    OctoIssueId = { fg = colors.accent_500, bold = true },
+    OctoEmpty = { fg = colors.foreground_300 },
+    OctoFloat = { bg = config.float_bg },
+    OctoDate = { fg = config.date_fg },
+    OctoSymbol = { fg = config.symbol_fg },
+    OctoTimelineItemHeading = { fg = colors.accent_500, bold = true },
+    OctoDetailsLabel = { fg = colors.accent_500, bold = true },
+    OctoMissingDetails = { fg = colors.red, italic = true },
+    OctoDetailsValue = { fg = colors.foreground_100 },
+    OctoDiffHunkPosition = { fg = colors.accent_500 },
+    OctoCommentLine = { fg = colors.foreground_300 },
+    OctoViewer = { fg = config.viewer_fg, bold = true },
+
+    -- Bubbles
+    OctoBubble = { bg = config.bubble_bg },
+    OctoBubbleGrey = { fg = config.grey_fg, bg = config.bubble_bg },
+    OctoBubbleDelimiterGrey = { fg = config.grey_fg },
+    OctoBubbleGreen = { fg = config.green_fg, bg = config.bubble_bg },
+    OctoBubbleDelimiterGreen = { fg = config.green_fg },
+    OctoBubbleBlue = { fg = config.blue_fg, bg = config.bubble_bg },
+    OctoBubbleDelimiterBlue = { fg = config.blue_fg },
+    OctoBubbleYellow = { fg = config.yellow_fg, bg = config.bubble_bg },
+    OctoBubbleDelimiterYellow = { fg = config.yellow_fg },
+    OctoBubbleRed = { fg = config.red_fg, bg = config.bubble_bg },
+    OctoBubbleDelimiterRed = { fg = config.red_fg },
+    OctoBubblePurple = { fg = config.purple_fg, bg = config.bubble_bg },
+    OctoBubbleDelimiterPurple = { fg = config.purple_fg },
+
+    -- User and Reaction highlights
+    OctoUser = { fg = colors.accent_500 },
+    OctoUserViewer = { fg = colors.accent_500, bold = true },
+    OctoReaction = { fg = colors.foreground_200 },
+    OctoReactionViewer = { fg = colors.accent_500, bold = true },
+
+    -- Test status
+    OctoPassingTest = { fg = colors.green, bold = true },
+    OctoFailingTest = { fg = colors.red, bold = true },
+
+    -- Pull request stats
+    OctoPullAdditions = { fg = colors.green },
+    OctoPullDeletions = { fg = colors.red },
+    OctoPullModifications = { fg = colors.yellow },
+
+    -- State highlights
+    OctoStateOpen = { fg = colors.green },
+    OctoStateOpenFloat = { fg = colors.green, bg = config.float_bg },
+    OctoStateClosed = { fg = colors.red },
+    OctoStateClosedFloat = { fg = colors.red, bg = config.float_bg },
+    OctoStateMerged = { fg = colors.purple },
+    OctoStateMergedFloat = { fg = colors.purple, bg = config.float_bg },
+    OctoStatePending = { fg = colors.yellow },
+    OctoStatePendingFloat = { fg = colors.yellow, bg = config.float_bg },
+    OctoStateApproved = { fg = colors.green },
+    OctoStateApprovedFloat = { fg = colors.green, bg = config.float_bg },
+    OctoStateChangesRequested = { fg = colors.red },
+    OctoStateChangesRequestedFloat = { fg = colors.red, bg = config.float_bg },
+    OctoStateCommented = { fg = colors.blue },
+    OctoStateCommentedFloat = { fg = colors.blue, bg = config.float_bg },
+    OctoStateDismissed = { fg = colors.foreground_300 },
+    OctoStateDismissedFloat = { fg = colors.foreground_300, bg = config.float_bg },
+    OctoStateSubmittedBubble = { fg = colors.accent_500, bg = config.bubble_bg },
+
+    -- File panel
+    OctoFilePanelCounter = { fg = colors.foreground_300, bold = true },
+    OctoFilePanelTitle = { fg = colors.accent_500, bold = true },
+    OctoFilePanelFileName = { fg = colors.foreground_100 },
+
+    -- Normal and float highlights
+    OctoNormalFront = { fg = colors.foreground_100 },
+    OctoYellowFloat = { fg = colors.yellow, bg = config.float_bg },
+    OctoPurpleFloat = { fg = colors.purple, bg = config.float_bg },
+    OctoRedFloat = { fg = colors.red, bg = config.float_bg },
+    OctoGreenFloat = { fg = colors.green, bg = config.float_bg },
+    OctoGreyFloat = { fg = colors.foreground_300, bg = config.float_bg },
+    OctoBlueFloat = { fg = colors.blue, bg = config.float_bg },
   }
 end
 

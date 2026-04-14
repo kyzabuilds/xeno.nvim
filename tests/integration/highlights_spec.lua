@@ -41,6 +41,52 @@ t.describe("applied highlights", function()
     t.eq(t.get_hl("@accent.500").fg, xeno.colors.accent_500)
   end)
 
+  t.it("resolves semantic shorthand references via the 500 alias", function()
+    t.reset_state()
+    vim.o.background = "dark"
+
+    local xeno = require("xeno")
+    xeno.setup(t.test_config({
+      background = "#1f2335",
+      accent = "#7aa2f7",
+      green = "#6ee7b7",
+      highlights = {
+        syntax = {
+          Number = { fg = "@green" },
+        },
+      },
+    }))
+
+    t.eq(t.get_hl("Number").fg, xeno.colors.green)
+    t.eq(xeno.colors.green_500, xeno.colors.green)
+  end)
+
+  t.it("preserves @-prefixed highlight links while resolving real custom colors", function()
+    t.reset_state()
+    vim.o.background = "dark"
+
+    local xeno = require("xeno")
+    xeno.color("lavender_mist", "#e0bbff")
+    xeno.setup(t.test_config({
+      background = "#1f2335",
+      accent = "#7aa2f7",
+      highlights = {
+        syntax = {
+          ["@punctuation"] = { fg = "#a5b4fc" },
+          ["@punctuation.bracket"] = { link = "@punctuation" },
+          ["@variable"] = { fg = "#cdd6f4" },
+          ["@lsp.type.variable"] = { link = "@variable" },
+          Identifier = { fg = "@lavender_mist" },
+        },
+      },
+    }))
+
+    t.eq(t.get_hl("@punctuation").fg, "#a5b4fc")
+    t.eq(t.get_hl("@punctuation.bracket").fg, "#a5b4fc")
+    t.eq(t.get_hl("@lsp.type.variable").fg, "#cdd6f4")
+    t.eq(t.get_hl("Identifier").fg, xeno.colors.lavender_mist_500)
+  end)
+
   t.it("applies plugin highlight consumers that depend on palette semantics", function()
     local xeno = setup_theme()
 

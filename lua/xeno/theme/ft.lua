@@ -10,6 +10,14 @@ local function to_pascal_case(str)
   return str:gsub("%s+", "")
 end
 
+local ft_group_priority = {
+  StatusLine = 1,
+  StatusLineNC = 2,
+  fzf1 = 3,
+  fzf2 = 4,
+  fzf3 = 5,
+}
+
 --- Setup filetype-specific window highlights
 --- @param ft_config table<string, function> Map of filetype to highlight generator function
 --- @param colors table The color palette
@@ -29,7 +37,20 @@ function M.setup(ft_config, colors, config)
     -- Convert filetype to PascalCase for the prefix
     local prefix = to_pascal_case(filetype)
 
-    for group, attrs in pairs(highlights) do
+    local groups = {}
+    for group in pairs(highlights) do
+      table.insert(groups, group)
+    end
+    table.sort(groups, function(a, b)
+      local pa, pb = ft_group_priority[a] or 100, ft_group_priority[b] or 100
+      if pa ~= pb then
+        return pa < pb
+      end
+      return a < b
+    end)
+
+    for _, group in ipairs(groups) do
+      local attrs = highlights[group]
       -- Create the global highlight group (e.g., NeoTreeVisual)
       local global_name = prefix .. group
       -- Create the global highlight group

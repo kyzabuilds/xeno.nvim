@@ -87,6 +87,12 @@ function M.generate_filename(format, metadata)
   if metadata.variation and metadata.variation ~= 0 then
     table.insert(name_parts, fmt("var%.1f", metadata.variation))
   end
+  if metadata.chroma and metadata.chroma ~= 0 then
+    table.insert(name_parts, fmt("chr%.1f", metadata.chroma))
+  end
+  if metadata.lightness and metadata.lightness ~= 0 then
+    table.insert(name_parts, fmt("lit%.1f", metadata.lightness))
+  end
   if metadata.contrast and metadata.contrast ~= 0 then
     table.insert(name_parts, fmt("con%.1f", metadata.contrast))
   end
@@ -263,6 +269,12 @@ function M.create_header_comment(metadata, comment_char)
 
   if metadata.variation and metadata.variation ~= 0 then
     table.insert(lines, fmt("%s Variation: %.1f", comment_char, metadata.variation))
+  end
+  if metadata.chroma and metadata.chroma ~= 0 then
+    table.insert(lines, fmt("%s Chroma: %.1f", comment_char, metadata.chroma))
+  end
+  if metadata.lightness and metadata.lightness ~= 0 then
+    table.insert(lines, fmt("%s Lightness: %.1f", comment_char, metadata.lightness))
   end
   if metadata.contrast and metadata.contrast ~= 0 then
     table.insert(lines, fmt("%s Contrast: %.1f", comment_char, metadata.contrast))

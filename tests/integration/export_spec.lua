@@ -45,6 +45,8 @@ t.describe("export pipeline", function()
     local config = t.test_config({
       background = "#1f2335",
       accent = "#7aa2f7",
+      chroma = 0.25,
+      lightness = 0.2,
       highlights = {
         editor = {
           Visual = { bg = "@brand.500", fg = "@foreground.100" },
@@ -64,6 +66,8 @@ t.describe("export pipeline", function()
     }))
     local content = read_file(exported.path)
 
+    t.truthy(content:find("Chroma: 0.2", 1, true))
+    t.truthy(content:find("Lightness: 0.2", 1, true))
     t.truthy(content:find("brand_400", 1, true))
     t.truthy(content:find("brand_500", 1, true))
     t.falsy(content:find("unused_500", 1, true))
@@ -73,6 +77,8 @@ t.describe("export pipeline", function()
     local palette_config = {
       background = config.background,
       accent = config.accent,
+      chroma = config.chroma,
+      lightness = config.lightness,
       _custom_colors = {
         brand = "#b48ead",
         unused = "#ff6b6b",
