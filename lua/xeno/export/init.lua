@@ -650,6 +650,7 @@ function M.export_theme(config)
 
   -- Generate metadata first (we'll need it)
   local metadata = generate_metadata()
+  metadata.theme_name = config.theme_name or "xeno"
 
   -- IMPORTANT: Generate variant-specific palettes BEFORE resolving highlights
   -- This ensures highlights are resolved with the correct colors for the current variant

@@ -418,7 +418,7 @@ function M.format_colorscheme(export_data)
   replacements["{{HEADER_COMMENT}}"] = utils.create_header_comment(export_data.metadata, "--")
 
   -- Theme name
-  local theme_name = utils.sanitize_name("xeno_exported_theme")
+  local theme_name = export_data.metadata.theme_name or "xeno_exported_theme"
   replacements["{{THEME_NAME}}"] = theme_name
 
   -- Check if we have variant-aware data structure
