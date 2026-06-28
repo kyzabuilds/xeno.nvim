@@ -1,5 +1,39 @@
 local M = {}
 local utils = require("xeno.core.utils")
+local fmt = string.format
+
+--- Detect and recover from circular highlight links.
+--- A link chain that loops back on itself (e.g. a user redefining `Keyword` so
+--- that `@keyword -> Keyword -> @keyword`) makes Neovim's redraw follow the chain
+--- forever and hangs the editor. We only ever see links that stay inside our own
+--- table; links to external/built-in groups terminate and are ignored. When a
+--- cycle is found we discard the offending override and restore that group's base
+--- (pre-override) definition so it keeps a working color, then warn. Base
+--- highlights are authored acyclic, so the restore can't re-introduce a loop.
+--- @param target_table table The merged highlights, sanitized in place
+--- @param base table The base highlights to fall back to
+local function break_link_cycles(target_table, base)
+  local function walk(group, seen)
+    local attrs = target_table[group]
+    if type(attrs) ~= "table" or attrs.link == nil then
+      return
+    end
+    if seen[group] then
+      vim.notify(
+        fmt("xeno.nvim: circular highlight link at '%s'; restoring its base highlight", group),
+        vim.log.levels.WARN
+      )
+      target_table[group] = base[group] and vim.deepcopy(base[group]) or {}
+      return
+    end
+    seen[group] = true
+    walk(attrs.link, seen)
+  end
+
+  for group in pairs(target_table) do
+    walk(group, {})
+  end
+end
 
 --- Deep merge highlight groups, with user overrides taking precedence
 --- @param base table Base highlight group
@@ -49,6 +83,21 @@ function M.merge_all_highlights(base_highlights, user_highlights, colors)
       -- First resolve color references only
       local resolved_attrs = resolver.resolve_highlights(attrs, colors, nil)
       target_table[group] = M.merge_highlight_group(target_table[group], resolved_attrs)
+    end
+  end
+
+  -- Resolve xeno.opaque() thunks now that `colors` is the fully-generated palette
+  -- for the current variant (including custom families). utils.opaque resolves the
+  -- fg/bg color references and applies the bg fallback chain, returning a hex string.
+  local function resolve_opaque_thunks(target_table)
+    for _, attrs in pairs(target_table) do
+      if type(attrs) == "table" then
+        for key, value in pairs(attrs) do
+          if type(value) == "table" and value.__xeno_opaque then
+            attrs[key] = utils.opaque(value.fg, value.opacity, value.bg, colors)
+          end
+        end
+      end
     end
   end
 
@@ -105,8 +154,16 @@ function M.merge_all_highlights(base_highlights, user_highlights, colors)
     process_highlights(user_highlights.syntax, merged)
   end
 
+  -- Resolve opaque thunks to hex before highlight references, so { from = ... }
+  -- copies a concrete value rather than an unresolved thunk.
+  resolve_opaque_thunks(merged)
+
   -- After all merging is done, resolve highlight references
   resolve_highlight_references(merged)
+
+  -- Recover from any circular links a user override may have introduced so the
+  -- theme still initializes instead of hanging Neovim's redraw.
+  break_link_cycles(merged, base_highlights)
   return merged
 end
 

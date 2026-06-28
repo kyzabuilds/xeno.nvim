@@ -16,11 +16,12 @@ local function get_palette_color(colors, key)
   return rawget(colors, key)
 end
 
-local function find_closest_palette_level(colors, family)
+local function find_closest_palette_level(colors, family, target)
   if type(colors) ~= "table" then
     return nil
   end
 
+  target = target or 400
   local closest_level = nil
   local closest_distance = nil
 
@@ -28,7 +29,7 @@ local function find_closest_palette_level(colors, family)
     local level = key:match("^" .. vim.pesc(family) .. "_(%d+)$")
     if level then
       local numeric_level = tonumber(level)
-      local distance = math.abs(numeric_level - 500)
+      local distance = math.abs(numeric_level - target)
 
       if closest_distance == nil or distance < closest_distance or (distance == closest_distance and numeric_level < closest_level) then
         closest_level = numeric_level
@@ -103,8 +104,19 @@ function M.extract_color_key(reference, colors)
   -- If it has a level (contains dot), replace . with _
   if key:match("%.") then
     key = key:gsub("%.", "_")
+    -- Snap to nearest available level if the exact one doesn't exist
+    if not get_palette_color(colors, key) then
+      local family = key:match("^(.-)_%d+$")
+      local requested_level = tonumber(key:match("_(%d+)$"))
+      if family and requested_level then
+        local closest_level = find_closest_palette_level(colors, family, requested_level)
+        if closest_level then
+          key = fmt("%s_%d", family, closest_level)
+        end
+      end
+    end
   else
-    local preferred_key = key .. "_500"
+    local preferred_key = key .. "_400"
     if get_palette_color(colors, preferred_key) then
       return preferred_key
     end

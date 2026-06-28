@@ -26,7 +26,7 @@ xeno._global_config = {}
 
 -- Set global configuration (for use with lazy.nvim opts)
 function xeno.config(config)
-  xeno._global_config = config or {}
+  xeno._global_config = utils.normalize_properties(config or {})
 end
 
 -- Define a custom color that can be referenced in highlights
@@ -61,16 +61,18 @@ function xeno.color(name, hex_value)
   return xeno -- Allow chaining
 end
 
+-- Expose the raw custom color registry so utils.opaque can do on-demand scale
+-- generation for custom colors that aren't yet in xeno.colors.
+xeno._custom_colors = custom_colors
+
 -- Initialize with default colors immediately for plugin access
 xeno.colors = fallback.initialize_default_colors()
 
 function xeno.setup(user_config)
-  vim.g.colors_name = "xeno"
-
   -- Clear resolver cache for fresh setup
   resolver.clear_cache()
 
-  local config = utils.extend("force", defaults.config, user_config or {})
+  local config = utils.normalize_properties(utils.extend("force", defaults.config, user_config or {}))
 
   -- Store the merged config globally for export functionality
   xeno._global_config = config
@@ -132,6 +134,7 @@ function xeno.setup(user_config)
   xeno._generated_highlights = highlights
 
   -- Apply highlights and setup autocmds
+  vim.g.colors_name = "xeno"
   theme.apply_highlights(highlights, config)
   theme.setup_autocmds(user_config)
 
@@ -149,7 +152,7 @@ function xeno.theme(name, config)
   end
 
   -- Merge global config with theme-specific config
-  local merged_config = utils.extend("force", xeno._global_config, config or {})
+  local merged_config = utils.normalize_properties(utils.extend("force", xeno._global_config, config or {}))
 
   -- Add custom colors to config
   merged_config._custom_colors = custom_colors
@@ -202,6 +205,10 @@ function xeno.export(config)
   return export_module.export_theme(config)
 end
 
+function xeno.export_theme_cmd()
+  require("xeno.export.init_cmd").export()
+end
+
 -- Public palette accessor for external integrations/helpers.
 function xeno.get_colors()
   return xeno.colors
@@ -210,8 +217,13 @@ end
 -- Expose namespace utilities
 xeno.namespace_utils = namespace
 
--- Expose utils.opaque for user themes
-xeno.opaque = utils.opaque
+-- Lazy opaque: returns a thunk resolved by the highlight pipeline during
+-- setup()/theme(), once the full palette (custom colors + correct light/dark
+-- variant) is available. Resolving eagerly here would freeze a stale variant
+-- and miss custom families registered after the highlights table is built.
+xeno.opaque = function(fg, opacity, bg)
+  return { __xeno_opaque = true, fg = fg, opacity = opacity, bg = bg }
+end
 
 -- Public color access: allow xeno.foreground_400 as shorthand for xeno.colors.foreground_400
 setmetatable(xeno, {

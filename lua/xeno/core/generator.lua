@@ -100,10 +100,16 @@ function M.theme(name, config, global_config)
   -- Add basic configuration
   table.insert(config_parts, fmt('  background = "%s"', user_config.background or "#030303"))
   table.insert(config_parts, fmt('  accent = "%s"', user_config.accent or "#7AA2F7"))
-  table.insert(config_parts, fmt("  variation = %.1f", user_config.variation or 0.0))
-  table.insert(config_parts, fmt("  chroma = %.1f", user_config.chroma or 0.0))
-  table.insert(config_parts, fmt("  lightness = %.1f", user_config.lightness or 0.0))
-  table.insert(config_parts, fmt("  contrast = %.1f", user_config.contrast or 0))
+  table.insert(
+    config_parts,
+    fmt(
+      "  properties = {\n    contrast = %.1f,\n    variation = %.1f,\n    chroma = %.1f,\n    lightness = %.1f,\n  }",
+      user_config.contrast or 0,
+      user_config.variation or 0.0,
+      user_config.chroma or 0.0,
+      user_config.lightness or 0.0
+    )
+  )
   table.insert(config_parts, fmt("  transparent = %s", user_config.transparent and "true" or "false"))
 
   if user_config.foreground then

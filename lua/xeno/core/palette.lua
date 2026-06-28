@@ -20,17 +20,17 @@ local OKLCH_LIGHTNESS_SCALES = {
     [950] = 0.14,
   },
   light = {
-    [50] = 0.14,     -- Very dark (for accents/highlights)
-    [100] = 0.18,    -- Dark
-    [200] = 0.24,    -- Dark
-    [300] = 0.26,    -- Dark (for text)
-    [400] = 0.34,    -- Medium-dark
-    [500] = 0.50,    -- Neutral (same)
-    [600] = 0.62,    -- Medium-light
-    [700] = 0.70,    -- Light
-    [800] = 0.82,    -- Light
-    [900] = 0.93,    -- Very light (for backgrounds)
-    [950] = 0.97,    -- Lightest
+    [50] = 0.3, -- Very dark (for accents/highlights)
+    [100] = 0.13, -- Dark
+    [200] = 0.18, -- Dark
+    [300] = 0.33, -- Dark (for text)
+    [400] = 0.43, -- Medium-dark
+    [500] = 0.48, -- Neutral (same)
+    [600] = 0.68, -- Medium-light
+    [700] = 0.78, -- Light
+    [800] = 0.83, -- Light
+    [900] = 0.88, -- Very light (for backgrounds)
+    [950] = 0.96, -- Lightest
   },
 }
 
@@ -221,8 +221,6 @@ local function resolve_foreground_lightness(theme, base_lightness, chroma, hue, 
   return lower_bound
 end
 
-
-
 -- OKLCH color scale generator
 -- OKLCH lightness is perceptually linear, providing uniform color scales
 local function generate_color_scale_oklch(color, options, levels)
@@ -332,6 +330,19 @@ local function add_scale_to_colors(colors, scale, prefix)
   for level, color in pairs(scale) do
     colors[fmt("%s_%s", prefix, level)] = color
   end
+end
+
+--- Generate and return a flat colors table for a single custom color family.
+--- @param hex string Seed hex color
+--- @param name string Family name (used as key prefix, e.g. "fuchsia")
+--- @param options? table Scale options (contrast, chroma, lightness, variation)
+--- @return table Flat table of name_50..name_600 hex values
+function M.generate_custom_scale(hex, name, options)
+  options = options or {}
+  local scale = generate_color_scale(hex, options, FAMILY_LEVELS.accent)
+  local colors = {}
+  add_scale_to_colors(colors, scale, name)
+  return colors
 end
 
 function M.generate_palette(config)

@@ -24,7 +24,9 @@
 xeno.theme('xeno-latte', {
   background = '#14110f',
   accent = '#bf8f7f',
-  variation = 0.9,
+  properties = {
+    variation = 0.9,
+  },
 })
 ```
 
@@ -34,8 +36,10 @@ xeno.theme('xeno-latte', {
 xeno.theme('xeno-sylvan', {
   background = '#151615',
   accent = '#3b594e',
-  contrast = -0.3,
-  variation = 0.9,
+  properties = {
+    contrast = -0.3,
+    variation = 0.9,
+  },
 })
 ```
 
@@ -45,7 +49,9 @@ xeno.theme('xeno-sylvan', {
 xeno.theme('xeno-onyx', {
   background = '#161616',
   accent = '#dbdbdb',
-  variation = 0.8,
+  properties = {
+    variation = 0.8,
+  },
 })
 ```
 
@@ -55,9 +61,11 @@ xeno.theme('xeno-onyx', {
 xeno.theme('xeno-emerald', {
   background = '#1c3029',
   accent = '#49b27f',
-  variation = 0.7,
-  chroma = 0.1,
-  lightness = 0.1,
+  properties = {
+    variation = 0.7,
+    chroma = 0.1,
+    lightness = 0.1,
+  },
 })
 ```
 
@@ -67,7 +75,7 @@ xeno.theme('xeno-emerald', {
 **lazy.nvim**
 ```lua
 {
-  'kyza0d/xeno.nvim',
+  'kyzadev/xeno.nvim',
   config = function()
     local xeno = require('xeno')
 
@@ -90,7 +98,7 @@ xeno.theme('xeno-emerald', {
 **mini.deps**
 ```lua
 local MiniDeps = require('mini.deps')
-MiniDeps.add('kyza0d/xeno.nvim')
+MiniDeps.add('kyzadev/xeno.nvim')
 
 local xeno = require('xeno')
 
@@ -119,10 +127,12 @@ xeno.setup({
   accent = '#7aa2f7',      -- Accent color
 
   -- Color adjustments
-  variation = 0.0,   -- Hue variation (-1.0 to 1.0)
-  chroma = 0.0,      -- Saturation adjustment (-1.0 to 1.0)
-  lightness = 0.0,   -- Lightness adjustment (-1.0 to 1.0)
-  contrast = 0.0,    -- Contrast adjustment (-1.0 to 1.0)
+  properties = {
+    contrast = 0.0,    -- Contrast adjustment (-1.0 to 1.0)
+    variation = 0.0,   -- Hue variation (-1.0 to 1.0)
+    chroma = 0.0,      -- Saturation adjustment (-1.0 to 1.0)
+    lightness = 0.0,   -- Lightness adjustment (-1.0 to 1.0)
+  },
 
   transparent = false,  -- Transparent background
 

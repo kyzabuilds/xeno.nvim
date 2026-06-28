@@ -4,12 +4,12 @@ local helpers = require("xeno.core.helpers")
 
 function M.generate_editor_highlights(colors, config)
   return {
-    Normal = { bg = colors.background_950, fg = colors.foreground_50 },
-    NormalNC = { bg = colors.background_950, fg = colors.foreground_100 },
-    Visual = { bg = utils.opaque(colors.background_600, 0.20) },
+    Normal = { bg = colors.background_950, fg = colors.foreground_200 },
+    NormalNC = { bg = colors.background_950, fg = colors.foreground_200 },
+    Visual = { bg = utils.opaque(colors.background_600, 0.40) },
 
     NormalFloat = { fg = colors.foreground_100, bg = colors.background_900 },
-    FloatBorder = { fg = colors.background_800, bg = colors.background_900 },
+    FloatBorder = { fg = colors.background_700, bg = colors.background_900 },
     FloatTitle = { fg = colors.foreground_50, bg = colors.background_900 },
 
     ColorColumn = { bg = colors.background_900 },
@@ -29,15 +29,15 @@ function M.generate_editor_highlights(colors, config)
     WarningMsg = { fg = colors.yellow },
     MoreMsg = { fg = colors.green },
 
-    Search = { bg = utils.opaque(colors.background_600, 0.15) },
+    Search = { bg = utils.opaque(colors.background_600, 0.30) },
     IncSearch = { link = "Cursor" },
-    CurSearch = { bg = utils.opaque(colors.background_600, 0.40) },
+    CurSearch = { bg = utils.opaque(colors.background_600, 0.50) },
 
     MatchParen = { fg = colors.accent_100, bold = true },
     NonText = { fg = colors.foreground_400 },
 
-    Pmenu = { bg = colors.background_800, fg = colors.foreground_100 },
-    PmenuSel = { bg = colors.background_700, bold = false, reverse = false },
+    Pmenu = { bg = colors.background_700, fg = colors.foreground_300 },
+    PmenuSel = { bg = colors.background_600, bold = false, reverse = false },
     PmenuSbar = { bg = colors.background_950 },
     PmenuThumb = { bg = colors.background_700 },
 
@@ -58,7 +58,7 @@ function M.generate_editor_highlights(colors, config)
     Title = { fg = colors.foreground_50, bold = true },
     VisualNOS = { bg = colors.background_900 },
 
-    WinSeparator = { fg = colors.background_800 },
+    WinSeparator = { fg = colors.background_700 },
     WhiteSpace = { fg = colors.foreground_400 },
     WinBar = helpers.with_borders({ bg = colors.background_900, fg = colors.foreground_300, sp = colors.background_800 }, config),
     WinBarNC = helpers.with_borders({ bg = colors.background_900, fg = colors.foreground_300, sp = colors.background_800 }, config),

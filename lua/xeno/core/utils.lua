@@ -30,6 +30,23 @@ utils.extend = function(method, t1, t2)
   return vim.tbl_deep_extend(method or "force", {}, vim.deepcopy(t1 or {}), vim.deepcopy(t2 or {}))
 end
 
+--- Theme knobs live under a `properties` table in the public API. Lift them into
+--- flat top-level config fields so downstream palette code reads them uniformly.
+--- Flat fields stay supported as a fallback for backward compatibility.
+--- @param config table The config to normalize in place.
+--- @return table config The same table, with knobs flattened.
+utils.normalize_properties = function(config)
+  if type(config) ~= "table" or type(config.properties) ~= "table" then
+    return config
+  end
+  for _, key in ipairs({ "contrast", "chroma", "lightness", "variation" }) do
+    if config.properties[key] ~= nil then
+      config[key] = config.properties[key]
+    end
+  end
+  return config
+end
+
 --- Convert a hex color string to RGB values.
 --- @param hex string The hex color string (e.g., "#RRGGBB", "RRGGBB", "#RGB", "RGB").
 --- @return number? r Red component (0-255) or nil on failure.
@@ -109,9 +126,52 @@ end
 --- @param colors? table Optional colors table to derive background from
 --- @return string The blended hex color string
 utils.opaque = function(fg_color, opacity, bg_color, colors)
-  -- Set default values for optional parameters
-  bg_color = bg_color or nil
   colors = colors or require("xeno").colors
+  local resolver = require("xeno.core.resolver")
+
+  -- Resolve @color.level references, with on-demand scale generation for custom
+  -- colors that aren't in xeno.colors yet (e.g. registered after setup()).
+  -- Uses current vim.o.background so light/dark variant is always correct.
+  local function resolve_with_custom_fallback(ref)
+    local resolved = resolver.resolve_value(ref, colors)
+    if not resolver.is_color_reference(resolved) then
+      return resolved
+    end
+    -- Resolution failed — check if it's a registered custom color family
+    local family = ref:match("^@([%w_]+)%.") or ref:match("^@([%w_]+)$")
+    local xeno_mod = require("xeno")
+    local custom_hex = xeno_mod._custom_colors and xeno_mod._custom_colors[family]
+    if custom_hex then
+      local cfg = xeno_mod._global_config or {}
+      local scale = require("xeno.core.palette").generate_custom_scale(custom_hex, family, {
+        contrast  = cfg.contrast,
+        chroma    = cfg.chroma or 0,
+        lightness = cfg.lightness or 0,
+        variation = cfg.variation,
+      })
+      for k, v in pairs(scale) do
+        colors[k] = v
+      end
+      resolved = resolver.resolve_value(ref, colors)
+    end
+    return resolved
+  end
+
+  if type(fg_color) == "string" and resolver.is_color_reference(fg_color) then
+    local resolved = resolve_with_custom_fallback(fg_color)
+    if resolver.is_color_reference(resolved) then
+      log_warn(fmt("utils.opaque: Could not resolve color reference '%s'", fg_color))
+      return "#000000"
+    end
+    fg_color = resolved
+  end
+  if type(bg_color) == "string" and resolver.is_color_reference(bg_color) then
+    local resolved = resolve_with_custom_fallback(bg_color)
+    if not resolver.is_color_reference(resolved) then
+      bg_color = resolved
+    end
+    -- on failure, fall through to normal bg derivation
+  end
 
   -- Validate inputs
   if type(fg_color) ~= "string" then

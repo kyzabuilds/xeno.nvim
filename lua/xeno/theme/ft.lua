@@ -73,27 +73,23 @@ function M.setup(ft_config, colors, config)
     callback = function()
       local ft = vim.bo.filetype
       local wh_string = ft_map[ft]
-
-      if wh_string then
-        vim.schedule(function()
-          if not vim.api.nvim_buf_is_valid(0) then
-            return
-          end
-          if vim.bo.filetype ~= ft then
-            return
-          end
-
-          local current = vim.wo.winhighlight
-          -- Avoid appending duplicates if this autocommand fires multiple times
-          if not string.find(current, wh_string, 1, true) then
-            if current ~= "" then
-              vim.wo.winhighlight = current .. "," .. wh_string
-            else
-              vim.wo.winhighlight = wh_string
-            end
-          end
-        end)
+      if not wh_string then
+        return
       end
+
+      -- Defer so we win against plugins (e.g. neo-tree) that replace
+      -- winhighlight wholesale in their own synchronous BufWinEnter handler.
+      local win = api.nvim_get_current_win()
+      vim.schedule(function()
+        if not api.nvim_win_is_valid(win) then
+          return
+        end
+        local current = vim.wo[win].winhighlight
+        if string.find(current, wh_string, 1, true) then
+          return
+        end
+        vim.wo[win].winhighlight = current ~= "" and (current .. "," .. wh_string) or wh_string
+      end)
     end,
   })
 end

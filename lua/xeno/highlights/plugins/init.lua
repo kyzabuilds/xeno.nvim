@@ -148,8 +148,8 @@ end
 M["Saghen/blink.cmp"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    label_fg = colors.foreground_200,
-    match_fg = colors.foreground_200,
+    label_fg = colors.foreground_300,
+    match_fg = colors.accent_300,
     kind_fg = colors.foreground_300,
     source_fg = colors.foreground_300,
   }
@@ -340,7 +340,7 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
     -- Filetypes
     ["neo-tree"] = function()
       return {
-        Visual = { bg = colors.background_800 },
+        Visual = { bg = colors.background_700 },
       }
     end,
 
@@ -362,7 +362,7 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
     NeoTreeTabSeparatorInactive = { fg = colors.background_800, bg = colors.background_900 },
 
     -- Selection and Navigation
-    NeoTreeCursorLine = { bg = utils.opaque(colors.background_600, 0.30) },
+    NeoTreeCursorLine = { bg = colors.background_700 },
     NeoTreeIndentMarker = { fg = utils.opaque(colors.foreground_400, 0.40), nocombine = true },
 
     -- File System Elements
@@ -1568,7 +1568,7 @@ end
 M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
   -- Default configuration
   local config = {
-    handle_bg = utils.opaque(colors.background_600, 0.30),
+    handle_bg = utils.opaque(colors.background_500, 0.80),
     git_add_fg = colors.green,
     git_change_fg = colors.yellow,
     git_delete_fg = colors.red,
@@ -1611,11 +1611,11 @@ M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
 
     -- Search indicators
     ScrollbarSearch = { fg = colors.foreground_50 },
-    ScrollbarSearchHandle = { fg = colors.foreground_50, bg = utils.opaque(colors.background_600, 0.30) },
+    ScrollbarSearchHandle = { fg = colors.foreground_50, bg = utils.opaque(colors.background_500, 0.80) },
 
     -- Cursor position indicator
     ScrollbarCursor = { fg = colors.foreground_300 },
-    ScrollbarCursorHandle = { fg = colors.foreground_300, bg = utils.opaque(colors.background_600, 0.30) },
+    ScrollbarCursorHandle = { fg = colors.foreground_300, bg = utils.opaque(colors.background_600, 0.80) },
   }
 end
 
