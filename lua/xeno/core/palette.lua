@@ -20,19 +20,43 @@ local OKLCH_LIGHTNESS_SCALES = {
     [950] = 0.14,
   },
   light = {
-    [50] = 0.3, -- Very dark (for accents/highlights)
-    [100] = 0.13, -- Dark
+    [50] = 0.04, -- Very dark (for accents/highlights)
+    [100] = 0.12, -- Dark
     [200] = 0.18, -- Dark
-    [300] = 0.33, -- Dark (for text)
-    [400] = 0.43, -- Medium-dark
-    [500] = 0.48, -- Neutral (same)
-    [600] = 0.68, -- Medium-light
+    [300] = 0.34, -- Dark (for text)
+    [400] = 0.42, -- Medium-dark
+    [500] = 0.66, -- Neutral (same)
+    [600] = 0.72, -- Medium-light
     [700] = 0.78, -- Light
-    [800] = 0.83, -- Light
+    [800] = 0.84, -- Light
     [900] = 0.88, -- Very light (for backgrounds)
     [950] = 0.96, -- Lightest
   },
 }
+
+-- On the light variant, the accent family's low levels (100-300, used heavily
+-- by syntax highlighting) sit at OKLCH lightness values so dark that the sRGB
+-- gamut only permits a sliver of chroma before clipping — colors collapse
+-- toward near-black regardless of hue. These overrides move those levels into
+-- the mid-lightness band where far more chroma survives, so syntax colors stay
+-- visibly distinct and vibrant instead of muddy. Foreground/background scales
+-- are untouched; only the accent family (custom colors included) uses this.
+local ACCENT_LIGHTNESS_OVERRIDES = {
+  light = {
+    [100] = 0.34,
+    [200] = 0.40,
+    [300] = 0.46,
+    [400] = 0.52,
+  },
+}
+
+-- Deliberately out-of-gamut at every hue and lightness this module produces
+-- (sRGB chroma tops out well under this in OKLCH). Feeding it through
+-- oklch2hex's gamut mapping always resolves to the maximum saturation actually
+-- achievable for that lightness/hue, rather than whatever chroma the seed
+-- color happened to carry — so overridden accent levels render as vivid as
+-- physically possible instead of inheriting an under-saturated seed.
+local ACCENT_CHROMA_BOOST = 0.5
 
 local FAMILY_LEVELS = {
   foreground = { 50, 100, 200, 300, 400 },
@@ -221,13 +245,32 @@ local function resolve_foreground_lightness(theme, base_lightness, chroma, hue, 
   return lower_bound
 end
 
+local function resolve_lightness_scale(theme, use_accent_overrides)
+  local base_scale = OKLCH_LIGHTNESS_SCALES[theme]
+  local overrides = use_accent_overrides and ACCENT_LIGHTNESS_OVERRIDES[theme]
+
+  if not overrides then
+    return base_scale
+  end
+
+  local merged = {}
+  for level, value in pairs(base_scale) do
+    merged[level] = value
+  end
+  for level, value in pairs(overrides) do
+    merged[level] = value
+  end
+
+  return merged
+end
+
 -- OKLCH color scale generator
 -- OKLCH lightness is perceptually linear, providing uniform color scales
-local function generate_color_scale_oklch(color, options, levels)
+local function generate_color_scale_oklch(color, options, levels, use_accent_overrides)
   options = options or {}
   levels = levels or FAMILY_LEVELS.accent
   local theme = get_theme_variant()
-  local lightness_scale = OKLCH_LIGHTNESS_SCALES[theme]
+  local lightness_scale = resolve_lightness_scale(theme, use_accent_overrides)
   local scale = {}
 
   -- Convert input color to OKLCH (preserves hue and chroma)
@@ -237,13 +280,19 @@ local function generate_color_scale_oklch(color, options, levels)
     return {}
   end
 
+  local accent_overrides = use_accent_overrides and ACCENT_LIGHTNESS_OVERRIDES[theme]
+
   for _, level in ipairs(levels) do
     local base_lightness = lightness_scale[level]
     local contrasted_L = adjust_lightness_for_contrast(base_lightness, options.contrast, theme)
     local adjusted_L = adjust_lightness(contrasted_L, options.lightness)
-    local adjusted_C = adjust_chroma(C_input, options.chroma)
 
-    -- Use input color's chroma and hue, only adjust lightness
+    -- Overridden levels boost toward the gamut-max chroma for this hue/lightness
+    -- instead of preserving the seed color's own (possibly mild) chroma.
+    local chroma_base = (accent_overrides and accent_overrides[level]) and ACCENT_CHROMA_BOOST or C_input
+    local adjusted_C = adjust_chroma(chroma_base, options.chroma)
+
+    -- Use input color's hue, adjust lightness and (for boosted levels) chroma
     -- OKLCH naturally handles all hues uniformly, no need for special cases
     scale[level] = utils.oklch2hex(adjusted_L, adjusted_C, H)
   end
@@ -264,8 +313,8 @@ local function improve_semantic_color(color, theme, chroma_option, lightness_opt
 end
 
 -- Rename the OKLCH generator to be the main generator
-local function generate_color_scale(color, options, levels)
-  return generate_color_scale_oklch(color, options, levels)
+local function generate_color_scale(color, options, levels, use_accent_overrides)
+  return generate_color_scale_oklch(color, options, levels, use_accent_overrides)
 end
 
 local function generate_foreground_scale(color, background_scale, options)
@@ -339,7 +388,7 @@ end
 --- @return table Flat table of name_50..name_600 hex values
 function M.generate_custom_scale(hex, name, options)
   options = options or {}
-  local scale = generate_color_scale(hex, options, FAMILY_LEVELS.accent)
+  local scale = generate_color_scale(hex, options, FAMILY_LEVELS.accent, true)
   local colors = {}
   add_scale_to_colors(colors, scale, name)
   return colors
@@ -382,7 +431,7 @@ function M.generate_palette(config)
   -- Generate all color scales
   local background_scale = generate_color_scale(background_color, scale_options.standard, FAMILY_LEVELS.background)
   local foreground_scale = generate_foreground_scale(foreground_color, background_scale, scale_options.standard)
-  local accent_scale = generate_color_scale(accent_color, scale_options.standard, FAMILY_LEVELS.accent)
+  local accent_scale = generate_color_scale(accent_color, scale_options.standard, FAMILY_LEVELS.accent, true)
 
   local scales = {
     { scale = foreground_scale, prefix = "foreground" },
@@ -413,7 +462,7 @@ function M.generate_palette(config)
     end
 
     for name, hex_value in pairs(custom_colors_to_include) do
-      local custom_scale = generate_color_scale(hex_value, scale_options.standard, FAMILY_LEVELS.accent)
+      local custom_scale = generate_color_scale(hex_value, scale_options.standard, FAMILY_LEVELS.accent, true)
       add_scale_to_colors(colors, custom_scale, name)
     end
   end

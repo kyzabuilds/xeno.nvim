@@ -469,36 +469,73 @@ utils.hex2oklch = function(hex)
   return L, C, H
 end
 
+--- Convert OKLCH lightness/chroma/hue to linear sRGB, without gamma correction
+--- or gamut clamping. Used internally to probe whether a color is in gamut.
+--- @param L number Lightness [0, 1].
+--- @param C number Chroma [0, 0.4+].
+--- @param H number Hue [0, 360) degrees.
+--- @return number r Linear red (may be outside [0, 1] if out of gamut).
+--- @return number g Linear green (may be outside [0, 1] if out of gamut).
+--- @return number b Linear blue (may be outside [0, 1] if out of gamut).
+local function oklch2linear_rgb(L, C, H)
+  local Lab_L, a, b = utils.oklch2oklab(L, C, H)
+  return utils.oklab2linear_rgb(Lab_L, a, b)
+end
+
+local GAMUT_EPSILON = 1e-4
+
+local function in_srgb_gamut(r, g, b)
+  return r >= -GAMUT_EPSILON
+    and r <= 1 + GAMUT_EPSILON
+    and g >= -GAMUT_EPSILON
+    and g <= 1 + GAMUT_EPSILON
+    and b >= -GAMUT_EPSILON
+    and b <= 1 + GAMUT_EPSILON
+end
+
 --- Convert OKLCH color to hex string.
 --- Complete pipeline: OKLCH → OKLab → Linear RGB → RGB → Hex
---- Uses simple clamping for gamut mapping.
+--- When the requested chroma falls outside the sRGB gamut at this lightness/hue,
+--- chroma is reduced via binary search until it fits. This preserves lightness and
+--- hue (unlike naive per-channel clamping, which can shift hue and mute colors
+--- toward gray), so out-of-gamut requests render as the most saturated in-gamut
+--- color available for that lightness/hue instead of a muddied clip.
 --- @param L number Lightness [0, 1].
 --- @param C number Chroma [0, 0.4+].
 --- @param H number Hue [0, 360) degrees.
 --- @return string Hex color string (e.g., "#5B8DEF").
 utils.oklch2hex = function(L, C, H)
-  -- OKLCH → OKLab
-  local a, b
-  L, a, b = utils.oklch2oklab(L, C, H)
+  local r, g, b = oklch2linear_rgb(L, C, H)
 
-  -- OKLab → Linear RGB
-  local r, g, b_lin = utils.oklab2linear_rgb(L, a, b)
+  if C > 0 and not in_srgb_gamut(r, g, b) then
+    local lo, hi = 0, C
+    for _ = 1, 20 do
+      local mid = (lo + hi) / 2
+      local mr, mg, mb = oklch2linear_rgb(L, mid, H)
+      if in_srgb_gamut(mr, mg, mb) then
+        lo = mid
+      else
+        hi = mid
+      end
+    end
+    r, g, b = oklch2linear_rgb(L, lo, H)
+  end
 
   -- Linear RGB → RGB (gamma correction)
   r = utils.linear2rgb(r)
   g = utils.linear2rgb(g)
-  b_lin = utils.linear2rgb(b_lin)
+  b = utils.linear2rgb(b)
 
   -- Normalize to [0, 255]
   r = r * 255
   g = g * 255
-  b_lin = b_lin * 255
+  b = b * 255
 
-  -- Clamp to valid RGB range for gamut mapping
-  r, g, b_lin = utils.rgb_clamp(r, g, b_lin)
+  -- Final clamp mops up floating-point residue from the gamut search above.
+  r, g, b = utils.rgb_clamp(r, g, b)
 
   -- RGB → Hex
-  return utils.rgb2hex(r, g, b_lin)
+  return utils.rgb2hex(r, g, b)
 end
 
 return utils
