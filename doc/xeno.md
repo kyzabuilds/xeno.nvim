@@ -2,7 +2,7 @@
 
 Minimalist colorscheme generator for Neovim.
 
-**Author:** kyza0d
+**Author:** kyzabuilds
 **License:** Same terms as Vim itself
 
 ## Table of Contents
@@ -46,7 +46,7 @@ xeno.nvim generates a complete colorscheme from three color seeds:
 
 ```lua
 {
-  'kyza0d/xeno.nvim',
+  'kyzabuilds/xeno.nvim',
   lazy = false,
   priority = 1000,
   config = function()
@@ -63,7 +63,7 @@ xeno.nvim generates a complete colorscheme from three color seeds:
 
 ```lua
 local MiniDeps = require('mini.deps')
-MiniDeps.add('kyza0d/xeno.nvim')
+MiniDeps.add('kyzabuilds/xeno.nvim')
 
 require('xeno').setup({
   background = '#1E1E1E',

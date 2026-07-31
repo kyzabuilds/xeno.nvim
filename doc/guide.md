@@ -74,13 +74,33 @@ Lightness per level (dark variant), lower number = lighter:
 So `@accent.50` ≈ white, `@background.950` ≈ black. **Low numbers for prominent
 foreground text, high numbers for backgrounds.**
 
+A good theme uses the *range*, not just one or two levels per family — each
+step down the scale should read as a deliberate step in visual weight, not an
+accident of what was closest to hand:
+
+| Level band | Reads as | Typical use |
+| --- | --- | --- |
+| `50`/`100` | brightest, most eye-catching | deliberate emphasis: literals you want to pop — numbers, strings, booleans, constants |
+| `200`/`300` | clear, legible, "normal code color" | the bulk of syntax — keywords, functions, types, properties |
+| `400` | receded, quiet | comments, punctuation, low-priority variables |
+| `500`/`600` | near-background weight | rarely used as `fg`; mostly `bg` on custom/accent families for subtle fills |
+
+**Shade `100` in particular is your emphasis lever.** It's brighter than the
+"normal" `200`/`300` band but not as flat/white as `50`, so it reads as
+"important" without looking like an error highlight. Reach for it on tokens you
+want to visually lead the eye — numbers and strings are the classic case, since
+they're semantically distinct from surrounding logic and benefit from standing
+out at a glance. Don't apply it broadly, though — if everything is `100`,
+nothing pops; reserve it for the two or three token kinds that should actually
+lead.
+
 ### Referencing in a spec
 
 A highlight value is a normal `nvim_set_hl` table, except `fg`/`bg`/`sp` accept
 `@family.level` references:
 
 ```lua
-['@string']  = { fg = '@green.300' },     -- explicit shade
+['@string']  = { fg = '@green.100' },     -- explicit bright shade for emphasis
 ['@keyword'] = { fg = '@accent' },        -- no level → nearest shade to 500 (see gotcha below)
 ['Type']     = { link = '@type' },        -- a real link; link targets are NOT reinterpreted
 ['@spell']   = { clear = true },          -- apply an empty group
@@ -90,7 +110,7 @@ A highlight value is a normal `nvim_set_hl` table, except `fg`/`bg`/`sp` accept
 **No-level gotcha:** `@family` with no level resolves to the shade nearest L 0.50
 (~500). If your seed is already bright (a pastel green at L≈0.82), level 500 is
 *much darker* than the seed, so `@green` renders dim. For bright seeds on
-prominent tokens, reference an explicit light level (`@green.300`/`.200`).
+prominent tokens, reference an explicit light level (`@green.300`/`.200`/`.100`).
 Reserve no-level `@family` for seeds already near mid-lightness. This is the #1
 reason a theme "looks darker than its reference."
 
@@ -151,17 +171,30 @@ carry no color: `{ clear = true }` and `{ bg = 'NONE' }`.
 
 Neovim resolves a token through three layers: Vim syntax (`Keyword`,
 `Function`, … — lowest) → Treesitter (`@keyword`, … — priority 100) → LSP
-semantic tokens (`@lsp.type.*` — 125–127, highest). When an LSP attaches and
-`@lsp.type.variable` has a *different color* than `@variable`, every variable
-snaps to a new color the instant it connects — a jarring "pop-in," maximally
-visible because variables are the most common token.
+semantic tokens (`@lsp.type.*`, `@lsp.mod.*`, `@lsp.typemod.*.*` — 125–127,
+highest). When an LSP attaches and a semantic group has a *different color* than
+the Treesitter capture already on screen, the token snaps to a new color the
+instant it connects — a jarring "pop-in," maximally visible on high-frequency
+tokens like variables and properties.
 
-**Rule: any `@lsp.type.*` you touch must be `{ clear = true }` or
-`{ link = "<its treesitter equivalent>" }` — never a distinct color.**
+**Rule: any `@lsp.type.*` or `@lsp.typemod.*.*` you touch must be
+`{ clear = true }` or `{ link = "<its treesitter equivalent>" }` — never a
+distinct color. Modifier-only groups such as `@lsp.mod.declaration` should be
+cleared unless you intentionally want style-only emphasis.**
 
 ```lua
 ['@variable']          = { fg = '@foreground.100' },
 ['@lsp.type.variable'] = { link = '@variable' },   -- all layers agree → no pop-in
+```
+
+For declaration/readonly/etc. semantic overlays, mirror the final type+modifier
+group too. A TSX property declaration can arrive as all of these at once:
+
+```lua
+['@property'] = { link = 'Property' },
+['@lsp.type.property'] = { link = '@property' },
+['@lsp.mod.declaration'] = { clear = true },
+['@lsp.typemod.property.declaration'] = { link = '@property' },
 ```
 
 xeno's defaults already do this; only re-assert the link when you override the
@@ -183,6 +216,13 @@ underlying capture and want a non-default color.
   it. Impossible to drift, easy to retune.
 - **Links must be semantically right** — `@constructor → @punctuation` is wrong
   even if the color happens to fit.
+- **Use the full shade range on purpose.** A theme that only ever reaches for
+  one or two levels per family (always `.300`, never anything else) looks flat
+  no matter how good the seeds are. Let level choice *do work*: `100` for the
+  handful of tokens that should visually lead (numbers, strings — see §2),
+  `200`/`300` for the everyday bulk of syntax, `400` for things that should
+  recede (comments, punctuation). The spread across levels is itself part of
+  the theme's visual hierarchy, not just a fallback for when a color looks off.
 
 ### d. Editor vs syntax
 
@@ -207,10 +247,13 @@ emphasis (numbers, constants, builtins); a muted violet marks keywords. That
 warm/cool tension is the identity — the trick any coherent palette uses.
 
 Note the rules in action: custom families registered first; muted base via
-`contrast`/`chroma`; strings use an explicit light level (`.300`) per the gotcha;
-each concept defined once as a primitive with everything linked to it (DRY), so
-an exception like `@function.builtin` is a one-line override and the rest stays
-in sync.
+`contrast`/`chroma`; literals (`Number`, `String`, `Boolean`) pulled up to `.100`
+for emphasis per the gotcha and the "use the full range" rule in §3c, while the
+everyday bulk of syntax (`Function`, `Type`, `Property`) sits at `.300`/`.200`
+and low-priority tokens (`Comment`, `@constructor`) recede to `.400`; each
+concept defined once as a primitive with everything linked to it (DRY), so an
+exception like `@function.builtin` is a one-line override and the rest stays in
+sync.
 
 ```lua
 xeno.color('teal', '#5fb3a1'); xeno.color('aqua', '#7fd1c0'); xeno.color('sky', '#8fc8e8')
@@ -228,23 +271,25 @@ xeno.theme('verdigris', {
     editor = {
       Normal = { fg = '@foreground.300' },
       LineNr = { fg = '@foreground.300' },
-      CursorLineNr = { fg = '@copper', bold = true },
-      MatchParen = { fg = '@copper', bold = true },
+      CursorLineNr = { fg = '@copper.100', bold = true },
+      MatchParen = { fg = '@copper.100', bold = true },
     },
     syntax = {
-      -- Primitives: each concept once.
+      -- Primitives: each concept once. Level chosen deliberately per §3c —
+      -- .100 for tokens that should lead, .200/.300 for the everyday bulk,
+      -- .400 for tokens that should recede.
       Comment = { fg = '@foreground.400', italic = true },
-      Keyword = { fg = '@violet' },
-      Conditional = { fg = '@lilac' },
-      Function = { fg = '@teal' },
-      Type = { fg = '@aqua' },
-      String = { fg = '@moss.300' },
-      Number = { fg = '@copper' },
-      Boolean = { fg = '@copper' },
+      Keyword = { fg = '@violet.300' },
+      Conditional = { fg = '@lilac.300' },
+      Function = { fg = '@teal.300' },
+      Type = { fg = '@aqua.200' },
+      String = { fg = '@moss.100' },
+      Number = { fg = '@copper.100' },
+      Boolean = { fg = '@copper.100' },
       Variable = { fg = '@foreground.300' },
-      Property = { fg = '@sage' },
-      Operator = { fg = '@sky' },
-      Punctuation = { fg = '@foreground.300' },
+      Property = { fg = '@sage.300' },
+      Operator = { fg = '@sky.300' },
+      Punctuation = { fg = '@foreground.400' },
 
       -- Captures: link to primitives, or override for a different intent.
       ['@keyword'] = { link = 'Keyword' },
@@ -252,18 +297,21 @@ xeno.theme('verdigris', {
       ['@keyword.function'] = { link = 'Conditional' },
       ['@keyword.conditional'] = { link = 'Conditional' },
       ['@keyword.repeat'] = { link = 'Conditional' },
-      ['@keyword.operator'] = { fg = '@sky' },
+      ['@keyword.operator'] = { fg = '@sky.300' },
       ['@keyword.import'] = { fg = '@cyan.400' },
 
       ['@function'] = { link = 'Function' },
-      ['@function.builtin'] = { fg = '@aqua' },
+      ['@function.builtin'] = { fg = '@aqua.100' },
       ['@type'] = { link = 'Type' },
       ['@string'] = { link = 'String' },
+      ['@string.escape'] = { fg = '@amber.100' },
       ['@number'] = { link = 'Number' },
       ['@boolean'] = { link = 'Boolean' },
+      ['@constant'] = { fg = '@amber.100' },
+      ['@constant.builtin'] = { fg = '@amber.100', bold = true },
 
       ['@variable'] = { link = 'Variable' },
-      ['@variable.builtin'] = { fg = '@rose' },
+      ['@variable.builtin'] = { fg = '@rose.200' },
       ['@property'] = { link = 'Property' },
       ['@constructor'] = { fg = '@foreground.400' },
       ['@lsp.type.variable'] = { link = '@variable' },
@@ -288,8 +336,12 @@ xeno.theme('verdigris', {
       `'NONE'`/`clear` (§3a).
 - [ ] UI surface backgrounds use `@background.*`, not hardcoded darks.
 - [ ] Bright seeds on prominent tokens use an explicit light level (§2 gotcha).
+- [ ] Literals you want to lead the eye (numbers, strings, and similar) use
+      `.100` deliberately, not just "whatever level looked closest" (§2, §3c).
+- [ ] The palette spans the range — some tokens at `.100`, most at `.200`/`.300`,
+      receded tokens at `.400` — rather than everything sitting on one level.
 - [ ] Themed through `@`-captures; legacy groups only as `link` fallbacks (§3c).
 - [ ] Whole families covered — no half-colored keyword/literal sets.
 - [ ] `@variable` kept near foreground unless deliberately loud.
-- [ ] Every overridden `@lsp.type.*` is `clear` or `link`s to its capture (§3b).
+- [ ] Every overridden `@lsp.type.*`/`@lsp.typemod.*.*` is `clear` or `link`s to its capture (§3b).
 - [ ] Loaded it and checked real code with an LSP attached — no pop-in.

@@ -1,11 +1,10 @@
 <img title="xeno banner" alt="xeno banner" src="./media/banner.png">
 
 <p align='center'>
-  <a href="examples.md">Examples</a> | <a href="plugins.md">Plugins</a>
+  <a href="doc/examples.md">Examples</a> | <a href="doc/plugins.md">Plugins</a> | <a href="doc/guide.md">Guide</a>
 </p>
 
-
-## Key Features
+<br/>
 
 - **Automatic Light/Dark Mode** - Seamlessly adapts to `vim.o.background` changes
 - **Background-Derived Foreground** - Foreground shades default to the background seed's hue/chroma and can still be overridden explicitly
@@ -16,66 +15,34 @@
 - **Plugin Integration** - Built-in support for 23 popular plugins
 - **Terminal Integration** - Automatic Ghostty terminal color synchronization
 
-## Preview
+<br/>
 
-<img title="xeno-latte" alt="xeno-latte" src="./media/xeno-latte.png">
+## Examples
 
-```lua
-xeno.theme('xeno-latte', {
-  background = '#14110f',
-  accent = '#bf8f7f',
-  properties = {
-    variation = 0.9,
-  },
-})
-```
+<details open>
+<summary>Sylvan</summary>
 
-<img title="xeno-sylvan" alt="xeno-sylvan" src="./media/xeno-sylvan.png">
+<img title="Sylvan" alt="Sylvan" src="./media/sylvan.png">
 
 ```lua
-xeno.theme('xeno-sylvan', {
+xeno.theme('sylvan', {
   background = '#151615',
   accent = '#3b594e',
-  properties = {
-    contrast = -0.3,
-    variation = 0.9,
-  },
+  contrast = -0.3,
+  variation = 0.1,
 })
 ```
 
-<img title="xeno-onyx" alt="xeno-onyx" src="./media/xeno-onyx.png">
-
-```lua
-xeno.theme('xeno-onyx', {
-  background = '#161616',
-  accent = '#dbdbdb',
-  properties = {
-    variation = 0.8,
-  },
-})
-```
-
-<img title="xeno-emerald" alt="xeno-emerald" src="./media/xeno-emerald.png">
-
-```lua
-xeno.theme('xeno-emerald', {
-  background = '#1c3029',
-  accent = '#49b27f',
-  properties = {
-    variation = 0.7,
-    chroma = 0.1,
-    lightness = 0.1,
-  },
-})
-```
-
+</details>
 
 ## Installation
 
-**lazy.nvim**
+<details open>
+<summary>lazy.nvim</summary>
+
 ```lua
 {
-  'kyzadev/xeno.nvim',
+  'kyzabuilds/xeno.nvim',
   config = function()
     local xeno = require('xeno')
 
@@ -95,10 +62,14 @@ xeno.theme('xeno-emerald', {
 }
 ```
 
-**mini.deps**
+</details>
+
+<details>
+<summary>mini.deps</summary>
+
 ```lua
 local MiniDeps = require('mini.deps')
-MiniDeps.add('kyzadev/xeno.nvim')
+MiniDeps.add('kyzabuilds/xeno.nvim')
 
 local xeno = require('xeno')
 
@@ -115,6 +86,8 @@ xeno.setup({
 -- })
 -- vim.cmd('colorscheme my-theme')
 ```
+
+</details>
 
 ## Configuration
 
