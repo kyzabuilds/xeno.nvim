@@ -1,217 +1,232 @@
 <img title="xeno banner" alt="xeno banner" src="./media/banner.png">
 
 <p align='center'>
-  Colorscheme generator that creates minimalist themes using two colors.
+  <a href="doc/examples.md">Examples</a> | <a href="doc/plugins.md">Plugins</a> | <a href="doc/guide.md">Guide</a>
 </p>
 
 <br/>
 
-## Previews
+- **Automatic Light/Dark Mode** - Seamlessly adapts to `vim.o.background` changes
+- **Background-Derived Foreground** - Foreground shades default to the background seed's hue/chroma and can still be overridden explicitly
+- **Custom Color Families** - Define custom colors with `xeno.color()` that generate full shade ranges (`.50` - `.600`)
+- **Extensive Theming API** - Granular control over every highlight group with color references and plugin configurations
+- **Export Capabilities** - Generate standalone colorscheme files with `xeno.export()`
+- **Window Namespaces** - Apply different highlight variants to specific windows with `xeno.namespace()`
+- **Plugin Integration** - Built-in support for 23 popular plugins
+- **Terminal Integration** - Automatic Ghostty terminal color synchronization
 
-<img title="Preview" alt="Preview Lilypad" src="./media/theme-lily-pad.png">
+<br/>
+
+## Examples
+
+<details open>
+<summary>Sylvan</summary>
+
+<img title="Sylvan" alt="Sylvan" src="./media/sylvan.png">
 
 ```lua
-xeno.new_theme('xeno-lilypad', {
-  base = '#1E1E1E',
-  accent = '#8CBE8C',
-  contrast = 0.1,
+xeno.theme('sylvan', {
+  background = '#151615',
+  accent = '#3b594e',
+  contrast = -0.3,
+  variation = 0.1,
 })
 ```
 
-<img title="Preview" alt="Preview Pink Haze" src="./media/theme-pink-haze.png">
-
-```lua
-xeno.new_theme('xeno-pink-haze', {
-  base = '#0f0c0e',
-  accent = '#D19EBC',
-  contrast = 0.1,
-})
-
-```
-<img title="Preview" alt="Preview Golden Hour" src="./media/theme-golden-hour.png">
-
-```lua
-xeno.new_theme('xeno-golden-hour', {
-  base = '#11100f',
-  accent = '#FFCC33',
-  contrast = 0.1,
-})
-```
+</details>
 
 ## Installation
 
-<details>
-<summary><strong>lazy.nvim</strong> (recommended)</summary>
+<details open>
+<summary>lazy.nvim</summary>
 
 ```lua
 {
-  'kyza0d/xeno.nvim',
-  lazy = false,
-  priority = 1000, -- Load colorscheme early
+  'kyzabuilds/xeno.nvim',
   config = function()
-    -- Create your custom theme here
-    require('xeno').new_theme('my-theme', {
-      base = '#1E1E1E',
-      accent = '#8CBE8C',
-    })
-    vim.cmd('colorscheme my-theme')
-  end,
-}
-```
-
-</details>
-
-<details>
-<summary><strong>packer.nvim</strong></summary>
-
-```lua
-use {
-  'kyza0d/xeno.nvim',
-  config = function()
-    -- Create your custom theme
-    require('xeno').new_theme('my-theme', {
-      base = '#1E1E1E',
-      accent = '#8CBE8C',
-    })
-    vim.cmd('colorscheme my-theme')
-  end
-}
-```
-
-</details>
-
-<details>
-<summary><strong>vim-plug</strong></summary>
-
-```vim
-Plug 'kyza0d/xeno.nvim'
-```
-
-Then add to your `init.vim` or `init.lua`:
-```lua
--- Create your custom theme
-require('xeno').new_theme('my-theme', {
-  base = '#1E1E1E',
-  accent = '#8CBE8C',
-})
-vim.cmd('colorscheme my-theme')
-```
-
-</details>
-
-<details>
-<summary><strong>paq-nvim</strong></summary>
-
-```lua
-require "paq" {
-  'kyza0d/xeno.nvim';
-}
-```
-
-Then add to your config:
-```lua
--- Create your custom theme
-require('xeno').new_theme('my-theme', {
-  base = '#1E1E1E',
-  accent = '#8CBE8C',
-})
-vim.cmd('colorscheme my-theme')
-```
-
-</details>
-
-## Usage
-
-**Note:** xeno.nvim does not provide any default colorschemes. You must create your own themes using the configuration options below.
-
-### Basic Configuration
-
-```lua
--- Create a new theme
-require('xeno').new_theme('my-new-theme', {
-  base = '#1a1a1a',
-  accent = '#7aa2f7',
-})
-
-vim.cmd('colorscheme my-new-theme')
-```
-
-### Global Configuration Options
-
-Global configuration options affect all themes and are set using `xeno.config()`:
-
-```lua
--- Set global configuration options
-require('xeno').config({
-  -- Appearance adjustments
-  contrast = 0,            -- Adjust contrast (-1 to 1, 0 is default)
-  variation = 0,           -- Adjust color variation strength (-1 to 1, 0 is default)
-  transparent = false,     -- Enable transparent background
-})
-```
-
-### Plugin Manager Configuration
-
-Using [lazy.nvim](https://github.com/folke/lazy.nvim) with global options:
-
-```lua
-{
-  'kyza0d/xeno.nvim',
-  lazy = false,
-  priority = 1000,
-  opts = {
-    transparent = true,
-    contrast = 0.1,
-  },
-  config = function(_, opts)
     local xeno = require('xeno')
-    
-    xeno.config(opts)
-    
-    -- Create your custom theme
-    xeno.new_theme('my-theme', {
-      base = '#1E1E1E',
+
+    -- Method 1: Use xeno.setup() for direct configuration
+    xeno.setup({
+      background = '#1E1E1E',
       accent = '#8CBE8C',
     })
-    vim.cmd('colorscheme my-theme')
+
+    -- Method 2: Use xeno.theme() to generate a named colorscheme
+    -- xeno.theme('my-theme', {
+    --   background = '#1E1E1E',
+    --   accent = '#8CBE8C',
+    -- })
+    -- vim.cmd('colorscheme my-theme')
   end,
 }
 ```
 
-## FAQ
-
-<details>
-<summary><strong>What font is used in the preview images?</strong></summary>
-
-The previews use [Lotion](https://github.com/ninabelikova/lotion) - it's a cozy monospace font that works great for coding (it's my favorite)
-
 </details>
 
 <details>
-<summary><strong>Why doesn't xeno come with built-in themes?</strong></summary>
-
-The whole point is to create your own! xeno is designed to be a theme generator, not a collection of pre-made themes. This way you get exactly the colors you want instead of settling for someone else's choices.
-
-</details>
-
-<details>
-<summary><strong>Can I use more than two colors?</strong></summary>
-
-Not directly - xeno is built around the concept of minimalism with just a base and accent color. However, the generator creates various shades and tones from these two colors to provide sufficient contrast and variety throughout your editor.
-
-</details>
-
-<details>
-<summary><strong>No colors on tmux?</strong></summary>
-
-Try add this line of code to your config:
+<summary>mini.deps</summary>
 
 ```lua
-vim.cmd("set termguicolors")
+local MiniDeps = require('mini.deps')
+MiniDeps.add('kyzabuilds/xeno.nvim')
+
+local xeno = require('xeno')
+
+-- Method 1: Use xeno.setup() for direct configuration
+xeno.setup({
+  background = '#1E1E1E',
+  accent = '#8CBE8C',
+})
+
+-- Method 2: Use xeno.theme() to generate a named colorscheme
+-- xeno.theme('my-theme', {
+--   background = '#1E1E1E',
+--   accent = '#8CBE8C',
+-- })
+-- vim.cmd('colorscheme my-theme')
 ```
 
 </details>
 
-## Customization
+## Configuration
 
-MIT
+xeno doesn't ship a colorscheme. `xeno.setup()` only sets global defaults that every theme you create will fall back to — it does not itself register or apply a colorscheme. To get a usable `:colorscheme` you must define at least one with `xeno.theme('name', { ... })` and then run `vim.cmd('colorscheme name')`, as shown in the Installation examples above.
+
+### Basic Options
+
+`background` and `foreground` here are global seed colors, not a theme definition. They act as the fallback background/foreground used by any `xeno.theme()` that doesn't override them itself — they are not a way to "customize the colorscheme" on their own.
+
+```lua
+xeno.setup({
+  background = '#1a1a1a',  -- Global default background seed (fallback for all themes)
+  foreground = nil,        -- Global default foreground seed (derived from background if nil)
+  accent = '#7aa2f7',      -- Accent color
+
+  -- Color adjustments
+  properties = {
+    contrast = 0.0,    -- Contrast adjustment (-1.0 to 1.0)
+    variation = 0.0,   -- Hue variation (-1.0 to 1.0)
+    chroma = 0.0,      -- Saturation adjustment (-1.0 to 1.0)
+    lightness = 0.0,   -- Lightness adjustment (-1.0 to 1.0)
+  },
+
+  transparent = false,  -- Transparent background
+
+  -- Semantic colors (optional)
+  red = nil,
+  green = nil,
+  yellow = nil,
+  orange = nil,
+  blue = nil,
+  purple = nil,
+  cyan = nil,
+
+  -- UI decorations
+  decorations = {
+    borders = true,
+  },
+
+  -- Terminal integrations
+  integrations = {
+    ghostty = {
+      enabled = true,
+      update_config = true,
+    },
+  },
+})
+```
+
+### Custom Colors
+
+Define custom color families with full shade ranges:
+
+```lua
+local xeno = require('xeno')
+
+-- Define custom colors (generates .50 through .600 shades)
+xeno.color('my_purple', '#8b5cf6')
+xeno.color('accent_red', '#ef4444')
+
+xeno.setup({
+  background = '#1a1a1a',
+  accent = '#7aa2f7',
+  highlights = {
+    syntax = {
+      String = { fg = '@my_purple.300' },
+      Function = { fg = '@accent_red.500' },
+    },
+  },
+})
+```
+
+### Plugin Configuration
+
+Customize plugin themes using high-level options:
+
+```lua
+xeno.setup({
+  background = '#1a1a1a',
+  accent = '#7aa2f7',
+  highlights = {
+    plugins = {
+      ["nvim-telescope/telescope.nvim"] = {
+        bg = "@background.950",
+        fg = "@foreground.50",
+        border = "@accent.500",
+      },
+      ["akinsho/bufferline.nvim"] = {
+        selected_bg = "@background.700",
+        visible_bg = "@background.900",
+        separator = "@background.600",
+      },
+    },
+  },
+})
+```
+
+See [plugins.md](plugins.md) for all available plugin configuration options.
+
+### Advanced Features
+
+**Export Colorschemes**
+
+```lua
+-- Export current theme as a standalone colorscheme file
+xeno.export({
+  name = 'my-theme',
+  path = vim.fn.stdpath('config') .. '/colors',
+})
+```
+
+**Window Namespaces**
+
+Apply different highlight variants to specific windows:
+
+```lua
+-- Create a namespace with custom highlights
+local ns_id = xeno.namespace('sidebar', {
+  editor = {
+    Normal = { bg = '@background.950' },
+  },
+})
+
+-- Apply to a window
+xeno.set_window_namespace(vim.api.nvim_get_current_win(), 'sidebar')
+```
+
+**Color Access**
+
+```lua
+-- Get the color table
+local colors = xeno.get_colors()
+
+-- Shorthand access
+local bg = xeno.background_950
+local fg = xeno.foreground_50
+
+-- Use xeno.opaque() for transparency
+xeno.opaque(color, alpha, bg, colors)
+```
+
+See [examples.md](examples.md) for detailed configuration examples and complete theme showcases.

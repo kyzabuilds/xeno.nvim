@@ -1,5 +1,5 @@
 local M = {}
-local api, g, cmd, fn = vim.api, vim.g, vim.cmd, vim.fn
+local api, g, cmd = vim.api, vim.g, vim.cmd
 
 --- Apply transparency settings to specific highlight groups
 --- @param highlights table The highlights table to modify
@@ -12,12 +12,8 @@ local function apply_transparency(highlights, transparent)
   local transparent_groups = {
     "Normal",
     "NormalNC",
-    "WinBar",
-    "WinBarNC",
     "SignColumn",
     "EndOfBuffer",
-    "NormalFloat",
-    "FloatBorder",
     "NotifyBackground",
   }
 
@@ -29,24 +25,21 @@ local function apply_transparency(highlights, transparent)
 end
 
 function M.apply_highlights(highlights, config)
-  cmd("highlight clear")
-  if fn.exists("syntax_on") then
-    cmd("syntax reset")
+  if vim.g.colors_name then
+    cmd("highlight clear")
   end
 
-  -- Apply transparency if configured
+  vim.o.termguicolors = true
+
   apply_transparency(highlights, config.transparent)
 
-  -- Apply each highlight group
   for group, attrs in pairs(highlights) do
     if attrs.clear then
-      api.nvim_cmd({ cmd = "highlight", args = { "clear", group } }, {})
       attrs.clear = nil
+      api.nvim_set_hl(0, group, {})
     elseif attrs.link then
-      -- Handle linked groups
-      api.nvim_cmd({ cmd = "highlight", args = { "link", group, attrs.link } }, {})
+      api.nvim_set_hl(0, group, { link = attrs.link })
     else
-      -- Normal highlight definition
       api.nvim_set_hl(0, group, attrs)
     end
   end

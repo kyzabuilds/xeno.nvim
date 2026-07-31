@@ -30,6 +30,23 @@ utils.extend = function(method, t1, t2)
   return vim.tbl_deep_extend(method or "force", {}, vim.deepcopy(t1 or {}), vim.deepcopy(t2 or {}))
 end
 
+--- Theme knobs live under a `properties` table in the public API. Lift them into
+--- flat top-level config fields so downstream palette code reads them uniformly.
+--- Flat fields stay supported as a fallback for backward compatibility.
+--- @param config table The config to normalize in place.
+--- @return table config The same table, with knobs flattened.
+utils.normalize_properties = function(config)
+  if type(config) ~= "table" or type(config.properties) ~= "table" then
+    return config
+  end
+  for _, key in ipairs({ "contrast", "chroma", "lightness", "variation" }) do
+    if config.properties[key] ~= nil then
+      config[key] = config.properties[key]
+    end
+  end
+  return config
+end
+
 --- Convert a hex color string to RGB values.
 --- @param hex string The hex color string (e.g., "#RRGGBB", "RRGGBB", "#RGB", "RGB").
 --- @return number? r Red component (0-255) or nil on failure.
@@ -101,80 +118,154 @@ utils.rgb_clamp = function(r, g, b)
   return r, g, b
 end
 
---- Blend a color with the 'Normal' background color based on opacity.
---- @param color_source string Either a hex color (e.g., "#RRGGBB") or a highlight group name.
---- @param opacity number From 0.0 (fully transparent, shows Normal background) to 1.0 (fully opaque, shows input color).
---- @return string The new hex color string. Returns input color (if hex and resolvable) or black on critical failure.
-utils.opaque = function(color_source, opacity)
-  assert(color_source ~= nil, "utils.opaque: color_source must be provided (hex string or highlight group name).")
-  assert(
-    type(opacity) == "number" and opacity >= 0 and opacity <= 1,
-    "utils.opaque: Opacity must be a number between 0.0 and 1.0."
-  )
+--- Blend a color with a background color based on opacity.
+--- This is a simplified version that focuses on reliable color blending.
+--- @param fg_color string The foreground hex color (e.g., "#RRGGBB")
+--- @param opacity number From 0.0 (fully transparent) to 1.0 (fully opaque)
+--- @param bg_color? string Optional background hex color. If not provided, derives from Normal background
+--- @param colors? table Optional colors table to derive background from
+--- @return string The blended hex color string
+utils.opaque = function(fg_color, opacity, bg_color, colors)
+  colors = colors or require("xeno").colors
+  local resolver = require("xeno.core.resolver")
 
-  local r_fg, g_fg, b_fg
+  -- Resolve @color.level references, with on-demand scale generation for custom
+  -- colors that aren't in xeno.colors yet (e.g. registered after setup()).
+  -- Uses current vim.o.background so light/dark variant is always correct.
+  local function resolve_with_custom_fallback(ref)
+    local resolved = resolver.resolve_value(ref, colors)
+    if not resolver.is_color_reference(resolved) then
+      return resolved
+    end
+    -- Resolution failed — check if it's a registered custom color family
+    local family = ref:match("^@([%w_]+)%.") or ref:match("^@([%w_]+)$")
+    local xeno_mod = require("xeno")
+    local custom_hex = xeno_mod._custom_colors and xeno_mod._custom_colors[family]
+    if custom_hex then
+      local cfg = xeno_mod._global_config or {}
+      local scale = require("xeno.core.palette").generate_custom_scale(custom_hex, family, {
+        contrast  = cfg.contrast,
+        chroma    = cfg.chroma or 0,
+        lightness = cfg.lightness or 0,
+        variation = cfg.variation,
+      })
+      for k, v in pairs(scale) do
+        colors[k] = v
+      end
+      resolved = resolver.resolve_value(ref, colors)
+    end
+    return resolved
+  end
 
-  if type(color_source) == "string" then
-    if color_source:sub(1, 1) == "#" or not color_source:match("%s") then -- Heuristic: if it starts with # or has no spaces, likely a hex or direct color name
-      r_fg, g_fg, b_fg = utils.hex2rgb(color_source)
+  if type(fg_color) == "string" and resolver.is_color_reference(fg_color) then
+    local resolved = resolve_with_custom_fallback(fg_color)
+    if resolver.is_color_reference(resolved) then
+      log_warn(fmt("utils.opaque: Could not resolve color reference '%s'", fg_color))
+      return "#000000"
+    end
+    fg_color = resolved
+  end
+  if type(bg_color) == "string" and resolver.is_color_reference(bg_color) then
+    local resolved = resolve_with_custom_fallback(bg_color)
+    if not resolver.is_color_reference(resolved) then
+      bg_color = resolved
+    end
+    -- on failure, fall through to normal bg derivation
+  end
+
+  -- Validate inputs
+  if type(fg_color) ~= "string" then
+    log_warn("utils.opaque: fg_color must be a hex string")
+    return "#000000"
+  end
+
+  if type(opacity) ~= "number" or opacity < 0 or opacity > 1 then
+    log_warn("utils.opaque: opacity must be a number between 0.0 and 1.0")
+    opacity = 0.5
+  end
+
+  -- Get foreground RGB values
+  local r_fg, g_fg, b_fg = utils.hex2rgb(fg_color)
+  if not r_fg then
+    log_warn(fmt("utils.opaque: Invalid foreground color: %s", fg_color))
+    return fg_color
+  end
+
+  -- Get background RGB values
+  local r_bg, g_bg, b_bg
+
+  if bg_color then
+    -- Use provided background color
+    r_bg, g_bg, b_bg = utils.hex2rgb(bg_color)
+    if not r_bg then
+      log_warn(fmt("utils.opaque: Invalid background color: %s. Using theme default.", bg_color))
+      bg_color = nil
+    end
+  end
+
+  if not bg_color then
+    -- Try to derive from colors table first (preferred method)
+    if colors and colors.background_950 then
+      r_bg, g_bg, b_bg = utils.hex2rgb(colors.background_950)
     end
 
-    if not (r_fg and g_fg and b_fg) then -- If not resolved as hex, assume it's a highlight group name
-      local ok_hl, hl_def = pcall(vim.api.nvim_get_hl, 0, { name = color_source, link = false, rgb = true })
-      if ok_hl and hl_def and hl_def.foreground then
-        local fg_hex = fmt("#%06x", hl_def.foreground)
-        r_fg, g_fg, b_fg = utils.hex2rgb(fg_hex)
+    -- Fallback: try to get Normal background color from applied highlights
+    if not r_bg then
+      local ok, normal_hl = pcall(vim.api.nvim_get_hl, 0, { name = "Normal", link = false })
+      if ok and normal_hl and normal_hl.bg then
+        local bg_hex = fmt("#%06x", normal_hl.bg)
+        r_bg, g_bg, b_bg = utils.hex2rgb(bg_hex)
+      end
+    end
+
+    -- Final fallback to theme-appropriate background
+    if not r_bg then
+      if utils.get_variant() == THEME_LIGHT then
+        r_bg, g_bg, b_bg = 255, 255, 255 -- White for light themes
       else
-        if not ok_hl then
-          log_warn(fmt("utils.opaque: Error getting highlight group '%s': %s", color_source, tostring(hl_def))) -- hl_def is error message here
-        elseif not hl_def then
-          log_warn(fmt("utils.opaque: Highlight group '%s' not found.", color_source))
-        elseif not hl_def.foreground then
-          log_warn(
-            fmt("utils.opaque: Highlight group '%s' has no foreground color. Cannot apply opacity.", color_source)
-          )
+        r_bg, g_bg, b_bg = 17, 17, 17 -- Very dark gray for dark themes
+      end
+    end
+  end
+
+  -- Simple linear interpolation between background and foreground
+  local r = r_bg + (r_fg - r_bg) * opacity
+  local g = g_bg + (g_fg - g_bg) * opacity
+  local b = b_bg + (b_fg - b_bg) * opacity
+
+  -- Apply a subtle minimum opacity boost for very low values to ensure visibility
+  -- This helps maintain legibility without complex contrast calculations
+  if opacity < 0.15 and opacity > 0 then
+    local boost = 0.15 - opacity
+    r = r + (r_fg - r_bg) * boost * 0.5
+    g = g + (g_fg - g_bg) * boost * 0.5
+    b = b + (b_fg - b_bg) * boost * 0.5
+  end
+
+  -- Clamp and convert to hex
+  r, g, b = utils.rgb_clamp(r, g, b)
+  local result = utils.rgb2hex(r, g, b)
+
+  -- Register the opaque color if export mode is active
+  local ok, opaque_registry = pcall(require, "xeno.core.opaque_registry")
+  if ok and opaque_registry.is_export_mode() then
+    -- Find the color name for the fg_color by searching the colors table
+    local fg_color_name = nil
+    if colors then
+      for name, hex in pairs(colors) do
+        if type(hex) == "string" and hex:upper() == fg_color:upper() then
+          fg_color_name = name
+          break
         end
       end
     end
-  else
-    log_warn(fmt("utils.opaque: color_source must be a string. Got %s", type(color_source)))
-  end
-
-  if not (r_fg and g_fg and b_fg) then
-    log_warn(
-      fmt(
-        "utils.opaque: Could not parse foreground color from source: %s. Using black as fallback for foreground.",
-        vim.inspect(color_source)
-      )
-    )
-    r_fg, g_fg, b_fg = 0, 0, 0 -- Fallback for foreground to black
-  end
-
-  -- Get RGB for the 'Normal' background color
-  local r_bg, g_bg, b_bg
-  local ok_normal_hl, normal_hl_def = pcall(vim.api.nvim_get_hl, 0, { name = "Normal", link = false, rgb = true })
-
-  if ok_normal_hl and normal_hl_def and normal_hl_def.background then
-    local normal_bg_hex = fmt("#%06x", normal_hl_def.background)
-    r_bg, g_bg, b_bg = utils.hex2rgb(normal_bg_hex)
-  end
-
-  if not (r_bg and g_bg and b_bg) then
-    if vim.o.background == "light" then
-      r_bg, g_bg, b_bg = 255, 255, 255 -- White for light themes
-    else
-      r_bg, g_bg, b_bg = 0, 0, 0 -- Black for dark themes
+    local registered_name = opaque_registry.register_opaque_call(fg_color, opacity, bg_color, result, colors, nil, fg_color_name)
+    if registered_name then
+      return "@" .. registered_name
     end
   end
 
-  -- Blend the colors: alpha * FG + (1 - alpha) * BG
-  local r_new = opacity * r_fg + (1 - opacity) * r_bg
-  local g_new = opacity * g_fg + (1 - opacity) * g_bg
-  local b_new = opacity * b_fg + (1 - opacity) * b_bg
-
-  -- Clamp and convert to hex
-  r_new, g_new, b_new = utils.rgb_clamp(r_new, g_new, b_new)
-  return utils.rgb2hex(r_new, g_new, b_new)
+  return result
 end
 
 --- Adjust the lightness of a hex color.
@@ -196,97 +287,254 @@ utils.adjust_lightness = function(hex, amount)
   return utils.rgb2hex(r, g, b)
 end
 
---- Convert a hex color string to HSL values.
---- @param hex string The hex color string.
---- @return number? h Hue (0-360) or nil on failure.
---- @return number? s Saturation (0-1) or nil on failure.
---- @return number? l Lightness (0-1) or nil on failure.
-utils.hex2hsl = function(hex)
-  local r_orig, g_orig, b_orig = utils.hex2rgb(hex)
-  if not r_orig then
+
+-- OKLCH Color Space Conversion Functions
+-- Reference: Part 3 of OKLCH_MIGRATION_ANALYSIS.md
+-- OKLCH is a perceptually uniform color space ideal for generating color palettes
+
+--- Apply inverse sRGB gamma correction (normalize RGB to linear RGB).
+--- @param r number Red component in [0, 255].
+--- @param g number Green component in [0, 255].
+--- @param b number Blue component in [0, 255].
+--- @return number Linear red [0, 1].
+--- @return number Linear green [0, 1].
+--- @return number Linear blue [0, 1].
+utils.rgb2linear_rgb = function(r, g, b)
+  -- Normalize to [0, 1]
+  local norm_r = r / 255
+  local norm_g = g / 255
+  local norm_b = b / 255
+
+  -- Apply inverse sRGB companding function (EOTF)
+  local function apply_inverse_gamma(value)
+    if value <= 0.04045 then
+      return value / 12.92
+    else
+      return math.pow((value + 0.055) / 1.055, 2.4)
+    end
+  end
+
+  return apply_inverse_gamma(norm_r), apply_inverse_gamma(norm_g), apply_inverse_gamma(norm_b)
+end
+
+--- Calculate WCAG relative luminance for a hex color.
+--- @param hex string Hex color string.
+--- @return number? luminance Relative luminance in [0, 1], or nil on invalid input.
+utils.relative_luminance = function(hex)
+  local r, g, b = utils.hex2rgb(hex)
+  if not r then
+    return nil
+  end
+
+  r, g, b = utils.rgb2linear_rgb(r, g, b)
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b
+end
+
+--- Calculate WCAG contrast ratio between two hex colors.
+--- @param first string Hex color string.
+--- @param second string Hex color string.
+--- @return number? ratio Contrast ratio, or nil when either color is invalid.
+utils.contrast_ratio = function(first, second)
+  local first_luminance = utils.relative_luminance(first)
+  local second_luminance = utils.relative_luminance(second)
+
+  if first_luminance == nil or second_luminance == nil then
+    return nil
+  end
+
+  local lighter = math.max(first_luminance, second_luminance)
+  local darker = math.min(first_luminance, second_luminance)
+  return (lighter + 0.05) / (darker + 0.05)
+end
+
+--- Convert linear RGB to OKLab color space.
+--- Uses matrix transformations with cube roots.
+--- @param r number Linear red [0, 1].
+--- @param g number Linear green [0, 1].
+--- @param b number Linear blue [0, 1].
+--- @return number L OKLab lightness [0, 1].
+--- @return number a OKLab a component (green-red axis).
+--- @return number b OKLab b component (blue-yellow axis).
+utils.linear_rgb2oklab = function(r, g, b)
+  -- Step 1: Convert linear RGB to LMS cone response space
+  local l = 0.3 * r + 0.622 * g + 0.078 * b
+  local m = 0.23 * r + 0.692 * g + 0.078 * b
+  local s = 0.24342268924547819 * r + 0.20476744424496821 * g + 0.55356137790893145 * b
+
+  -- Step 2: Apply nonlinearity (cube root)
+  local l_ = l > 0 and math.pow(l, 1 / 3) or 0
+  local m_ = m > 0 and math.pow(m, 1 / 3) or 0
+  local s_ = s > 0 and math.pow(s, 1 / 3) or 0
+
+  -- Step 3: Linear combination to get OKLab values
+  local L = 0.2104542553 * l_ + 0.7936177850 * m_ - 0.0040720468 * s_
+  local a = 1.9779984951 * l_ - 2.4285922050 * m_ + 0.4505937099 * s_
+  local b_out = 0.0259040371 * l_ + 0.7827717662 * m_ - 0.8086757660 * s_
+
+  return L, a, b_out
+end
+
+--- Convert OKLab to OKLCH (Cartesian to polar coordinates).
+--- @param L number OKLab lightness [0, 1].
+--- @param a number OKLab a component.
+--- @param b number OKLab b component.
+--- @return number L Lightness [0, 1].
+--- @return number C Chroma [0, 0.4+].
+--- @return number H Hue [0, 360) degrees.
+utils.oklab2oklch = function(L, a, b)
+  local C = math.sqrt(a * a + b * b)
+  local H = math.atan2(b, a) * (180 / math.pi)
+  if H < 0 then
+    H = H + 360
+  end
+  return L, C, H
+end
+
+--- Convert OKLCH to OKLab (polar to Cartesian coordinates).
+--- @param L number Lightness [0, 1].
+--- @param C number Chroma [0, 0.4+].
+--- @param H number Hue [0, 360) degrees.
+--- @return number L Lightness [0, 1].
+--- @return number a OKLab a component.
+--- @return number b OKLab b component.
+utils.oklch2oklab = function(L, C, H)
+  local H_rad = H * (math.pi / 180)
+  local a = C * math.cos(H_rad)
+  local b = C * math.sin(H_rad)
+  return L, a, b
+end
+
+--- Convert OKLab to linear RGB (inverse of linear_rgb2oklab).
+--- @param L number OKLab lightness [0, 1].
+--- @param a number OKLab a component.
+--- @param b number OKLab b component.
+--- @return number r Linear red [0, 1].
+--- @return number g Linear green [0, 1].
+--- @return number b_out Linear blue [0, 1].
+utils.oklab2linear_rgb = function(L, a, b)
+  -- Step 1: Reverse OKLab → LMS' (inverse linear combination)
+  local l_ = L + 0.3963377774 * a + 0.2158037573 * b
+  local m_ = L - 0.1055613458 * a - 0.0638541728 * b
+  local s_ = L - 0.0894841775 * a - 1.2914855480 * b
+
+  -- Step 2: Reverse nonlinearity (cube: reverse the cube root)
+  local l = l_ * l_ * l_
+  local m = m_ * m_ * m_
+  local s = s_ * s_ * s_
+
+  -- Step 3: Inverse matrix to get linear RGB (LMS → Linear RGB)
+  -- This is the mathematical inverse of the RGB → LMS matrix
+  local r = 11.0305154984 * l - 9.8661643235 * m - 0.1640638153 * s
+  local g = -3.2551987873 * l + 4.4195499622 * m - 0.1640638153 * s
+  local b_out = -3.6464231263 * l + 2.7037079562 * m + 1.9393184317 * s
+
+  return r, g, b_out
+end
+
+--- Apply sRGB gamma correction (linear RGB to RGB).
+--- @param value number Linear value [0, 1].
+--- @return number Gamma-corrected value [0, 1].
+utils.linear2rgb = function(value)
+  -- Apply sRGB companding function
+  if value <= 0.0031308 then
+    return value * 12.92
+  else
+    return 1.055 * math.pow(value, 1 / 2.4) - 0.055
+  end
+end
+
+--- Convert hex color to OKLCH color space.
+--- Complete pipeline: Hex → RGB → Linear RGB → OKLab → OKLCH
+--- @param hex string Hex color string (e.g., "#5B8DEF").
+--- @return number? L Lightness [0, 1] or nil on failure.
+--- @return number? C Chroma [0, 0.4+] or nil on failure.
+--- @return number? H Hue [0, 360) or nil on failure.
+utils.hex2oklch = function(hex)
+  -- Hex → RGB
+  local r, g, b = utils.hex2rgb(hex)
+  if not r then
     return nil, nil, nil
   end
 
-  local r, g, b = r_orig / 255, g_orig / 255, b_orig / 255
+  -- RGB → Linear RGB
+  r, g, b = utils.rgb2linear_rgb(r, g, b)
 
-  local min_val = math.min(r, g, b)
-  local max_val = math.max(r, g, b)
-  local delta = max_val - min_val
+  -- Linear RGB → OKLab
+  local L, a, b_lab = utils.linear_rgb2oklab(r, g, b)
 
-  local h, s, l
-  l = (max_val + min_val) / 2
+  -- OKLab → OKLCH
+  local C, H
+  L, C, H = utils.oklab2oklch(L, a, b_lab)
 
-  if delta == 0 then
-    h = 0
-    s = 0 -- Achromatic
-  else
-    s = l > 0.5 and delta / (2 - max_val - min_val) or delta / (max_val + min_val)
-    if max_val == r then
-      h = (g - b) / delta + (g < b and 6 or 0)
-    elseif max_val == g then
-      h = (b - r) / delta + 2
-    else -- max_val == b
-      h = (r - g) / delta + 4
+  return L, C, H
+end
+
+--- Convert OKLCH lightness/chroma/hue to linear sRGB, without gamma correction
+--- or gamut clamping. Used internally to probe whether a color is in gamut.
+--- @param L number Lightness [0, 1].
+--- @param C number Chroma [0, 0.4+].
+--- @param H number Hue [0, 360) degrees.
+--- @return number r Linear red (may be outside [0, 1] if out of gamut).
+--- @return number g Linear green (may be outside [0, 1] if out of gamut).
+--- @return number b Linear blue (may be outside [0, 1] if out of gamut).
+local function oklch2linear_rgb(L, C, H)
+  local Lab_L, a, b = utils.oklch2oklab(L, C, H)
+  return utils.oklab2linear_rgb(Lab_L, a, b)
+end
+
+local GAMUT_EPSILON = 1e-4
+
+local function in_srgb_gamut(r, g, b)
+  return r >= -GAMUT_EPSILON
+    and r <= 1 + GAMUT_EPSILON
+    and g >= -GAMUT_EPSILON
+    and g <= 1 + GAMUT_EPSILON
+    and b >= -GAMUT_EPSILON
+    and b <= 1 + GAMUT_EPSILON
+end
+
+--- Convert OKLCH color to hex string.
+--- Complete pipeline: OKLCH → OKLab → Linear RGB → RGB → Hex
+--- When the requested chroma falls outside the sRGB gamut at this lightness/hue,
+--- chroma is reduced via binary search until it fits. This preserves lightness and
+--- hue (unlike naive per-channel clamping, which can shift hue and mute colors
+--- toward gray), so out-of-gamut requests render as the most saturated in-gamut
+--- color available for that lightness/hue instead of a muddied clip.
+--- @param L number Lightness [0, 1].
+--- @param C number Chroma [0, 0.4+].
+--- @param H number Hue [0, 360) degrees.
+--- @return string Hex color string (e.g., "#5B8DEF").
+utils.oklch2hex = function(L, C, H)
+  local r, g, b = oklch2linear_rgb(L, C, H)
+
+  if C > 0 and not in_srgb_gamut(r, g, b) then
+    local lo, hi = 0, C
+    for _ = 1, 20 do
+      local mid = (lo + hi) / 2
+      local mr, mg, mb = oklch2linear_rgb(L, mid, H)
+      if in_srgb_gamut(mr, mg, mb) then
+        lo = mid
+      else
+        hi = mid
+      end
     end
-    h = h / 6 -- Normalize to [0,1)
-    h = h * 360 -- Convert to degrees
-    if h < 0 then
-      h = h + 360
-    end -- Ensure hue is positive [0, 360)
+    r, g, b = oklch2linear_rgb(L, lo, H)
   end
-  return h, s, l
-end
 
---- Helper function for HSL to RGB conversion.
-local function hue_to_rgb_component(p, q, t)
-  if t < 0 then
-    t = t + 1
-  end
-  if t > 1 then
-    t = t - 1
-  end
-  if t < 1 / 6 then
-    return p + (q - p) * 6 * t
-  end
-  if t < 1 / 2 then
-    return q
-  end
-  if t < 2 / 3 then
-    return p + (q - p) * (2 / 3 - t) * 6
-  end
-  return p
-end
+  -- Linear RGB → RGB (gamma correction)
+  r = utils.linear2rgb(r)
+  g = utils.linear2rgb(g)
+  b = utils.linear2rgb(b)
 
---- Convert HSL values to RGB values.
---- @param h number Hue (0-360).
---- @param s number Saturation (0-1).
---- @param l number Lightness (0-1).
---- @return number r Red component (0-255).
---- @return number g Green component (0-255).
---- @return number b Blue component (0-255).
-utils.hsl2rgb = function(h, s, l)
-  local r, g, b
+  -- Normalize to [0, 255]
+  r = r * 255
+  g = g * 255
+  b = b * 255
 
-  if s == 0 then
-    r, g, b = l, l, l -- Achromatic
-  else
-    h = h / 360 -- Normalize h to be in [0,1) for calculations
-    local q = l < 0.5 and l * (1 + s) or l + s - l * s
-    local p = 2 * l - q
-    r = hue_to_rgb_component(p, q, h + 1 / 3)
-    g = hue_to_rgb_component(p, q, h)
-    b = hue_to_rgb_component(p, q, h - 1 / 3)
-  end
-  return r * 255, g * 255, b * 255
-end
+  -- Final clamp mops up floating-point residue from the gamut search above.
+  r, g, b = utils.rgb_clamp(r, g, b)
 
---- Convert HSL values to a hex color string.
---- @param h number Hue (0-360).
---- @param s number Saturation (0-1).
---- @param l number Lightness (0-1).
---- @return string Hex color string.
-utils.hsl2hex = function(h, s, l)
-  local r, g, b = utils.hsl2rgb(h, s, l)
+  -- RGB → Hex
   return utils.rgb2hex(r, g, b)
 end
 

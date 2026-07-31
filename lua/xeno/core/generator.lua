@@ -86,7 +86,7 @@ local function generate_highlights_code(highlights)
   return serialize_value(highlights, 1)
 end
 
-function M.new_theme(name, config, global_config)
+function M.theme(name, config, global_config)
   local colorscheme_dir = fmt("%s/colors", fn.stdpath("config"))
   local colorscheme_path = fmt("%s/%s.lua", colorscheme_dir, name)
 
@@ -98,11 +98,23 @@ function M.new_theme(name, config, global_config)
   local config_parts = {}
 
   -- Add basic configuration
-  table.insert(config_parts, fmt('  base = "%s"', user_config.base or user_config.background or "#030303"))
+  table.insert(config_parts, fmt('  background = "%s"', user_config.background or "#030303"))
   table.insert(config_parts, fmt('  accent = "%s"', user_config.accent or "#7AA2F7"))
-  table.insert(config_parts, fmt("  variation = %.1f", user_config.variation or 0.0))
-  table.insert(config_parts, fmt("  contrast = %.1f", user_config.contrast or 0))
+  table.insert(
+    config_parts,
+    fmt(
+      "  properties = {\n    contrast = %.1f,\n    variation = %.1f,\n    chroma = %.1f,\n    lightness = %.1f,\n  }",
+      user_config.contrast or 0,
+      user_config.variation or 0.0,
+      user_config.chroma or 0.0,
+      user_config.lightness or 0.0
+    )
+  )
   table.insert(config_parts, fmt("  transparent = %s", user_config.transparent and "true" or "false"))
+
+  if user_config.foreground then
+    table.insert(config_parts, fmt('  foreground = "%s"', user_config.foreground))
+  end
 
   -- Add custom colors if present
   if user_config.red then
@@ -127,10 +139,28 @@ function M.new_theme(name, config, global_config)
     table.insert(config_parts, fmt('  cyan = "%s"', user_config.cyan))
   end
 
+  -- Add custom colors if present (colors registered with xeno.color())
+  if user_config._custom_colors and next(user_config._custom_colors) then
+    local custom_colors_code = serialize_value(user_config._custom_colors, 1)
+    table.insert(config_parts, fmt("  _custom_colors = %s", custom_colors_code))
+  end
+
+  -- Add decorations if present
+  if user_config.decorations then
+    local decorations_code = serialize_value(user_config.decorations, 1)
+    table.insert(config_parts, fmt("  decorations = %s", decorations_code))
+  end
+
   -- Add highlights if present
   local highlights_code = generate_highlights_code(user_config.highlights)
   if highlights_code then
     table.insert(config_parts, fmt("  highlights = %s", highlights_code))
+  end
+
+  -- Add integrations if present
+  if user_config.integrations then
+    local integrations_code = serialize_value(user_config.integrations, 1)
+    table.insert(config_parts, fmt("  integrations = %s", integrations_code))
   end
 
   local content = fmt(

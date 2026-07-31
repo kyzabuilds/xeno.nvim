@@ -1,79 +1,77 @@
 local M = {}
 local utils = require("xeno.core.utils")
+local helpers = require("xeno.core.helpers")
 
-function M.generate_editor_highlights(colors)
-  local is_light = utils.get_variant() == 2
-  local cursor_line_bg = is_light and colors.base_800 or colors.base_900
-
+function M.generate_editor_highlights(colors, config)
   return {
-    Normal = { bg = colors.base_900, fg = colors.base_300 },
-    NormalNC = { fg = colors.base_200, bg = colors.base_900 },
-    Visual = { bg = utils.opaque(colors.accent_100, 0.2) },
+    Normal = { bg = colors.background_950, fg = colors.foreground_200 },
+    NormalNC = { bg = colors.background_950, fg = colors.foreground_200 },
+    Visual = { bg = utils.opaque(colors.accent_500, 0.40) },
 
-    NormalFloat = { fg = colors.base_200, bg = colors.base_800 },
-    FloatBorder = { fg = colors.base_400, bg = colors.base_800 },
-    FloatTitle = { fg = colors.base_300, bg = colors.base_800 },
+    NormalFloat = { fg = colors.foreground_100, bg = colors.background_900 },
+    FloatBorder = { fg = colors.background_700, bg = colors.background_900 },
+    FloatTitle = { fg = colors.foreground_50, bg = colors.background_900 },
 
-    ColorColumn = { bg = colors.base_800 },
+    ColorColumn = { bg = colors.background_900 },
 
-    Cursor = { bg = colors.accent_200, reverse = false },
-    CursorColumn = { bg = cursor_line_bg },
-    CursorLine = { bg = cursor_line_bg },
-    CursorLineNr = { bg = cursor_line_bg, fg = colors.accent_200 },
-    CursorLineFold = { bg = cursor_line_bg },
-    CursorLineSign = { bg = cursor_line_bg },
-    CursorLineSignColumn = { bg = cursor_line_bg },
+    Cursor = { bg = colors.accent_500, fg = "#000000" },
+    CursorColumn = { bg = utils.opaque(colors.background_600, 0.05) },
+    CursorLine = { bg = utils.opaque(colors.background_600, 0.05) },
+    CursorLineNr = { bg = utils.opaque(colors.background_600, 0.05), fg = colors.foreground_100, bold = false },
+    CursorLineFold = { bg = utils.opaque(colors.background_600, 0.05) },
+    CursorLineSign = { bg = utils.opaque(colors.background_600, 0.05) },
+    CursorLineSignColumn = { bg = utils.opaque(colors.background_600, 0.05) },
 
-    LineNr = { fg = colors.base_600 },
-    Directory = { fg = colors.base_200 },
+    LineNr = { fg = colors.foreground_400 },
+    Directory = { fg = colors.foreground_100 },
 
     ErrorMsg = { fg = colors.red },
     WarningMsg = { fg = colors.yellow },
     MoreMsg = { fg = colors.green },
 
-    IncSearch = { bg = utils.opaque(colors.accent_100, 0.2) },
-    Search = { bg = utils.opaque(colors.accent_100, 0.2) },
-    CurSearch = { bg = utils.opaque(colors.accent_100, 0.4) },
+    Search = { bg = utils.opaque(colors.background_500, 0.40) },
+    IncSearch = { link = "Cursor" },
+    CurSearch = { bg = utils.opaque(colors.accent_500, 0.60), fg = colors.accent_200 },
 
     MatchParen = { fg = colors.accent_100, bold = true },
-    NonText = { fg = colors.base_300 },
+    NonText = { fg = colors.foreground_400 },
 
-    Pmenu = { bg = colors.base_700, fg = colors.base_200 },
-    PmenuSel = { bg = colors.base_600, bold = false },
-    PmenuSbar = { bg = colors.base_900 },
-    PmenuThumb = { bg = colors.base_600 },
+    Pmenu = { bg = colors.background_700, fg = colors.foreground_300 },
+    PmenuSel = { bg = colors.background_600, bold = false, reverse = false },
+    PmenuSbar = { bg = colors.background_950 },
+    PmenuThumb = { bg = colors.background_700 },
 
     Question = { fg = colors.green },
-    QuickFixLine = { bg = colors.base_800 },
-    SpecialKey = { fg = colors.base_300 },
+    QuickFixLine = { bg = colors.background_900 },
+    SpecialKey = { fg = colors.foreground_50 },
     SpellBad = { undercurl = true, sp = colors.red },
     SpellCap = { undercurl = true, sp = colors.yellow },
     SpellLocal = { undercurl = true, sp = colors.green },
     SpellRare = { undercurl = true, sp = colors.accent_100 },
 
-    StatusLine = { fg = colors.base_200, bg = colors.base_900 },
-    StatusLineNC = { fg = colors.base_300, bg = colors.base_800 },
-    TabLine = { fg = colors.base_300, bg = colors.base_800 },
-    TabLineFill = { fg = colors.base_400, bg = colors.base_800 },
-    TabLineSel = { fg = colors.base_700, bg = colors.accent_100 },
+    StatusLine = { fg = colors.foreground_100, bg = colors.background_950 },
+    StatusLineNC = { fg = colors.foreground_200, bg = colors.background_900 },
+    TabLine = { fg = colors.foreground_200, bg = colors.background_900 },
+    TabLineFill = { fg = colors.foreground_300, bg = colors.background_900 },
+    TabLineSel = { fg = colors.background_950, bg = colors.accent_100 },
 
-    Title = { fg = colors.base_200, bold = true },
-    VisualNOS = { bg = colors.base_800 },
+    Title = { fg = colors.foreground_50, bold = true },
+    VisualNOS = { bg = colors.background_900 },
 
-    WinSeparator = { fg = colors.base_700 },
-    WhiteSpace = { fg = colors.base_700 },
-    WinBar = { bg = "NONE", fg = utils.adjust_lightness(colors.base_200, -50), bold = false },
-    WinBarNC = { link = "WinBar" },
+    WinSeparator = { fg = colors.background_700 },
+    WhiteSpace = { fg = colors.foreground_400 },
+    WinBar = helpers.with_borders({ bg = colors.background_900, fg = colors.foreground_300, sp = colors.background_800 }, config),
+    WinBarNC = helpers.with_borders({ bg = colors.background_900, fg = colors.foreground_300, sp = colors.background_800 }, config),
 
-    WildMenu = { fg = colors.base_200, bg = colors.base_800 },
-    SignColumn = { bg = "NONE" },
-    Folded = { fg = colors.base_300, bg = utils.adjust_lightness(colors.base_700, 3) },
-    FoldStatus = { fg = utils.adjust_lightness(colors.base_200, -50) },
-    FoldColumn = { fg = colors.base_300, bg = colors.base_700 },
-    EndOfBuffer = { bg = "NONE" },
-    Substitute = { fg = colors.base_700, bg = colors.accent_100 },
+    WildMenu = { fg = colors.foreground_100, bg = colors.background_900 },
+    SignColumn = { link = "Normal" },
+    Folded = { fg = colors.foreground_200, bg = colors.background_900 },
+    FoldStatus = { fg = utils.adjust_lightness(colors.foreground_200, -50) },
+    FoldColumn = { link = "Normal", fg = colors.foreground_300 },
+    EndOfBuffer = { link = "Normal" },
+    Substitute = { fg = colors.background_950, bg = colors.accent_100 },
 
-    IndentLine = { fg = colors.base_200, bg = "NONE" },
+    IndentLine = { fg = colors.foreground_400, bg = "NONE" },
 
     NotifyBackground = { bg = "NONE" },
 
@@ -92,20 +90,57 @@ function M.generate_editor_highlights(colors)
     DiagnosticUnderlineInfo = { sp = colors.accent_100, undercurl = true },
     DiagnosticUnderlineHint = { sp = colors.green, undercurl = true },
 
-    DiagnosticFloatingError = { fg = colors.red, bg = colors.base_800 },
-    DiagnosticFloatingWarn = { fg = colors.yellow, bg = colors.base_800 },
-    DiagnosticFloatingInfo = { fg = colors.accent_100, bg = colors.base_800 },
-    DiagnosticFloatingHint = { fg = colors.green, bg = colors.base_800 },
+    DiagnosticFloatingError = { fg = colors.red, bg = colors.background_900 },
+    DiagnosticFloatingWarn = { fg = colors.yellow, bg = colors.background_900 },
+    DiagnosticFloatingInfo = { fg = colors.accent_100, bg = colors.background_900 },
+    DiagnosticFloatingHint = { fg = colors.green, bg = colors.background_900 },
+    DiagnosticFloatingOk = { fg = colors.green, bg = colors.background_900 },
+
+    ErrorFloat = { fg = colors.red, bg = colors.background_900 },
+    WarningFloat = { fg = colors.yellow, bg = colors.background_900 },
+    InfoFloat = { fg = colors.accent_100, bg = colors.background_900 },
+    HintFloat = { fg = colors.green, bg = colors.background_900 },
+    OkFloat = { fg = colors.green, bg = colors.background_900 },
+
+    VirtualTextError = { fg = colors.red },
+    VirtualTextWarning = { fg = colors.yellow },
+    VirtualTextInfo = { fg = colors.accent_100 },
+    VirtualTextHint = { fg = colors.green },
+    VirtualTextOk = { fg = colors.green },
+
+    RedSign = { fg = colors.red },
+    YellowSign = { fg = colors.yellow },
+    BlueSign = { fg = colors.accent_100 },
+    PurpleSign = { fg = colors.accent_100 },
+    GreenSign = { fg = colors.green },
+
+    CurrentWord = { bg = utils.opaque(colors.background_600, 0.30) },
+    InlayHints = { fg = colors.foreground_400 },
+
+    LspInfoBorder = { fg = colors.background_700, bg = colors.background_900 },
+    LspInfoTitle = { fg = colors.foreground_100, bg = colors.background_900 },
+    LspInfoFloat = { fg = colors.foreground_100, bg = colors.background_900 },
+
+    LspHover = { fg = colors.foreground_100, bg = colors.background_900 },
+    LspHoverBorder = { fg = colors.background_700, bg = colors.background_900 },
+    LspSignatureHelp = { fg = colors.foreground_100, bg = colors.background_900 },
+    LspSignatureHelpBorder = { fg = colors.background_700, bg = colors.background_900 },
+
+    -- Additional floating window variants
+    FloatingWindow = { fg = colors.foreground_100, bg = colors.background_900 },
+    Floating = { fg = colors.foreground_100, bg = colors.background_900 },
 
     DiagnosticSignError = { fg = colors.red },
     DiagnosticSignWarn = { fg = colors.yellow },
     DiagnosticSignInfo = { fg = colors.accent_100 },
     DiagnosticSignHint = { fg = colors.green },
 
+    DiagnosticUnnecessary = { fg = colors.foreground_400 },
+
     DiffAdd = { bg = utils.opaque(colors.green, 0.25), fg = colors.green },
     DiffChange = { bg = utils.opaque(colors.yellow, 0.25), fg = colors.yellow },
     DiffDelete = { bg = utils.opaque(colors.red, 0.25), fg = colors.red },
-    DiffText = { bg = colors.base_800 },
+    DiffText = { bg = colors.background_900 },
 
     GitSignsAdd = { fg = colors.green },
     GitSignsChange = { fg = colors.yellow },

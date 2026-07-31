@@ -33,4 +33,26 @@ M.default = function(config)
   return result
 end
 
+--- Conditionally add border styles to highlight groups
+--- If borders are explicitly disabled in config, removes border properties
+--- Otherwise adds underline and sp properties for borders
+--- @param base_highlight table The base highlight configuration
+--- @param config table The theme configuration containing decorations.borders setting
+--- @return table The processed highlight with or without border properties
+M.with_borders = function(base_highlight, config)
+  -- If borders are explicitly disabled, return the base highlight without border properties
+  if config and config.decorations and config.decorations.borders == false then
+    local result = vim.tbl_deep_extend("force", {}, base_highlight)
+    result.underline = nil
+    result.sp = nil
+    return result
+  end
+
+  -- Default: add border properties
+  local result = vim.tbl_deep_extend("force", {}, base_highlight)
+  result.underline = true
+  result.sp = result.sp or "#4a4a4a"
+  return result
+end
+
 return M

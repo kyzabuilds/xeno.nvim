@@ -2,133 +2,479 @@ local M = {}
 local utils = require("xeno.core.utils")
 local fmt = string.format
 
-local function generate_color_scale(color, variation, contrast)
+-- OKLCH Lightness Scales
+-- OKLCH lightness is perceptually linear, providing uniform color scale generation
+-- Foreground/background families consume different slices of this shared scale.
+local OKLCH_LIGHTNESS_SCALES = {
+  dark = {
+    [50] = 0.97,
+    [100] = 0.93,
+    [200] = 0.82,
+    [300] = 0.70,
+    [400] = 0.62,
+    [500] = 0.50,
+    [600] = 0.34,
+    [700] = 0.26,
+    [800] = 0.24,
+    [900] = 0.18,
+    [950] = 0.14,
+  },
+  light = {
+    [50] = 0.04, -- Very dark (for accents/highlights)
+    [100] = 0.12, -- Dark
+    [200] = 0.18, -- Dark
+    [300] = 0.34, -- Dark (for text)
+    [400] = 0.42, -- Medium-dark
+    [500] = 0.66, -- Neutral (same)
+    [600] = 0.72, -- Medium-light
+    [700] = 0.78, -- Light
+    [800] = 0.84, -- Light
+    [900] = 0.88, -- Very light (for backgrounds)
+    [950] = 0.96, -- Lightest
+  },
+}
+
+-- On the light variant, the accent family's low levels (100-300, used heavily
+-- by syntax highlighting) sit at OKLCH lightness values so dark that the sRGB
+-- gamut only permits a sliver of chroma before clipping — colors collapse
+-- toward near-black regardless of hue. These overrides move those levels into
+-- the mid-lightness band where far more chroma survives, so syntax colors stay
+-- visibly distinct and vibrant instead of muddy. Foreground/background scales
+-- are untouched; only the accent family (custom colors included) uses this.
+local ACCENT_LIGHTNESS_OVERRIDES = {
+  light = {
+    [100] = 0.34,
+    [200] = 0.40,
+    [300] = 0.46,
+    [400] = 0.52,
+  },
+}
+
+-- Deliberately out-of-gamut at every hue and lightness this module produces
+-- (sRGB chroma tops out well under this in OKLCH). Feeding it through
+-- oklch2hex's gamut mapping always resolves to the maximum saturation actually
+-- achievable for that lightness/hue, rather than whatever chroma the seed
+-- color happened to carry — so overridden accent levels render as vivid as
+-- physically possible instead of inheriting an under-saturated seed.
+local ACCENT_CHROMA_BOOST = 0.5
+
+local FAMILY_LEVELS = {
+  foreground = { 50, 100, 200, 300, 400 },
+  background = { 500, 600, 700, 800, 900, 950 },
+  accent = { 50, 100, 200, 300, 400, 500, 600 },
+}
+
+local TEXT_BACKGROUND_LEVELS = { 800, 900, 950 }
+local LIGHTNESS_SHIFT_RANGE = 0.12
+local FOREGROUND_CONTRAST_MIN = {
+  [50] = 9.0,
+  [100] = 8.8,
+  [200] = 8.0,
+  [300] = 6.0,
+  [400] = 4.5,
+}
+local FOREGROUND_HIERARCHY_STEP = 0.015
+local FOREGROUND_MIN_SEPARATION = 0.001
+
+local SEMANTIC_COLORS = {
+  dark = {
+    red = "#E86671",
+    green = "#A9DC76",
+    yellow = "#E7C547",
+    orange = "#FFA94D",
+    blue = "#66B2FF",
+    purple = "#A37EE5",
+    cyan = "#78DCE8",
+  },
+  light = {
+    red = "#B71C1C",
+    green = "#2E7D32",
+    yellow = "#F57C00",
+    orange = "#E65100",
+    blue = "#1565C0",
+    purple = "#6A1B9A",
+    cyan = "#0097A7",
+  },
+}
+
+local DEFAULT_BACKGROUND = "#030303"
+local DEFAULT_ACCENT = "#7AA2F7"
+
+-- Helper functions
+local function clamp(value, min, max)
+  return math.min(max, math.max(min, value))
+end
+
+local function get_theme_variant()
+  return utils.get_variant() == 2 and "light" or "dark"
+end
+
+local function adjust_lightness_for_contrast(base_lightness, contrast, theme)
+  local adjusted_L = base_lightness
+
+  if contrast and contrast ~= 0 then
+    local mid_point = theme == "dark" and 0.45 or 0.55
+    local distance = base_lightness - mid_point
+    local multiplier = 1 + (contrast * 0.5)
+    adjusted_L = clamp(mid_point + (distance * multiplier), 0.02, 0.98)
+  end
+
+  return adjusted_L
+end
+
+local function adjust_lightness(base_lightness, lightness_option)
+  if not lightness_option or lightness_option == 0 then
+    return base_lightness
+  end
+
+  return clamp(base_lightness + (lightness_option * LIGHTNESS_SHIFT_RANGE), 0.02, 0.98)
+end
+
+local function adjust_chroma(base_chroma, chroma_option)
+  if not chroma_option or chroma_option == 0 then
+    return base_chroma
+  end
+
+  -- Scale chroma by (1 + chroma_option)
+  -- If chroma_option is -1.0, chroma becomes 0 (grayscale)
+  -- If chroma_option is 1.0, chroma is doubled
+  return clamp(base_chroma * (1 + chroma_option), 0, 0.4)
+end
+
+local function collect_text_backgrounds(background_scale)
+  local backgrounds = {}
+
+  for _, level in ipairs(TEXT_BACKGROUND_LEVELS) do
+    if background_scale[level] then
+      table.insert(backgrounds, background_scale[level])
+    end
+  end
+
+  return backgrounds
+end
+
+local function has_required_contrast(candidate, background_colors, minimum_ratio)
+  for _, background_color in ipairs(background_colors) do
+    local ratio = utils.contrast_ratio(candidate, background_color)
+    if not ratio or ratio < minimum_ratio then
+      return false
+    end
+  end
+
+  return true
+end
+
+local function resolve_foreground_lightness(theme, base_lightness, chroma, hue, background_colors, minimum_ratio, previous_lightness)
+  local lower_bound
+  local upper_bound
+
+  if theme == "dark" then
+    lower_bound = base_lightness
+    upper_bound = previous_lightness and math.min(0.98, previous_lightness - FOREGROUND_HIERARCHY_STEP) or 0.98
+
+    if lower_bound > upper_bound then
+      lower_bound = upper_bound
+    end
+
+    local lower_candidate = utils.oklch2hex(lower_bound, chroma, hue)
+    if has_required_contrast(lower_candidate, background_colors, minimum_ratio) then
+      return lower_bound
+    end
+
+    local upper_candidate = utils.oklch2hex(upper_bound, chroma, hue)
+    if not has_required_contrast(upper_candidate, background_colors, minimum_ratio) then
+      local fallback_upper = previous_lightness and math.min(0.98, previous_lightness - FOREGROUND_MIN_SEPARATION) or 0.98
+      local fallback_candidate = utils.oklch2hex(fallback_upper, chroma, hue)
+
+      if has_required_contrast(fallback_candidate, background_colors, minimum_ratio) then
+        upper_bound = fallback_upper
+      else
+        return fallback_upper
+      end
+    end
+
+    for _ = 1, 18 do
+      local midpoint = (lower_bound + upper_bound) / 2
+      local midpoint_candidate = utils.oklch2hex(midpoint, chroma, hue)
+
+      if has_required_contrast(midpoint_candidate, background_colors, minimum_ratio) then
+        upper_bound = midpoint
+      else
+        lower_bound = midpoint
+      end
+    end
+
+    return upper_bound
+  end
+
+  lower_bound = previous_lightness and math.max(0.02, previous_lightness + FOREGROUND_HIERARCHY_STEP) or 0.02
+  upper_bound = base_lightness
+
+  if upper_bound < lower_bound then
+    upper_bound = lower_bound
+  end
+
+  local upper_candidate = utils.oklch2hex(upper_bound, chroma, hue)
+  if has_required_contrast(upper_candidate, background_colors, minimum_ratio) then
+    return upper_bound
+  end
+
+  local lower_candidate = utils.oklch2hex(lower_bound, chroma, hue)
+  if not has_required_contrast(lower_candidate, background_colors, minimum_ratio) then
+    local fallback_lower = previous_lightness and math.max(0.02, previous_lightness + FOREGROUND_MIN_SEPARATION) or 0.02
+    local fallback_candidate = utils.oklch2hex(fallback_lower, chroma, hue)
+
+    if has_required_contrast(fallback_candidate, background_colors, minimum_ratio) then
+      lower_bound = fallback_lower
+    else
+      return fallback_lower
+    end
+  end
+
+  for _ = 1, 18 do
+    local midpoint = (lower_bound + upper_bound) / 2
+    local midpoint_candidate = utils.oklch2hex(midpoint, chroma, hue)
+
+    if has_required_contrast(midpoint_candidate, background_colors, minimum_ratio) then
+      lower_bound = midpoint
+    else
+      upper_bound = midpoint
+    end
+  end
+
+  return lower_bound
+end
+
+local function resolve_lightness_scale(theme, use_accent_overrides)
+  local base_scale = OKLCH_LIGHTNESS_SCALES[theme]
+  local overrides = use_accent_overrides and ACCENT_LIGHTNESS_OVERRIDES[theme]
+
+  if not overrides then
+    return base_scale
+  end
+
+  local merged = {}
+  for level, value in pairs(base_scale) do
+    merged[level] = value
+  end
+  for level, value in pairs(overrides) do
+    merged[level] = value
+  end
+
+  return merged
+end
+
+-- OKLCH color scale generator
+-- OKLCH lightness is perceptually linear, providing uniform color scales
+local function generate_color_scale_oklch(color, options, levels, use_accent_overrides)
+  options = options or {}
+  levels = levels or FAMILY_LEVELS.accent
+  local theme = get_theme_variant()
+  local lightness_scale = resolve_lightness_scale(theme, use_accent_overrides)
   local scale = {}
-  local h, s, l = utils.hex2hsl(color)
-  if not h or not s or not l then
-    h, s, l = 0, 0, 0.5
+
+  -- Convert input color to OKLCH (preserves hue and chroma)
+  local L_input, C_input, H = utils.hex2oklch(color)
+  if not L_input then
+    -- Fallback to white/black if conversion fails
+    return {}
   end
 
-  local is_dark = utils.get_variant() == 1
-  local lightness
+  local accent_overrides = use_accent_overrides and ACCENT_LIGHTNESS_OVERRIDES[theme]
 
-  if is_dark then
-    lightness = {
-      [100] = 0.900,
-      [200] = 0.750,
-      [300] = 0.650,
-      [400] = 0.600,
-      [500] = 0.480,
-      [600] = 0.280,
-      [700] = 0.195,
-      [800] = 0.140,
-      [900] = 0.115,
-      [950] = 0.090,
-    }
-  else
-    lightness = {
-      [100] = 0.950,
-      [200] = 0.820,
-      [300] = 0.760,
-      [400] = 0.650,
-      [500] = 0.450,
-      [600] = 0.350,
-      [700] = 0.250,
-      [800] = 0.180,
-      [900] = 0.040,
-      [950] = 0.020,
-    }
-  end
+  for _, level in ipairs(levels) do
+    local base_lightness = lightness_scale[level]
+    local contrasted_L = adjust_lightness_for_contrast(base_lightness, options.contrast, theme)
+    local adjusted_L = adjust_lightness(contrasted_L, options.lightness)
 
-  local function apply_contrast(lightness, contrast_factor)
-    local mid_point = 0.5
-    local distance_from_mid = lightness - mid_point
-    local adjusted_distance = distance_from_mid * (1 + contrast_factor)
-    return mid_point + adjusted_distance
-  end
+    -- Overridden levels boost toward the gamut-max chroma for this hue/lightness
+    -- instead of preserving the seed color's own (possibly mild) chroma.
+    local chroma_base = (accent_overrides and accent_overrides[level]) and ACCENT_CHROMA_BOOST or C_input
+    local adjusted_C = adjust_chroma(chroma_base, options.chroma)
 
-  local function adjust_saturation(level, orig_s, variation_factor)
-    local extreme_light = (is_dark and level <= 100) or (not is_dark and level >= 900)
-    local extreme_dark = (is_dark and level >= 900) or (not is_dark and level <= 100)
-
-    local base_saturation
-    if extreme_light then
-      base_saturation = math.max(0, orig_s * 0.8)
-    elseif extreme_dark then
-      base_saturation = math.max(0, orig_s * 0.7)
-    else
-      base_saturation = orig_s
-    end
-
-    local saturation_variation = 1 + (variation_factor * 0.5)
-    base_saturation = base_saturation * saturation_variation
-
-    return math.min(1, math.max(0, base_saturation))
-  end
-
-  for level, target_lightness in pairs(lightness) do
-    local adjusted_lightness
-    if level == 500 then
-      adjusted_lightness = apply_contrast(target_lightness, contrast or 0)
-    else
-      local diff_from_mid = target_lightness - 0.45
-      local varied_lightness = 0.45 + (diff_from_mid * (variation or 1.0))
-      adjusted_lightness = apply_contrast(varied_lightness, contrast or 0)
-    end
-
-    adjusted_lightness = math.min(0.98, math.max(0.02, adjusted_lightness))
-
-    local adjusted_s = adjust_saturation(level, s, variation or 1.0)
-    scale[level] = utils.hsl2hex(h, adjusted_s, adjusted_lightness)
+    -- Use input color's hue, adjust lightness and (for boosted levels) chroma
+    -- OKLCH naturally handles all hues uniformly, no need for special cases
+    scale[level] = utils.oklch2hex(adjusted_L, adjusted_C, H)
   end
 
   return scale
 end
 
+-- Apply semantic color (OKLCH handles all hues naturally)
+local function improve_semantic_color(color, theme, chroma_option, lightness_option)
+  local L, C, H = utils.hex2oklch(color)
+  if not L then
+    return color
+  end
+
+  local adjusted_L = adjust_lightness(L, lightness_option)
+  local adjusted_C = adjust_chroma(C, chroma_option)
+  return utils.oklch2hex(adjusted_L, adjusted_C, H)
+end
+
+-- Rename the OKLCH generator to be the main generator
+local function generate_color_scale(color, options, levels, use_accent_overrides)
+  return generate_color_scale_oklch(color, options, levels, use_accent_overrides)
+end
+
+local function generate_foreground_scale(color, background_scale, options)
+  options = options or {}
+  local variation = options.variation or 0
+
+  local theme = get_theme_variant()
+  local lightness_scale = OKLCH_LIGHTNESS_SCALES[theme]
+  local scale = {}
+  local background_colors = collect_text_backgrounds(background_scale)
+  local L_input, C_input, H = utils.hex2oklch(color)
+
+  if not L_input then
+    return {}
+  end
+
+  local foreground_contrast = -(options.contrast or 0) * 0.35
+  local previous_lightness = nil
+
+  for _, level in ipairs(FAMILY_LEVELS.foreground) do
+    local base_L = lightness_scale[level]
+    -- Apply variation
+    local mid_point = theme == "dark" and 0.45 or 0.55
+    local distance = base_L - mid_point
+    local multiplier = 1 - (variation * 1.5)
+    local adjusted_L = clamp(mid_point + (distance * multiplier), 0.005, 0.98)
+
+    local contrasted_lightness = adjust_lightness_for_contrast(adjusted_L, foreground_contrast, theme)
+    local base_lightness = adjust_lightness(contrasted_lightness, options.lightness)
+    local adjusted_C = adjust_chroma(C_input, options.chroma)
+
+    local resolved_lightness = resolve_foreground_lightness(
+      theme,
+      base_lightness,
+      adjusted_C,
+      H,
+      background_colors,
+      FOREGROUND_CONTRAST_MIN[level],
+      previous_lightness
+    )
+
+    scale[level] = utils.oklch2hex(resolved_lightness, adjusted_C, H)
+    previous_lightness = resolved_lightness
+  end
+
+  return scale
+end
+
+local function resolve_foreground_seed(config, background_color)
+  if config.foreground ~= nil then
+    local L = utils.hex2oklch(config.foreground)
+    if L then
+      return config.foreground
+    end
+  end
+
+  return background_color
+end
+
+-- Scale generators for different purposes
+local function add_scale_to_colors(colors, scale, prefix)
+  for level, color in pairs(scale) do
+    colors[fmt("%s_%s", prefix, level)] = color
+  end
+end
+
+--- Generate and return a flat colors table for a single custom color family.
+--- @param hex string Seed hex color
+--- @param name string Family name (used as key prefix, e.g. "fuchsia")
+--- @param options? table Scale options (contrast, chroma, lightness, variation)
+--- @return table Flat table of name_50..name_600 hex values
+function M.generate_custom_scale(hex, name, options)
+  options = options or {}
+  local scale = generate_color_scale(hex, options, FAMILY_LEVELS.accent, true)
+  local colors = {}
+  add_scale_to_colors(colors, scale, name)
+  return colors
+end
+
 function M.generate_palette(config)
-  local base_color = config.base or config.background or "#030303"
-  local accent_color = config.accent or "#7AA2F7"
-  local variation = 1.0 + (config.variation or 0.0)
+  local theme = get_theme_variant()
+
+  -- Parse and validate colors
+  local background_color = config.background or DEFAULT_BACKGROUND
+  local accent_color = config.accent or DEFAULT_ACCENT
   local contrast = config.contrast or 0
 
-  local base_h, base_s, base_l = utils.hex2hsl(base_color)
-  if not base_h or not base_s or not base_l then
-    vim.notify(fmt("xeno.nvim: Invalid base color '%s', using fallback", tostring(base_color)), vim.log.levels.WARN)
-    base_h, base_s, base_l = 0, 0, 0.15
-    base_color = "#030303"
+  -- Validate background color
+  local L, C, H = utils.hex2oklch(background_color)
+  if not L then
+    background_color = DEFAULT_BACKGROUND
   end
 
-  if base_l < 0.05 then
-    base_color = utils.hsl2hex(base_h, base_s, 0.15)
-  elseif base_l > 0.95 then
-    base_color = utils.hsl2hex(base_h, base_s, 0.85)
+  -- Validate accent color
+  L, C, H = utils.hex2oklch(accent_color)
+  if not L then
+    accent_color = DEFAULT_ACCENT
   end
 
-  local accent_h, accent_s, accent_l = utils.hex2hsl(accent_color)
-  if not accent_h or not accent_s or not accent_l then
-    accent_color = "#7AA2F7"
-  end
+  -- Foreground defaults to the background seed so its shades stay coupled to
+  -- the active surface hue/chroma. An explicit foreground keeps override behavior.
+  local foreground_color = resolve_foreground_seed(config, background_color)
 
-  local base_scale = generate_color_scale(base_color, variation, contrast)
-  local accent_scale = generate_color_scale(accent_color, variation, contrast)
+  -- Generate scales with shared options
+  local scale_options = {
+    standard = {
+      contrast = contrast,
+      variation = config.variation,
+      chroma = config.chroma or 0,
+      lightness = config.lightness or 0,
+    },
+  }
 
+  -- Generate all color scales
+  local background_scale = generate_color_scale(background_color, scale_options.standard, FAMILY_LEVELS.background)
+  local foreground_scale = generate_foreground_scale(foreground_color, background_scale, scale_options.standard)
+  local accent_scale = generate_color_scale(accent_color, scale_options.standard, FAMILY_LEVELS.accent, true)
+
+  local scales = {
+    { scale = foreground_scale, prefix = "foreground" },
+    { scale = background_scale, prefix = "background" },
+    { scale = accent_scale, prefix = "accent" },
+  }
+
+  -- Build final color palette
   local colors = {}
 
-  for level, color in pairs(base_scale) do
-    colors[fmt("base_%s", level)] = color
+  -- Add all scales
+  for _, scale_data in ipairs(scales) do
+    add_scale_to_colors(colors, scale_data.scale, scale_data.prefix)
   end
 
-  for level, color in pairs(accent_scale) do
-    colors[fmt("accent_%s", level)] = color
+  -- Add custom color scales (optionally filtered)
+  if config._custom_colors then
+    local custom_colors_to_include = config._custom_colors
+
+    -- If filtering is specified, only include requested custom colors
+    if config._filtered_custom_colors then
+      custom_colors_to_include = {}
+      for name, _ in pairs(config._filtered_custom_colors) do
+        if config._custom_colors[name] then
+          custom_colors_to_include[name] = config._custom_colors[name]
+        end
+      end
+    end
+
+    for name, hex_value in pairs(custom_colors_to_include) do
+      local custom_scale = generate_color_scale(hex_value, scale_options.standard, FAMILY_LEVELS.accent, true)
+      add_scale_to_colors(colors, custom_scale, name)
+    end
   end
 
-  colors.red = config.red or "#E86671"
-  colors.green = config.green or "#A9DC76"
-  colors.yellow = config.yellow or "#E7C547"
-  colors.orange = config.orange or "#FFA94D"
-  colors.blue = config.blue or "#66B2FF"
-  colors.purple = config.purple or "#A37EE5"
-  colors.cyan = config.cyan or "#78DCE8"
+  -- Add semantic colors
+  local semantic = SEMANTIC_COLORS[theme]
+  for name, default_color in pairs(semantic) do
+    local color = config[name] or default_color
+    local resolved = improve_semantic_color(color, theme, scale_options.standard.chroma, scale_options.standard.lightness)
+    colors[name] = resolved
+    colors[fmt("%s_500", name)] = resolved
+  end
 
   return colors
 end
