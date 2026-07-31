@@ -230,3 +230,16 @@ xeno.opaque(color, alpha, bg, colors)
 ```
 
 See [examples.md](examples.md) for detailed configuration examples and complete theme showcases.
+
+## Troubleshooting
+
+<details>
+<summary><strong>No colors on tmux?</strong></summary>
+
+Add this line to your config:
+
+```lua
+vim.cmd("set termguicolors")
+```
+
+</details>
