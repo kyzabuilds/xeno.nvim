@@ -91,12 +91,16 @@ xeno.setup({
 
 ## Configuration
 
+xeno doesn't ship a colorscheme. `xeno.setup()` only sets global defaults that every theme you create will fall back to — it does not itself register or apply a colorscheme. To get a usable `:colorscheme` you must define at least one with `xeno.theme('name', { ... })` and then run `vim.cmd('colorscheme name')`, as shown in the Installation examples above.
+
 ### Basic Options
+
+`background` and `foreground` here are global seed colors, not a theme definition. They act as the fallback background/foreground used by any `xeno.theme()` that doesn't override them itself — they are not a way to "customize the colorscheme" on their own.
 
 ```lua
 xeno.setup({
-  background = '#1a1a1a',  -- Background seed color
-  foreground = nil,        -- Foreground seed (derived from background if nil)
+  background = '#1a1a1a',  -- Global default background seed (fallback for all themes)
+  foreground = nil,        -- Global default foreground seed (derived from background if nil)
   accent = '#7aa2f7',      -- Accent color
 
   -- Color adjustments
