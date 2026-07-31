@@ -6,7 +6,7 @@ function M.generate_editor_highlights(colors, config)
   return {
     Normal = { bg = colors.background_950, fg = colors.foreground_200 },
     NormalNC = { bg = colors.background_950, fg = colors.foreground_200 },
-    Visual = { bg = utils.opaque(colors.background_600, 0.40) },
+    Visual = { bg = utils.opaque(colors.accent_500, 0.40) },
 
     NormalFloat = { fg = colors.foreground_100, bg = colors.background_900 },
     FloatBorder = { fg = colors.background_700, bg = colors.background_900 },
@@ -29,9 +29,9 @@ function M.generate_editor_highlights(colors, config)
     WarningMsg = { fg = colors.yellow },
     MoreMsg = { fg = colors.green },
 
-    Search = { bg = utils.opaque(colors.background_600, 0.30) },
+    Search = { bg = utils.opaque(colors.background_500, 0.40) },
     IncSearch = { link = "Cursor" },
-    CurSearch = { bg = utils.opaque(colors.background_600, 0.50) },
+    CurSearch = { bg = utils.opaque(colors.accent_500, 0.60), fg = colors.accent_200 },
 
     MatchParen = { fg = colors.accent_100, bold = true },
     NonText = { fg = colors.foreground_400 },

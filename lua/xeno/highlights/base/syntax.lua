@@ -136,6 +136,22 @@ function M.generate_syntax_highlights(colors)
     ["@lsp.type.parameter"] = { link = "@parameter" },
     ["@lsp.type.property"] = { link = "@property" },
 
+    -- LSP modifier-only tokens have no treesitter equivalent, so they should
+    -- add no color. Type+modifier tokens are higher priority than @lsp.type.*;
+    -- link common declaration forms back to the same capture to avoid pop-in.
+    ["@lsp.mod.declaration"] = { clear = true },
+    ["@lsp.typemod.enum.declaration"] = { link = "@type" },
+    ["@lsp.typemod.enumMember.declaration"] = { link = "@constant" },
+    ["@lsp.typemod.function.declaration"] = { link = "@function" },
+    ["@lsp.typemod.interface.declaration"] = { link = "@type" },
+    ["@lsp.typemod.method.declaration"] = { link = "@function.method" },
+    ["@lsp.typemod.parameter.declaration"] = { link = "@parameter" },
+    ["@lsp.typemod.property.declaration"] = { link = "@property" },
+    ["@lsp.typemod.struct.declaration"] = { link = "@type" },
+    ["@lsp.typemod.type.declaration"] = { link = "@type" },
+    ["@lsp.typemod.typeParameter.declaration"] = { link = "@type" },
+    ["@lsp.typemod.variable.declaration"] = { link = "@variable" },
+
     -- Markdown support
     ["@markup.strong"] = { fg = colors.foreground_50, bold = true },
 

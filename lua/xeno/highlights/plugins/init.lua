@@ -791,6 +791,8 @@ M["akinsho/toggleterm.nvim"] = function(colors, plugin_config)
   return {
     ["toggleterm"] = function()
       return {
+        Normal = { bg = "#000000" },
+        WinBar = { bg = "#000000" },
         StatusLine = { bg = colors.background_950, fg = colors.foreground_100 },
         StatusLineNC = { bg = colors.background_950, fg = colors.foreground_100 },
       }
