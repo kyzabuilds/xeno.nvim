@@ -2,7 +2,7 @@
 
 ## Sylvan
 
-<img title="Sylvan" alt="Sylvan" src="./media/sylvan.png">
+<img title="Sylvan" alt="Sylvan" src="../media/sylvan.png">
 
 ```lua
 xeno.theme('sylvan', {
@@ -15,7 +15,7 @@ xeno.theme('sylvan', {
 
 ## Verdigris
 
-<img title="Verdigris" alt="Verdigris" src="./media/verdigris.png">
+<img title="Verdigris" alt="Verdigris" src="../media/verdigris.png">
 
 ```lua
 xeno.color('teal', '#5fb3a1')
@@ -87,7 +87,7 @@ xeno.theme('verdigris', {
 
 ## Latte Express
 
-<img title="Latte Express" alt="Latte Express" src="./media/latte%20express.png">
+<img title="Latte Express" alt="Latte Express" src="../media/latte%20express.png">
 
 ```lua
 xeno.color('caramel', '#E6A15C')
@@ -169,11 +169,11 @@ xeno.theme('latte-express', {
 
 ## Polarized
 
-<img title="Polarized" alt="Polarized" src="./media/polarized.png">
+<img title="Polarized" alt="Polarized" src="../media/polarized.png">
 
 ## Emerald
 
-<img title="Emerald" alt="Emerald" src="./media/emerald.png">
+<img title="Emerald" alt="Emerald" src="../media/emerald.png">
 
 ```lua
 xeno.theme('emerald', {
@@ -188,7 +188,7 @@ xeno.theme('emerald', {
 
 ## Sapphire
 
-<img title="Sapphire" alt="Sapphire" src="./media/sapphire.png">
+<img title="Sapphire" alt="Sapphire" src="../media/sapphire.png">
 
 ```lua
 xeno.theme('sapphire', {
@@ -204,7 +204,7 @@ xeno.theme('sapphire', {
 
 ## Industrial
 
-<img title="Industrial" alt="Industrial" src="./media/industrial.png">
+<img title="Industrial" alt="Industrial" src="../media/industrial.png">
 
 ```lua
 xeno.theme('industrial', {
@@ -260,7 +260,7 @@ xeno.theme('industrial', {
 
 ## Nocturnal
 
-<img title="Nocturnal" alt="Nocturnal" src="./media/nocturnal.png">
+<img title="Nocturnal" alt="Nocturnal" src="../media/nocturnal.png">
 
 ```lua
 xeno.color('amber', '#c9a15c')
@@ -341,7 +341,7 @@ xeno.theme('nocturnal', {
 
 ## Nausicaä
 
-<img title="Nausicaä" alt="Nausicaä" src="./media/nausicaá.png">
+<img title="Nausicaä" alt="Nausicaä" src="../media/nausicaá.png">
 
 ```lua
 xeno.color('spore', '#5fa891')
