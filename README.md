@@ -5,6 +5,7 @@
 </p>
 
 <br/>
+<br/>
 
 - **Automatic Light/Dark Mode** - Seamlessly adapts to `vim.o.background` changes
 - **Background-Derived Foreground** - Foreground shades default to the background seed's hue/chroma and can still be overridden explicitly
@@ -34,6 +35,9 @@ xeno.theme('sylvan', {
 ```
 
 </details>
+
+- <a href="doc/examples.md">Browse Examples</a>
+- <a href="doc/guide.md">Follow Theming Guide</a>
 
 ## Installation
 
@@ -185,7 +189,7 @@ xeno.setup({
 })
 ```
 
-See [plugins.md](plugins.md) for all available plugin configuration options.
+See [plugins.md](doc/plugins.md) for all available plugin configuration options.
 
 ### Advanced Features
 
@@ -229,7 +233,7 @@ local fg = xeno.foreground_50
 xeno.opaque(color, alpha, bg, colors)
 ```
 
-See [examples.md](examples.md) for detailed configuration examples and complete theme showcases.
+See [examples.md](doc/examples.md) for detailed configuration examples and complete theme showcases.
 
 ## Troubleshooting
 
