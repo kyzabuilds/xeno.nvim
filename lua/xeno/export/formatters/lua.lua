@@ -5,116 +5,6 @@ local lua_template = require("xeno.export.templates.lua")
 
 local fmt = string.format
 
--- Extract color categories from xeno's generated palette structure
-local function organize_color_palette(colors)
-  local organized = {
-    foreground = {},
-    background = {},
-    accent = {},
-    custom = {},
-    semantic = {},
-  }
-
-  local family_levels = {
-    foreground = { 50, 100, 200, 300, 400 },
-    background = { 500, 600, 700, 800, 900, 950 },
-    accent = { 50, 100, 200, 300, 400, 500, 600 },
-  }
-
-  for color_name, color_value in pairs(colors) do
-    local name, level = color_name:match("^([^_]+_?[^_]*)_(%d+)$")
-    if name and level then
-      level = tonumber(level)
-      if level and name == "foreground" then
-        organized.foreground[level] = color_value
-      elseif level and name == "background" then
-        organized.background[level] = color_value
-      elseif level and name == "accent" then
-        organized.accent[level] = color_value
-      elseif level then
-        -- Custom colors (red_stone, martina_olive, etc.)
-        if not organized.custom[name] then
-          organized.custom[name] = {}
-        end
-        if organized.custom[name] then
-          organized.custom[name][level] = color_value
-        end
-      end
-    else
-      -- Semantic colors (red, green, blue, etc.)
-      organized.semantic[color_name] = color_value
-    end
-  end
-
-  return organized, family_levels
-end
-
--- Format color definitions in structured format
-local function format_color_definitions(colors)
-  local lines = {}
-  local organized, family_levels = organize_color_palette(colors)
-
-  -- Helper function to add color scale section
-  local function add_color_scale(title, colors_table, prefix, levels)
-    if next(colors_table) then
-      table.insert(lines, "")
-      table.insert(lines, fmt("  -- %s", title))
-
-      for _, level in ipairs(levels) do
-        if colors_table[level] then
-          local color_name = fmt("%s_%d", prefix, level)
-          table.insert(lines, fmt('  %s = "%s",', color_name, utils.format_hex_color(colors_table[level])))
-        end
-      end
-    end
-  end
-
-  add_color_scale("Foreground colors", organized.foreground, "foreground", family_levels.foreground)
-  add_color_scale("Background colors", organized.background, "background", family_levels.background)
-
-  add_color_scale("Accent colors", organized.accent, "accent", family_levels.accent)
-
-  -- Add semantic colors first (these have priority)
-  if next(organized.semantic) then
-    table.insert(lines, "")
-    table.insert(lines, "  -- Semantic colors")
-
-    local semantic_names = {}
-    for name in pairs(organized.semantic) do
-      table.insert(semantic_names, name)
-    end
-    table.sort(semantic_names)
-
-    for _, name in ipairs(semantic_names) do
-      table.insert(lines, fmt('  %s = "%s",', name, utils.format_hex_color(organized.semantic[name])))
-    end
-  end
-
-  -- Add custom colors (sorted by name)
-  if next(organized.custom) then
-    local custom_names = {}
-    for name in pairs(organized.custom) do
-      table.insert(custom_names, name)
-    end
-    table.sort(custom_names)
-
-    for _, name in ipairs(custom_names) do
-      local color_scale = organized.custom[name]
-      table.insert(lines, "")
-      table.insert(lines, fmt("  -- %s colors", name))
-
-      for _, level in ipairs(family_levels.accent) do
-        if color_scale[level] then
-          local color_name = fmt("%s_%d", name, level)
-          table.insert(lines, fmt('  %s = "%s",', color_name, utils.format_hex_color(color_scale[level])))
-        end
-      end
-    end
-  end
-
-  return table.concat(lines, "\n")
-end
-
 -- Format highlight group for Lua with color variable references
 local function format_highlight_group(group_name, attrs, color_lookup)
   if not attrs or type(attrs) ~= "table" or not next(attrs) then
@@ -129,8 +19,10 @@ local function format_highlight_group(group_name, attrs, color_lookup)
 
   -- Helper to resolve color value (either hex or reference)
   local function resolve_attr(value)
-    if not value then return nil end
-    
+    if not value then
+      return nil
+    end
+
     -- Handle semantic references starting with @ (e.g., @background_600_020)
     if type(value) == "string" and value:match("^@") then
       local var_name = value:sub(2):gsub("%.", "_")
@@ -143,7 +35,7 @@ local function format_highlight_group(group_name, attrs, color_lookup)
     if var_name then
       return fmt("colors.%s", var_name)
     end
-    
+
     return fmt('"%s"', normalized)
   end
 
@@ -350,7 +242,7 @@ local function format_filetype_highlights(filetype_highlights, organized_colors)
     local winhighlight_parts = {}
 
     table.insert(lines, string.format("  -- %s", ft))
-    
+
     -- Get sorted groups for consistent output
     local groups = {}
     for group in pairs(ft_hls) do

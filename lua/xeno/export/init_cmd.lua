@@ -6,7 +6,7 @@ local utils = require("xeno.core.utils")
 
 function M.export()
   local default_name = "xeno-" .. vim.fn.strftime("%Y-%m-%d-%H-%M")
-  
+
   vim.ui.input({
     prompt = "Enter theme name: ",
     default = default_name,
@@ -21,7 +21,7 @@ function M.export()
     }
 
     local result, err = export.export_theme(config)
-    
+
     if not result then
       vim.notify("Export failed: " .. tostring(err), vim.log.levels.ERROR)
       return
@@ -31,7 +31,7 @@ function M.export()
     local old_path = result.path
     local new_filename = input .. ".lua"
     local new_path = vim.fn.fnamemodify(old_path, ":h") .. "/" .. new_filename
-    
+
     -- Need to ensure we don't try to rename if the names are the same (which shouldn't happen but good practice)
     if old_path ~= new_path then
       local success, rename_err = pcall(os.rename, old_path, new_path)
@@ -42,7 +42,7 @@ function M.export()
     end
 
     vim.notify("Theme exported to: " .. new_path)
-    
+
     -- Navigate to the theme file
     vim.cmd("edit " .. vim.fn.fnameescape(new_path))
   end)

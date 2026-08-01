@@ -431,6 +431,7 @@ Export the current theme as a standalone Lua colorscheme file.
 - `config` (table, optional) — Export configuration
   - `format` (string) — Export format, currently 'lua' only
   - `dir` (string) — Output directory (supports ~ expansion, default: ~/.config/nvim/colors/)
+  - `theme_name` (string) — Name used in the generated filename (default: 'xeno')
 
 **Returns:** table with export metadata (path, filename, format, size, color/highlight counts)
 
