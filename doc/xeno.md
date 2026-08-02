@@ -117,6 +117,27 @@ vim.cmd('colorscheme my-theme')
 | `lightness` | number | -1.0–1.0 | 0.0 | Shifts palette brightness toward black/white. -1.0 darkens every family, 0.0 keeps the native scale, 1.0 brightens every family. |
 | `contrast` | number | -1.0–1.0 | 0.0 | Adjusts overall brightness contrast around a midpoint. |
 
+### Accessibility
+
+| Option | Type | Range | Default | Description |
+|--------|------|-------|---------|-------------|
+| `min_contrast` | number | 1.0–21.0 | `nil` (off) | Minimum WCAG contrast ratio that generated text colors must clear against `background_800`/`900`/`950`. Applies to `foreground_*` and to `accent_100`/`200`/`300` (the accent levels used as syntax text), including custom `xeno.color()` families. |
+
+A top-level option, not a `properties` knob — the knobs are relative nudges, this is an absolute floor. Landmarks: `4.5` = WCAG AA normal text, `7.0` = AAA, `21.0` = maximum.
+
+Per-level floors scale from `min_contrast / 4.5` rather than flattening to one number, so the shade hierarchy survives — `foreground_50` stays crisper than `foreground_400` at any setting. It composes with `contrast`: `contrast` reshapes lightness first, then the floor is enforced on the result.
+
+```lua
+require('xeno').setup({
+  background = '#1a1a1a',
+  accent = '#7aa2f7',
+  properties = { contrast = -0.3 },  -- still softens the surfaces
+  min_contrast = 7.0,                -- but text never drops below AAA
+})
+```
+
+`background_800` sits at a fixed lightness, which caps the achievable ratio at roughly 15.5 (dark) and 12.8 (light). Values above ~6.4 are therefore unreachable for the highest foreground levels in light mode; xeno lands on the closest in-gamut color rather than erroring, so check the extremes visually.
+
 ### Semantic Color Overrides
 
 Define custom semantic colors for common UI elements:

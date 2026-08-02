@@ -115,6 +115,8 @@ xeno.setup({
     lightness = 0.0,   -- Lightness adjustment (-1.0 to 1.0)
   },
 
+  min_contrast = nil,   -- Minimum WCAG contrast ratio for text (1.0 to 21.0), nil = off
+
   transparent = false,  -- Transparent background
 
   -- Semantic colors (optional)
@@ -140,6 +142,8 @@ xeno.setup({
   },
 })
 ```
+
+`min_contrast` is an opt-in accessibility floor: set it to a WCAG ratio (`4.5` = AA, `7.0` = AAA) and generated text colors are pushed until they clear it. It constrains the `contrast` knob rather than replacing it. See <a href="doc/xeno.md#palette-adjustments">the reference</a> for details.
 
 ### Custom Colors
 

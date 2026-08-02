@@ -135,6 +135,25 @@ lightness         Number (-1.0 to 1.0). Default: 0.0. Shifts palette
 contrast          Number (-1.0 to 1.0). Default: 0.0. Adjusts overall
                   brightness contrast around a midpoint.
 
+Accessibility~
+
+*xeno-config-min_contrast*
+min_contrast      Number (1.0 to 21.0). Default: nil (off). Minimum WCAG
+                  contrast ratio that generated text colors must clear against
+                  background_800/900/950. Applies to the whole foreground
+                  family and to accent_100, accent_200 and accent_300 (the
+                  accent levels used as syntax text), custom xeno.color()
+                  families included. Landmarks: 4.5 = AA normal text,
+                  7.0 = AAA, 21.0 = maximum.
+
+                  A top-level option, not a `properties` knob. Per-level
+                  floors scale from `min_contrast / 4.5`, so the shade
+                  hierarchy is preserved. Composes with |xeno-config-contrast|
+                  rather than replacing it: `contrast` reshapes lightness
+                  first, then the floor is enforced on the result. Ratios the
+                  sRGB gamut cannot reach fall back to the closest achievable
+                  color.
+
 Semantic Color Overrides~
 
 *xeno-config-semantic-colors*

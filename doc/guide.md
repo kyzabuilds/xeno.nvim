@@ -36,6 +36,8 @@ differs.
     contrast = -0.10, variation = 0.00, chroma = 0.10, lightness = 0.50,
   },
 
+  min_contrast = nil,       -- OPTIONAL accessibility floor (1.0–21.0). off by default.
+
   highlights = {
     editor  = { ... },   -- UI: LineNr, Visual, StatusLine, Pmenu, ...
     syntax  = { ... },   -- code: @keyword, @function, String, Type, ...
@@ -147,6 +149,30 @@ character comes from seeds + knobs.
 Raising `lightness` washes colors toward gray, so a small positive `chroma` is
 the usual counterweight (brighter but still colorful). Muted/pastel ≈ slightly
 negative `contrast` + modest `chroma`; vivid ≈ positive `chroma`.
+
+### The accessibility floor
+
+`min_contrast` sits **outside** `properties`, at the top level of the config —
+the four knobs are relative nudges, this is an absolute guarantee, and it's off
+unless you ask for it. Set it to a WCAG ratio (`4.5` = AA normal text, `7.0` =
+AAA) and xeno pushes `@foreground.50`–`.400` plus the accent levels used as
+syntax text (`.100`/`.200`/`.300`, on `accent` and every `xeno.color()` family)
+until they clear it against `@background.800`/`.900`/`.950`.
+
+```lua
+xeno.theme('tired-eyes', {
+  background = '#1a1a1a', accent = '#7aa2f7',
+  properties = { contrast = -0.3 },  -- still softens the surfaces
+  min_contrast = 7.0,                -- but text never drops below AAA
+})
+```
+
+Floors scale per level rather than flattening to one number, so the hierarchy in
+§2 survives. It constrains `contrast` rather than replacing it. Reach for it
+when a theme must hold a readability guarantee, not when you just want a
+punchier look — that's still `contrast`. Very high ratios can hit the sRGB gamut
+ceiling (roughly 15.5 dark / 12.8 light); xeno lands on the closest achievable
+color instead of erroring, so check the extremes visually.
 
 ---
 
@@ -332,6 +358,8 @@ xeno.theme('verdigris', {
 - [ ] Custom families registered with `xeno.color()` **before** the theme.
 - [ ] Seeds chosen for `background`, `accent`, and (if needed) `foreground`.
 - [ ] Knobs tuned first — only `contrast`/`variation`/`chroma`/`lightness`.
+- [ ] `min_contrast` set (top level, not in `properties`) if the theme must hold
+      a readability floor.
 - [ ] No raw hex in any `fg`/`bg`/`sp`; only references, `xeno.opaque(...)`, or
       `'NONE'`/`clear` (§3a).
 - [ ] UI surface backgrounds use `@background.*`, not hardcoded darks.
