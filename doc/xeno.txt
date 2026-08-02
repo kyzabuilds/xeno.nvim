@@ -74,7 +74,7 @@ Using mini.deps~
 3. QUICK START                                             *xeno-quickstart*
 
 Setup Method (Immediate Use)~
-                                                              *xeno.setup()*
+                                                       *xeno-setup-method*
 
 Use |xeno.setup()| to load a colorscheme immediately:
 >lua
