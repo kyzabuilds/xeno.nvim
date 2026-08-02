@@ -110,6 +110,10 @@ function M.theme(name, config, global_config)
       user_config.lightness or 0.0
     )
   )
+  -- Top-level option, not a `properties` knob; only emitted when opted in.
+  if type(user_config.min_contrast) == "number" then
+    table.insert(config_parts, fmt("  min_contrast = %.2f", user_config.min_contrast))
+  end
   table.insert(config_parts, fmt("  transparent = %s", user_config.transparent and "true" or "false"))
 
   if user_config.foreground then

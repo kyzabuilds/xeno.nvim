@@ -30,20 +30,60 @@ utils.extend = function(method, t1, t2)
   return vim.tbl_deep_extend(method or "force", {}, vim.deepcopy(t1 or {}), vim.deepcopy(t2 or {}))
 end
 
+-- Accepted bounds for the `min_contrast` option. 1.0 is "no contrast at all"
+-- (identical colors) and 21.0 is the WCAG maximum (pure black on pure white).
+utils.MIN_CONTRAST_LOWER = 1.0
+utils.MIN_CONTRAST_UPPER = 21.0
+
+--- Validate the optional `min_contrast` option.
+--- Non-numeric input is ignored (feature stays off); out-of-range numbers are
+--- clamped into [1.0, 21.0]. Both cases warn, matching the rest of this module.
+--- @param value any Raw config value.
+--- @return number? ratio A usable ratio, or nil when the option is unset/invalid.
+utils.normalize_min_contrast = function(value)
+  if value == nil then
+    return nil
+  end
+
+  -- The `value ~= value` guard rejects NaN, which would silently poison every
+  -- downstream comparison in the contrast search.
+  if type(value) ~= "number" or value ~= value then
+    log_warn(fmt("min_contrast: expected a number in [%.1f, %.1f], got %s. Ignoring.", utils.MIN_CONTRAST_LOWER, utils.MIN_CONTRAST_UPPER, vim.inspect(value)))
+    return nil
+  end
+
+  if value < utils.MIN_CONTRAST_LOWER or value > utils.MIN_CONTRAST_UPPER then
+    local clamped = math.min(utils.MIN_CONTRAST_UPPER, math.max(utils.MIN_CONTRAST_LOWER, value))
+    log_warn(fmt("min_contrast: %s is outside [%.1f, %.1f]. Clamping to %.1f.", value, utils.MIN_CONTRAST_LOWER, utils.MIN_CONTRAST_UPPER, clamped))
+    return clamped
+  end
+
+  return value
+end
+
 --- Theme knobs live under a `properties` table in the public API. Lift them into
 --- flat top-level config fields so downstream palette code reads them uniformly.
 --- Flat fields stay supported as a fallback for backward compatibility.
 --- @param config table The config to normalize in place.
 --- @return table config The same table, with knobs flattened.
 utils.normalize_properties = function(config)
-  if type(config) ~= "table" or type(config.properties) ~= "table" then
+  if type(config) ~= "table" then
     return config
   end
-  for _, key in ipairs({ "contrast", "chroma", "lightness", "variation" }) do
-    if config.properties[key] ~= nil then
-      config[key] = config.properties[key]
+
+  if type(config.properties) == "table" then
+    for _, key in ipairs({ "contrast", "chroma", "lightness", "variation" }) do
+      if config.properties[key] ~= nil then
+        config[key] = config.properties[key]
+      end
     end
   end
+
+  -- `min_contrast` is a top-level setup option, not a `properties` knob: the
+  -- knobs are relative nudges, this is an absolute floor. Validated here rather
+  -- than at read time so a bad value warns once, at the config boundary.
+  config.min_contrast = utils.normalize_min_contrast(config.min_contrast)
+
   return config
 end
 
@@ -143,12 +183,20 @@ utils.opaque = function(fg_color, opacity, bg_color, colors)
     local custom_hex = xeno_mod._custom_colors and xeno_mod._custom_colors[family]
     if custom_hex then
       local cfg = xeno_mod._global_config or {}
+      -- Reuse the already-generated background surfaces so this on-demand scale
+      -- gets the same contrast floor as one built during generate_palette().
+      local background_scale = {
+        [800] = colors.background_800,
+        [900] = colors.background_900,
+        [950] = colors.background_950,
+      }
       local scale = require("xeno.core.palette").generate_custom_scale(custom_hex, family, {
-        contrast  = cfg.contrast,
-        chroma    = cfg.chroma or 0,
-        lightness = cfg.lightness or 0,
-        variation = cfg.variation,
-      })
+        contrast     = cfg.contrast,
+        chroma       = cfg.chroma or 0,
+        lightness    = cfg.lightness or 0,
+        variation    = cfg.variation,
+        min_contrast = cfg.min_contrast,
+      }, background_scale)
       for k, v in pairs(scale) do
         colors[k] = v
       end

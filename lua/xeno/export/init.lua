@@ -386,6 +386,7 @@ local function generate_variant_palette(foreground_color, background_color, acce
     chroma = user_config.chroma or 0,
     lightness = user_config.lightness or 0,
     contrast = user_config.contrast or 0,
+    min_contrast = user_config.min_contrast,
     -- Include any custom colors from the current config
     _custom_colors = user_config._custom_colors,
     -- Apply filtering if provided

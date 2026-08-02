@@ -10,6 +10,11 @@ defaults.config = {
   lightness = 0.0,
   contrast = 0.0,
 
+  -- Opt-in accessibility floor. nil = off (historical behavior). When set to a
+  -- WCAG ratio in [1.0, 21.0], generated text colors are pushed until they meet
+  -- it. Composes with `contrast` rather than replacing it.
+  min_contrast = nil,
+
   transparent = false,
 
   -- UI decorations

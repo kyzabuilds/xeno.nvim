@@ -76,6 +76,29 @@ local FOREGROUND_CONTRAST_MIN = {
 local FOREGROUND_HIERARCHY_STEP = 0.015
 local FOREGROUND_MIN_SEPARATION = 0.001
 
+-- Baseline WCAG floors for the accent levels that syntax highlighting uses as
+-- *text* foregrounds: accent_100 (functions, constants, builtin types),
+-- accent_200 (strings, statements, keyword sub-captures) and accent_300
+-- (keywords, types, numbers). Deliberately excludes 50/400/500/600 — those
+-- double as subtle background tints (diff fills, selections), where forcing a
+-- legibility-grade floor would destroy the effect they exist for.
+--
+-- Shaped like FOREGROUND_CONTRAST_MIN: the dimmest text level sits on the
+-- MIN_CONTRAST_REFERENCE (4.5, WCAG AA for normal text) so a configured
+-- `min_contrast` lands there exactly, and the more prominent levels get
+-- proportionally more headroom. Unused unless `min_contrast` is set.
+local ACCENT_CONTRAST_BASELINE = {
+  [100] = 5.5,
+  [200] = 5.0,
+  [300] = 4.5,
+}
+
+-- `min_contrast` is expressed relative to this anchor: setting it to 4.5
+-- reproduces the baseline tables verbatim, 7.0 scales every floor by 7/4.5,
+-- and so on. Scaling (rather than flooring everything at one number) keeps the
+-- level hierarchy intact at any setting.
+local MIN_CONTRAST_REFERENCE = 4.5
+
 local SEMANTIC_COLORS = {
   dark = {
     red = "#E86671",
@@ -151,6 +174,25 @@ local function collect_text_backgrounds(background_scale)
   end
 
   return backgrounds
+end
+
+--- Scale a baseline floor table by the user's `min_contrast`.
+--- @param baseline table Map of level -> baseline WCAG ratio.
+--- @param min_contrast number? The configured ratio, or nil when unset.
+--- @return table? scaled Map of level -> clamped ratio, or nil when unset.
+local function scale_contrast_floor(baseline, min_contrast)
+  if not min_contrast then
+    return nil
+  end
+
+  local factor = min_contrast / MIN_CONTRAST_REFERENCE
+  local scaled = {}
+
+  for level, ratio in pairs(baseline) do
+    scaled[level] = clamp(ratio * factor, utils.MIN_CONTRAST_LOWER, utils.MIN_CONTRAST_UPPER)
+  end
+
+  return scaled
 end
 
 local function has_required_contrast(candidate, background_colors, minimum_ratio)
@@ -266,7 +308,13 @@ end
 
 -- OKLCH color scale generator
 -- OKLCH lightness is perceptually linear, providing uniform color scales
-local function generate_color_scale_oklch(color, options, levels, use_accent_overrides)
+--
+-- `background_scale` is optional and only meaningful for accent-shaped families
+-- (the accent seed and every custom `xeno.color()` family). When it is supplied
+-- *and* `options.min_contrast` is set, the levels in ACCENT_CONTRAST_BASELINE
+-- are pushed through the same lightness search the foreground family uses, so
+-- syntax colors clear a real WCAG floor against the text surfaces.
+local function generate_color_scale_oklch(color, options, levels, use_accent_overrides, background_scale)
   options = options or {}
   levels = levels or FAMILY_LEVELS.accent
   local theme = get_theme_variant()
@@ -281,6 +329,9 @@ local function generate_color_scale_oklch(color, options, levels, use_accent_ove
   end
 
   local accent_overrides = use_accent_overrides and ACCENT_LIGHTNESS_OVERRIDES[theme]
+  local contrast_floor = background_scale and scale_contrast_floor(ACCENT_CONTRAST_BASELINE, options.min_contrast)
+  local background_colors = contrast_floor and collect_text_backgrounds(background_scale)
+  local previous_lightness = nil
 
   for _, level in ipairs(levels) do
     local base_lightness = lightness_scale[level]
@@ -291,6 +342,14 @@ local function generate_color_scale_oklch(color, options, levels, use_accent_ove
     -- instead of preserving the seed color's own (possibly mild) chroma.
     local chroma_base = (accent_overrides and accent_overrides[level]) and ACCENT_CHROMA_BOOST or C_input
     local adjusted_C = adjust_chroma(chroma_base, options.chroma)
+
+    -- Floored levels chain through `previous_lightness` so raising the floor
+    -- can't collapse 100/200/300 onto one another; unfloored levels keep the
+    -- plain scale untouched.
+    if contrast_floor and contrast_floor[level] then
+      adjusted_L = resolve_foreground_lightness(theme, adjusted_L, adjusted_C, H, background_colors, contrast_floor[level], previous_lightness)
+      previous_lightness = adjusted_L
+    end
 
     -- Use input color's hue, adjust lightness and (for boosted levels) chroma
     -- OKLCH naturally handles all hues uniformly, no need for special cases
@@ -313,8 +372,8 @@ local function improve_semantic_color(color, theme, chroma_option, lightness_opt
 end
 
 -- Rename the OKLCH generator to be the main generator
-local function generate_color_scale(color, options, levels, use_accent_overrides)
-  return generate_color_scale_oklch(color, options, levels, use_accent_overrides)
+local function generate_color_scale(color, options, levels, use_accent_overrides, background_scale)
+  return generate_color_scale_oklch(color, options, levels, use_accent_overrides, background_scale)
 end
 
 local function generate_foreground_scale(color, background_scale, options)
@@ -333,6 +392,8 @@ local function generate_foreground_scale(color, background_scale, options)
 
   local foreground_contrast = -(options.contrast or 0) * 0.35
   local previous_lightness = nil
+  -- Unset `min_contrast` keeps the historical hardcoded floors verbatim.
+  local contrast_floor = scale_contrast_floor(FOREGROUND_CONTRAST_MIN, options.min_contrast) or FOREGROUND_CONTRAST_MIN
 
   for _, level in ipairs(FAMILY_LEVELS.foreground) do
     local base_L = lightness_scale[level]
@@ -352,7 +413,7 @@ local function generate_foreground_scale(color, background_scale, options)
       adjusted_C,
       H,
       background_colors,
-      FOREGROUND_CONTRAST_MIN[level],
+      contrast_floor[level],
       previous_lightness
     )
 
@@ -384,11 +445,14 @@ end
 --- Generate and return a flat colors table for a single custom color family.
 --- @param hex string Seed hex color
 --- @param name string Family name (used as key prefix, e.g. "fuchsia")
---- @param options? table Scale options (contrast, chroma, lightness, variation)
+--- @param options? table Scale options (contrast, chroma, lightness, variation, min_contrast)
+--- @param background_scale? table Background shades keyed by level; required for
+---        `min_contrast` to floor the text levels, omitted for a plain scale.
 --- @return table Flat table of name_50..name_600 hex values
-function M.generate_custom_scale(hex, name, options)
+function M.generate_custom_scale(hex, name, options, background_scale)
   options = options or {}
-  local scale = generate_color_scale(hex, options, FAMILY_LEVELS.accent, true)
+  options.min_contrast = utils.normalize_min_contrast(options.min_contrast)
+  local scale = generate_color_scale(hex, options, FAMILY_LEVELS.accent, true, background_scale)
   local colors = {}
   add_scale_to_colors(colors, scale, name)
   return colors
@@ -425,13 +489,16 @@ function M.generate_palette(config)
       variation = config.variation,
       chroma = config.chroma or 0,
       lightness = config.lightness or 0,
+      -- Re-validated here because generate_palette is also called directly
+      -- (exports, fallback palette) without going through normalize_properties.
+      min_contrast = utils.normalize_min_contrast(config.min_contrast),
     },
   }
 
   -- Generate all color scales
   local background_scale = generate_color_scale(background_color, scale_options.standard, FAMILY_LEVELS.background)
   local foreground_scale = generate_foreground_scale(foreground_color, background_scale, scale_options.standard)
-  local accent_scale = generate_color_scale(accent_color, scale_options.standard, FAMILY_LEVELS.accent, true)
+  local accent_scale = generate_color_scale(accent_color, scale_options.standard, FAMILY_LEVELS.accent, true, background_scale)
 
   local scales = {
     { scale = foreground_scale, prefix = "foreground" },
@@ -462,7 +529,7 @@ function M.generate_palette(config)
     end
 
     for name, hex_value in pairs(custom_colors_to_include) do
-      local custom_scale = generate_color_scale(hex_value, scale_options.standard, FAMILY_LEVELS.accent, true)
+      local custom_scale = generate_color_scale(hex_value, scale_options.standard, FAMILY_LEVELS.accent, true, background_scale)
       add_scale_to_colors(colors, custom_scale, name)
     end
   end

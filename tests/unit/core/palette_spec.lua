@@ -13,6 +13,48 @@ local FOREGROUND_CONTRAST_MIN = {
   [300] = 6.0,
   [400] = 4.5,
 }
+local ACCENT_CONTRAST_BASELINE = {
+  [100] = 5.5,
+  [200] = 5.0,
+  [300] = 4.5,
+}
+local ACCENT_TEXT_LEVELS = { 100, 200, 300 }
+local MIN_CONTRAST_REFERENCE = 4.5
+
+-- background_800 sits at a fixed OKLCH lightness (0.24 dark / 0.84 light), so
+-- the ratio achievable against it tops out around 15.5 / 12.8 respectively.
+-- 6.0 is the largest round value whose scaled foreground_50 floor (12.0) is
+-- still physically reachable in *both* variants; above ~6.4 light mode can only
+-- degrade gracefully. See the extreme-value test for that path.
+local SATISFIABLE_MIN_CONTRAST = 6.0
+
+local function scaled_floor(baseline, level, min_contrast)
+  local scaled = baseline[level] * (min_contrast / MIN_CONTRAST_REFERENCE)
+  return math.min(21.0, math.max(1.0, scaled))
+end
+
+local function ratio_of(colors, key, bg_level)
+  return utils.contrast_ratio(colors[key], colors[string.format("background_%s", bg_level)])
+end
+
+local function assert_family_floor(colors, prefix, baseline, levels, min_contrast, variant)
+  for _, level in ipairs(levels) do
+    local minimum = scaled_floor(baseline, level, min_contrast)
+    local key = string.format("%s_%s", prefix, level)
+
+    for _, bg_level in ipairs(TEXT_BACKGROUND_LEVELS) do
+      local ratio = ratio_of(colors, key, bg_level)
+      t.truthy(
+        ratio >= minimum - 1e-9,
+        string.format("%s %s on background_%s expected >= %.3f, got %.3f", variant, key, bg_level, minimum, ratio)
+      )
+    end
+  end
+end
+
+local function is_hex(value)
+  return type(value) == "string" and value:match("^#%x%x%x%x%x%x$") ~= nil
+end
 
 local function family(colors, prefix, levels)
   return t.pick(colors, t.family(prefix, levels))
@@ -296,6 +338,182 @@ t.describe("core.palette", function()
           string.format("foreground_%s should remain legible on background_800 after lightness adjustments", fg_level)
         )
       end
+    end
+  end)
+
+  t.it("leaves the palette untouched when min_contrast is unset", function()
+    for _, variant in ipairs({ "dark", "light" }) do
+      local base = {
+        background = variant == "dark" and "#1f2335" or "#d9e1f2",
+        accent = "#7aa2f7",
+        contrast = -0.3,
+        _custom_colors = { fuchsia = "#ff00ff" },
+      }
+
+      local omitted = with_variant(variant, vim.deepcopy(base))
+      local explicit_nil = with_variant(variant, vim.tbl_extend("force", vim.deepcopy(base), { min_contrast = nil }))
+      local invalid = with_variant(variant, vim.tbl_extend("force", vim.deepcopy(base), { min_contrast = "seven" }))
+
+      t.deep_eq(explicit_nil, omitted, variant .. ": explicit nil min_contrast should be a no-op")
+      t.deep_eq(invalid, omitted, variant .. ": invalid min_contrast should fall back to default behavior")
+    end
+  end)
+
+  t.it("reproduces the historical foreground floors when min_contrast equals the 4.5 reference", function()
+    for _, variant in ipairs({ "dark", "light" }) do
+      local base = {
+        background = variant == "dark" and "#1f2335" or "#d9e1f2",
+        accent = "#7aa2f7",
+        contrast = -0.6,
+      }
+
+      local omitted = with_variant(variant, vim.deepcopy(base))
+      local referenced = with_variant(variant, vim.tbl_extend("force", vim.deepcopy(base), { min_contrast = MIN_CONTRAST_REFERENCE }))
+
+      t.deep_eq(
+        family(referenced, "foreground", FOREGROUND_LEVELS),
+        family(omitted, "foreground", FOREGROUND_LEVELS),
+        variant .. ": min_contrast = 4.5 should reproduce the baseline foreground table"
+      )
+    end
+  end)
+
+  t.it("raises every foreground floor proportionally when min_contrast is set", function()
+    for _, variant in ipairs({ "dark", "light" }) do
+      local colors = with_variant(variant, {
+        background = variant == "dark" and "#1f2335" or "#d9e1f2",
+        accent = "#7aa2f7",
+        min_contrast = SATISFIABLE_MIN_CONTRAST,
+      })
+
+      assert_family_floor(colors, "foreground", FOREGROUND_CONTRAST_MIN, FOREGROUND_LEVELS, SATISFIABLE_MIN_CONTRAST, variant)
+
+      -- The floor is additive: it must not undo the existing hierarchy.
+      for _, level in ipairs(FOREGROUND_LEVELS) do
+        t.truthy(
+          ratio_of(colors, string.format("foreground_%s", level), 800) >= FOREGROUND_CONTRAST_MIN[level],
+          string.format("%s foreground_%s should still clear its historical floor", variant, level)
+        )
+      end
+    end
+  end)
+
+  t.it("applies the contrast floor to the accent text levels when min_contrast is set", function()
+    for _, variant in ipairs({ "dark", "light" }) do
+      local config = {
+        background = variant == "dark" and "#1f2335" or "#d9e1f2",
+        accent = "#7aa2f7",
+      }
+
+      local unfloored = with_variant(variant, vim.deepcopy(config))
+      local floored = with_variant(variant, vim.tbl_extend("force", vim.deepcopy(config), { min_contrast = SATISFIABLE_MIN_CONTRAST }))
+
+      assert_family_floor(floored, "accent", ACCENT_CONTRAST_BASELINE, ACCENT_TEXT_LEVELS, SATISFIABLE_MIN_CONTRAST, variant)
+
+      -- Non-text accent levels double as background tints and must stay put.
+      for _, level in ipairs({ 50, 400, 500, 600 }) do
+        local key = string.format("accent_%s", level)
+        t.eq(floored[key], unfloored[key], string.format("%s %s should not be contrast-floored", variant, key))
+      end
+
+      -- Floored levels must stay distinct from one another.
+      t.ne(floored.accent_100, floored.accent_200, variant .. ": accent_100/200 collapsed")
+      t.ne(floored.accent_200, floored.accent_300, variant .. ": accent_200/300 collapsed")
+    end
+  end)
+
+  t.it("applies the accent contrast floor to custom color families", function()
+    for _, variant in ipairs({ "dark", "light" }) do
+      local colors = with_variant(variant, {
+        background = variant == "dark" and "#1f2335" or "#d9e1f2",
+        accent = "#7aa2f7",
+        min_contrast = SATISFIABLE_MIN_CONTRAST,
+        _custom_colors = { fuchsia = "#ff00ff", moss = "#a3c98a" },
+      })
+
+      for _, name in ipairs({ "fuchsia", "moss" }) do
+        assert_family_floor(colors, name, ACCENT_CONTRAST_BASELINE, ACCENT_TEXT_LEVELS, SATISFIABLE_MIN_CONTRAST, variant)
+      end
+    end
+  end)
+
+  t.it("reads min_contrast as a top-level setup option, not a properties knob", function()
+    for _, variant in ipairs({ "dark", "light" }) do
+      local background = variant == "dark" and "#1f2335" or "#d9e1f2"
+
+      t.reset_state()
+      vim.o.background = variant
+      local utils_module = require("xeno.core.utils")
+
+      -- Top level survives normalization, keeps its value, and reaches the palette.
+      local top_level = utils_module.normalize_properties({
+        background = background,
+        accent = "#7aa2f7",
+        min_contrast = SATISFIABLE_MIN_CONTRAST,
+        properties = { contrast = -0.3 },
+      })
+      t.eq(top_level.min_contrast, SATISFIABLE_MIN_CONTRAST)
+      t.eq(top_level.contrast, -0.3, "properties knobs should still be lifted")
+
+      local applied = require("xeno.core.palette").generate_palette(top_level)
+      assert_family_floor(applied, "accent", ACCENT_CONTRAST_BASELINE, ACCENT_TEXT_LEVELS, SATISFIABLE_MIN_CONTRAST, variant)
+
+      -- Nesting it under `properties` is not a supported position.
+      local nested = utils_module.normalize_properties({
+        background = background,
+        accent = "#7aa2f7",
+        properties = { min_contrast = SATISFIABLE_MIN_CONTRAST },
+      })
+      t.eq(nested.min_contrast, nil, variant .. ": properties.min_contrast should not be lifted")
+    end
+  end)
+
+  t.it("clamps out-of-range min_contrast values instead of erroring", function()
+    for _, variant in ipairs({ "dark", "light" }) do
+      local config = {
+        background = variant == "dark" and "#1f2335" or "#d9e1f2",
+        accent = "#ff0000",
+      }
+
+      local clamped_high = with_variant(variant, vim.tbl_extend("force", vim.deepcopy(config), { min_contrast = 99.0 }))
+      local at_max = with_variant(variant, vim.tbl_extend("force", vim.deepcopy(config), { min_contrast = 21.0 }))
+      local clamped_low = with_variant(variant, vim.tbl_extend("force", vim.deepcopy(config), { min_contrast = 0.1 }))
+      local at_min = with_variant(variant, vim.tbl_extend("force", vim.deepcopy(config), { min_contrast = 1.0 }))
+
+      t.deep_eq(clamped_high, at_max, variant .. ": min_contrast above 21.0 should clamp")
+      t.deep_eq(clamped_low, at_min, variant .. ": min_contrast below 1.0 should clamp")
+    end
+  end)
+
+  t.it("degrades gracefully for unreachable min_contrast values on a saturated hue", function()
+    for _, variant in ipairs({ "dark", "light" }) do
+      local colors = with_variant(variant, {
+        background = variant == "dark" and "#1f2335" or "#d9e1f2",
+        accent = "#ff0000",
+        min_contrast = 21.0,
+        _custom_colors = { fuchsia = "#ff00ff" },
+      })
+
+      for _, spec in ipairs({
+        { prefix = "foreground", levels = FOREGROUND_LEVELS },
+        { prefix = "accent", levels = ACCENT_LEVELS },
+        { prefix = "fuchsia", levels = ACCENT_LEVELS },
+      }) do
+        for _, level in ipairs(spec.levels) do
+          local key = string.format("%s_%s", spec.prefix, level)
+          t.truthy(is_hex(colors[key]), string.format("%s %s should still be a valid hex, got %s", variant, key, tostring(colors[key])))
+        end
+      end
+
+      -- Best effort still means "as far as the gamut allows", not "unchanged".
+      local relaxed = with_variant(variant, {
+        background = variant == "dark" and "#1f2335" or "#d9e1f2",
+        accent = "#ff0000",
+      })
+      t.truthy(
+        ratio_of(colors, "accent_300", 800) > ratio_of(relaxed, "accent_300", 800),
+        variant .. ": an unreachable floor should still push accent_300 toward more contrast"
+      )
     end
   end)
 end)
