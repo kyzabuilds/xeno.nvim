@@ -1,0 +1,8 @@
+{
+  "repo": "kyzabuilds/xeno.nvim",
+  "projectName": "xeno",
+  "tagStyle": "project",
+  "appDir": ".",
+  "trackedPackages": [],
+  "areaMatchers": []
+}
