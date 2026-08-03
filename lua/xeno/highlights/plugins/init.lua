@@ -2,7 +2,7 @@ local M = {}
 local utils = require("xeno.core.utils")
 local helpers = require("xeno.core.helpers")
 
-M["nvim-telescope/telescope.nvim"] = function(colors, plugin_config)
+M["nvim-telescope/telescope.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     bg = colors.background_900,
@@ -26,7 +26,7 @@ M["nvim-telescope/telescope.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
+M["ibhagwan/fzf-lua"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     bg = colors.background_950,
@@ -121,7 +121,7 @@ M["ibhagwan/fzf-lua"] = function(colors, plugin_config)
   }
 end
 
-M["hrsh7th/nvim-cmp"] = function(colors, plugin_config)
+M["hrsh7th/nvim-cmp"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     match_fg = colors.accent_200,
@@ -145,7 +145,7 @@ M["hrsh7th/nvim-cmp"] = function(colors, plugin_config)
   }
 end
 
-M["Saghen/blink.cmp"] = function(colors, plugin_config)
+M["Saghen/blink.cmp"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     label_fg = colors.foreground_300,
@@ -221,7 +221,7 @@ M["Saghen/blink.cmp"] = function(colors, plugin_config)
   }
 end
 
-M["SmiteshP/nvim-navic"] = function(colors, plugin_config)
+M["SmiteshP/nvim-navic"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     text_fg = colors.foreground_200,
@@ -250,7 +250,7 @@ M["SmiteshP/nvim-navic"] = function(colors, plugin_config)
   }
 end
 
-M["folke/todo-comments.nvim"] = function(colors, plugin_config)
+M["folke/todo-comments.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     note_fg = colors.accent_500,
@@ -277,7 +277,7 @@ M["folke/todo-comments.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["lukas-reineke/indent-blankline.nvim"] = function(colors, plugin_config)
+M["lukas-reineke/indent-blankline.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     scope_fg = utils.opaque(colors.foreground_400, 0.70),
@@ -296,7 +296,7 @@ M["lukas-reineke/indent-blankline.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["nvimdev/indentmini.nvim"] = function(colors, plugin_config)
+M["nvimdev/indentmini.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     line_fg = utils.opaque(colors.foreground_400, 0.30),
@@ -314,7 +314,7 @@ M["nvimdev/indentmini.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
+M["nvim-neo-tree/neo-tree.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     bg = colors.background_900,
@@ -378,7 +378,7 @@ M["nvim-neo-tree/neo-tree.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
+M["nvim-tree/nvim-tree.lua"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     bg = colors.background_900,
@@ -555,7 +555,7 @@ M["nvim-tree/nvim-tree.lua"] = function(colors, plugin_config)
   }
 end
 
-M["lewis6991/gitsigns.nvim"] = function(colors, plugin_config)
+M["lewis6991/gitsigns.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     add_fg = utils.opaque(colors.green, 0.60),
@@ -654,7 +654,7 @@ M["lewis6991/gitsigns.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
+M["akinsho/bufferline.nvim"] = function(colors, _, plugin_config)
   local light = utils.get_variant() == 2
 
   local function variant()
@@ -787,20 +787,31 @@ M["akinsho/bufferline.nvim"] = function(colors, plugin_config)
   return helpers.default(highlights)
 end
 
-M["akinsho/toggleterm.nvim"] = function(colors, plugin_config)
+M["akinsho/toggleterm.nvim"] = function(colors, _, plugin_config)
+  -- Default configuration
+  local config = {
+    bg = colors.background_950,
+    fg = colors.foreground_100,
+  }
+
+  -- Merge with user overrides if provided
+  if plugin_config then
+    config = utils.extend("force", config, plugin_config)
+  end
+
   return {
     ["toggleterm"] = function()
       return {
-        Normal = { bg = "#000000" },
-        WinBar = { bg = "#000000" },
-        StatusLine = { bg = colors.background_950, fg = colors.foreground_100 },
-        StatusLineNC = { bg = colors.background_950, fg = colors.foreground_100 },
+        Normal = { bg = config.bg },
+        WinBar = { bg = config.bg },
+        StatusLine = { bg = config.bg, fg = config.fg },
+        StatusLineNC = { bg = config.bg, fg = config.fg },
       }
     end,
   }
 end
 
-M["folke/trouble.nvim"] = function(colors, plugin_config)
+M["folke/trouble.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     bg = colors.background_950,
@@ -825,7 +836,7 @@ M["folke/trouble.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["folke/snacks.nvim"] = function(colors, plugin_config)
+M["folke/snacks.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     -- Base UI colors
@@ -1073,7 +1084,7 @@ M["NeogitOrg/neogit"] = function(colors, config)
   }
 end
 
-M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, plugin_config)
+M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     heading_fg = colors.foreground_100,
@@ -1159,7 +1170,7 @@ M["MeanderingProgrammer/render-markdown.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["sindrets/diffview.nvim"] = function(colors, plugin_config)
+M["sindrets/diffview.nvim"] = function(colors, _, plugin_config)
   return {
     -- Primary UI elements
     DiffviewPrimary = { fg = colors.foreground_100 },
@@ -1219,7 +1230,7 @@ M["sindrets/diffview.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["Bekaboo/dropbar.nvim"] = function(colors, plugin_config)
+M["Bekaboo/dropbar.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     fg = colors.foreground_100,
@@ -1271,7 +1282,7 @@ M["Bekaboo/dropbar.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["DNLHC/glance.nvim"] = function(colors, plugin_config)
+M["DNLHC/glance.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     fg = colors.foreground_100,
@@ -1323,7 +1334,7 @@ M["DNLHC/glance.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["MagicDuck/grug-far.nvim"] = function(colors, plugin_config)
+M["MagicDuck/grug-far.nvim"] = function(colors, _, plugin_config)
   return {
     -- Main window and background
     GrugFarNormal = { fg = colors.foreground_100 },
@@ -1406,7 +1417,7 @@ M["MagicDuck/grug-far.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["OXY2DEV/markview.nvim"] = function(colors, plugin_config)
+M["OXY2DEV/markview.nvim"] = function(colors, _, plugin_config)
   return {
     -- Palette colors (0-6 use base colors, 7 uses green accent)
     MarkviewPalette0 = { fg = colors.foreground_300, bg = colors.background_900 },
@@ -1531,7 +1542,7 @@ M["OXY2DEV/markview.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["folke/which-key.nvim"] = function(colors, plugin_config)
+M["folke/which-key.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     key_fg = colors.accent_500,
@@ -1567,7 +1578,7 @@ M["folke/which-key.nvim"] = function(colors, plugin_config)
   }
 end
 
-M["petertriho/nvim-scrollbar"] = function(colors, plugin_config)
+M["petertriho/nvim-scrollbar"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     handle_bg = utils.opaque(colors.background_500, 0.80),
@@ -1704,7 +1715,7 @@ M["yetone/avante.nvim"] = function(colors, global_config, plugin_config)
   }
 end
 
-M["pwntester/octo.nvim"] = function(colors, plugin_config)
+M["pwntester/octo.nvim"] = function(colors, _, plugin_config)
   -- Default configuration
   local config = {
     grey_fg = colors.foreground_300,
