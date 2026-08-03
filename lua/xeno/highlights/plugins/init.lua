@@ -938,7 +938,7 @@ M["folke/snacks.nvim"] = function(colors, _, plugin_config)
     SnacksPicker = { bg = config.picker_bg, fg = colors.foreground_100 },
     SnacksPickerBorder = { bg = config.picker_bg, fg = config.border },
     SnacksPickerInputBorder = { fg = config.border },
-    SnacksPickerInput = { bg = colors.background_900, fg = colors.foreground_100 },
+    SnacksPickerInput = { bg = config.picker_bg },
     SnacksPickerPrompt = { fg = colors.accent_500 },
   }
 end
