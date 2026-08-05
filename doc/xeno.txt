@@ -86,7 +86,7 @@ Use |xeno.setup()| to load a colorscheme immediately:
 <
 
 Theme Method (Generate Files)~
-                                                              *xeno.theme()*
+                                                       *xeno-theme-method*
 
 Use |xeno.theme()| to generate reusable colorscheme files:
 >lua
