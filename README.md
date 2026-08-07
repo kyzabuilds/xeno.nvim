@@ -29,8 +29,10 @@
 xeno.theme('sylvan', {
   background = '#151615',
   accent = '#3b594e',
-  contrast = -0.3,
-  variation = 0.1,
+  properties = {
+    contrast = -0.3,
+    variation = 0.1,
+  }
 })
 ```
 
